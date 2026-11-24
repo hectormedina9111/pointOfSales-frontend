@@ -9,7 +9,16 @@
   <ul class="list-group list-group-flush">
     @for (node of nodes.items(); track node.id) {
       <li class="list-group-item d-flex flex-wrap align-items-center gap-2" [class.pos-caught-up]="caughtUp.ids().has(node.id)">
-        <span class="fw-semibold me-auto">{{ 'stores.nodes.storeName' | translate: { number: node.nodeNumber } }}</span>
+        <div class="me-auto">
+          <span class="fw-semibold d-block">{{ 'stores.nodes.storeName' | translate: { number: node.nodeNumber } }}</span>
+          @if (branchName(node); as name) {
+            <span class="small text-body-secondary">{{ name }}</span>
+          } @else {
+            <span class="badge text-bg-warning" [title]="'stores.nodes.branch.missingHint' | translate">
+              {{ 'stores.nodes.noBranch' | translate }}
+            </span>
+          }
+        </div>
         <app-sync-state-badge [state]="node.syncState" />
         <span class="small text-body-secondary">{{ 'stores.nodes.field.pending' | translate }}: {{ node.pendingChanges }}</span>
         <div class="progress flex-grow-1" style="height: 0.5rem; min-width: 6rem;" role="progressbar"

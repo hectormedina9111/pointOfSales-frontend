@@ -5,6 +5,7 @@ import { tap } from 'rxjs';
 import { BranchView, BranchesApi } from '../../../core/api/branches-api';
 import { listAllPages } from '../../../core/api/page';
 import { StoreNodesApi, StoreNodeView } from '../../../core/api/store-nodes-api';
+import { SystemInfoService } from '../../../core/system/system-info.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { StoreNodeCardComponent } from '../../../shared/components/store-node-card/store-node-card';
@@ -16,8 +17,10 @@ import { LocalDateTimePipe } from '../../../shared/pipes/local-date-time.pipe';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { autoRefresh } from '../../../shared/polling/auto-refresh';
 import { CaughtUpTracker } from '../../../shared/stores/caught-up-tracker';
+import { branchLabel } from '../../../shared/stores/branch-label';
 import { ActivationCodeDialogComponent } from './activation-code-dialog';
 import { StoreNodeFormComponent } from './store-node-form';
+import { StoreBranchDialogComponent } from './store-branch-dialog';
 
 /** Tiendas por página: el panel muestra muchas a la vez. */
 const PANEL_PAGE_SIZE = 50;
@@ -50,6 +53,7 @@ export class StoreNodeListComponent {
   private readonly api = inject(StoreNodesApi);
   private readonly branchesApi = inject(BranchesApi);
   private readonly modal = inject(NgbModal);
+  protected readonly isCentral = inject(SystemInfoService).isCentral;
 
   protected readonly autoRefreshOn = signal(true);
   protected readonly lastUpdated = signal<Date | null>(null);
@@ -84,8 +88,7 @@ export class StoreNodeListComponent {
     if (node.branchId === null) {
       return null;
     }
-    const branch = this.branches().get(node.branchId);
-    return branch ? `${branch.code} · ${branch.name}` : `#${node.branchId}`;
+    return branchLabel(this.branches(), node.branchId);
   }
 
   protected register(): void {
@@ -93,6 +96,18 @@ export class StoreNodeListComponent {
     ref.result.then(
       (created: StoreNodeView) => {
         this.notice.set({ key: 'stores.nodes.registered', params: { number: created.nodeNumber } });
+        this.nodes.load();
+      },
+      () => undefined,
+    );
+  }
+
+  protected assignBranch(node: StoreNodeView): void {
+    const ref = this.modal.open(StoreBranchDialogComponent, { centered: true });
+    ref.componentInstance.node = node;
+    ref.result.then(
+      (updated: StoreNodeView) => {
+        this.notice.set({ key: 'stores.nodes.branch.assigned', params: { number: updated.nodeNumber } });
         this.nodes.load();
       },
       () => undefined,

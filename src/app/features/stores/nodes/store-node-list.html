@@ -37,6 +37,12 @@
       <app-store-node-card [node]="node" [branchName]="branchName(node)" [highlighted]="caughtUp.ids().has(node.id)">
         @if (node.syncState !== 'DISABLED') {
           <div class="card-footer bg-transparent d-flex flex-wrap justify-content-end gap-2">
+            @if (isCentral()) {
+              <button *appIfPrivilege="'PUT_STORE_NODES_ID_BRANCH'" type="button"
+                class="btn btn-sm btn-outline-primary" (click)="assignBranch(node)">
+                {{ 'stores.nodes.branch.action' | translate }}
+              </button>
+            }
             <button *appIfPrivilege="'POST_STORE_NODES_ID_ACTIVATION_CODE'" type="button"
               class="btn btn-sm btn-outline-primary" (click)="generateCode(node)">
               {{ 'stores.nodes.activationCode' | translate }}

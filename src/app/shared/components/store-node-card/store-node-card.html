@@ -7,7 +7,9 @@
           @if (branchName(); as name) {
             {{ name }}
           } @else {
-            {{ 'stores.nodes.noBranch' | translate }}
+            <span class="badge text-bg-warning" [title]="'stores.nodes.branch.missingHint' | translate">
+              {{ 'stores.nodes.noBranch' | translate }}
+            </span>
           }
         </div>
       </div>

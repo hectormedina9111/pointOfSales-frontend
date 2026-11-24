@@ -59,4 +59,12 @@ export class StoreNodesApi {
   revoke(id: number): Observable<StoreNodeView> {
     return this.http.post<StoreNodeView>(`/api/v1/store-nodes/${id}/revoke`, null);
   }
+
+  /**
+   * Asigna la sucursal de la tienda; null la quita. Errores de negocio (422): BRANCH_NOT_FOUND,
+   * DUPLICATE_STORE_BRANCH y STORE_REVOKED.
+   */
+  assignBranch(id: number, branchId: number | null): Observable<StoreNodeView> {
+    return this.http.put<StoreNodeView>(`/api/v1/store-nodes/${id}/branch`, { branchId });
+  }
 }
