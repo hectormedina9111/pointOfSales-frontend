@@ -7,6 +7,7 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
 - **Todo el código va en inglés:** nombres de archivos, clases, métodos, variables, claves de traducción, rutas, campos, valores y nombres de pruebas. Los mensajes de commit también van en inglés, en modo imperativo (`Add node information page`).
 - **Solo la documentación va en español:** `docs/`, README, `CLAUDE.md`, `api/README.md` y comentarios dirigidos a personas del equipo.
 - **Ningún texto visible para la persona va escrito en plantillas ni en el código.** Todo texto (incluidos los mensajes de error) sale de `public/i18n/es.json` y `public/i18n/en.json`, con la misma clave en los dos archivos. En las plantillas se usa siempre `{{ 'clave' | translate }}`.
+- `npm run check:i18n` (también en el CI) falla si una clave usada no existe en los dos archivos o si los archivos no tienen las mismas claves. nginx sirve `/i18n/` sin caché para que el navegador nunca use un diccionario viejo.
 - El idioma por defecto es español. Se guarda en `localStorage` (con try/catch) y se envía al backend en `Accept-Language`.
 
 ## Stack (no cambiar sin acordarlo)
