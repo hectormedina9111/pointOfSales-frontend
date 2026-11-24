@@ -1,0 +1,77 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">
+      {{ (country === null ? 'organization.countries.form.createTitle' : 'organization.countries.form.editTitle') | translate }}
+    </h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <app-problem-alert [error]="error()" />
+
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <label class="form-label" for="country-iso">{{ 'organization.countries.field.isoCode' | translate }}</label>
+        <input id="country-iso" type="text" class="form-control font-monospace" formControlName="isoCode" maxlength="2"
+          [class.is-invalid]="isInvalid(form.controls.isoCode)" />
+        <app-field-error [control]="form.controls.isoCode" invalidKey="validation.uppercaseLetters" />
+        <div class="form-text">{{ 'organization.countries.hint.isoCode' | translate }}</div>
+      </div>
+
+      <div class="col-12 col-md-8">
+        <label class="form-label" for="country-name">{{ 'organization.countries.field.name' | translate }}</label>
+        <input id="country-name" type="text" class="form-control" formControlName="name"
+          [class.is-invalid]="isInvalid(form.controls.name)" />
+        <app-field-error [control]="form.controls.name" />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label" for="country-currency">{{ 'organization.countries.field.currency' | translate }}</label>
+        <input id="country-currency" type="text" class="form-control font-monospace" formControlName="currency" maxlength="3"
+          [class.is-invalid]="isInvalid(form.controls.currency)" />
+        <app-field-error [control]="form.controls.currency" invalidKey="validation.uppercaseLetters" />
+        <div class="form-text">{{ 'organization.countries.hint.currency' | translate }}</div>
+      </div>
+
+      <div class="col-12 col-md-8">
+        <label class="form-label" for="country-time-zone">{{ 'organization.countries.field.timeZone' | translate }}</label>
+        <input id="country-time-zone" type="text" class="form-control" formControlName="timeZone"
+          [class.is-invalid]="isInvalid(form.controls.timeZone)" />
+        <app-field-error [control]="form.controls.timeZone" />
+        <div class="form-text">{{ 'organization.countries.hint.timeZone' | translate }}</div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="country-tax-id-label">{{ 'organization.countries.field.taxIdLabel' | translate }}</label>
+        <input id="country-tax-id-label" type="text" class="form-control" formControlName="taxIdLabel"
+          [class.is-invalid]="isInvalid(form.controls.taxIdLabel)" />
+        <app-field-error [control]="form.controls.taxIdLabel" />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="country-fiscal">{{ 'organization.countries.field.fiscalProvider' | translate }}</label>
+        <select id="country-fiscal" class="form-select" formControlName="fiscalProvider">
+          @for (provider of fiscalProviders; track provider) {
+            <option [value]="provider">{{ 'organization.countries.fiscalProvider.' + provider | translate }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12">
+        <div class="form-check">
+          <input id="country-active" type="checkbox" class="form-check-input" formControlName="active" />
+          <label class="form-check-label" for="country-active">{{ 'organization.countries.field.active' | translate }}</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+      {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+    </button>
+  </div>
+</form>

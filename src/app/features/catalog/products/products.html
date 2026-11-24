@@ -1,0 +1,117 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'catalog.products.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'catalog.products.intro' | translate }}</p>
+  </div>
+  @if (isCentral()) {
+    <button *appIfPrivilege="'POST_PRODUCTS'" type="button" class="btn btn-primary" (click)="create()">
+      {{ 'catalog.products.new' | translate }}
+    </button>
+  }
+</div>
+
+<form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" role="search" (submit)="$event.preventDefault()">
+  <div class="col-12 col-lg-4">
+    <label class="form-label small mb-1" for="product-search">{{ 'catalog.products.search.label' | translate }}</label>
+    <input id="product-search" type="search" class="form-control" autocomplete="off" formControlName="search"
+      [placeholder]="'catalog.products.search.placeholder' | translate" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-3">
+    <label class="form-label small mb-1" for="product-filter-category">{{ 'catalog.products.filter.category' | translate }}</label>
+    <select id="product-filter-category" class="form-select" formControlName="categoryId">
+      <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+      @for (row of categories(); track row.item.id) {
+        <option [ngValue]="row.item.id">{{ indent(row.level) }}{{ row.item.name }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-6 col-lg-2">
+    <label class="form-label small mb-1" for="product-filter-type">{{ 'catalog.products.filter.type' | translate }}</label>
+    <select id="product-filter-type" class="form-select" formControlName="type">
+      <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+      <option [ngValue]="'GOOD'">{{ 'catalog.products.type.GOOD' | translate }}</option>
+      <option [ngValue]="'SERVICE'">{{ 'catalog.products.type.SERVICE' | translate }}</option>
+    </select>
+  </div>
+  <div class="col-6 col-lg-3">
+    <label class="form-label small mb-1" for="product-filter-active">{{ 'catalog.products.filter.status' | translate }}</label>
+    <select id="product-filter-active" class="form-select" formControlName="active">
+      <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+      <option [ngValue]="true">{{ 'common.active' | translate }}</option>
+      <option [ngValue]="false">{{ 'common.inactive' | translate }}</option>
+    </select>
+  </div>
+</form>
+
+@if (notice(); as key) {
+  <div class="alert alert-success alert-dismissible" role="status">
+    {{ key | translate }}
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+  </div>
+}
+
+<app-problem-alert [error]="products.error()" />
+<app-problem-alert [error]="actionError()" />
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'catalog.products.column.sku' | translate }}</th>
+        <th scope="col">{{ 'catalog.products.column.barcode' | translate }}</th>
+        <th scope="col">{{ 'catalog.products.column.name' | translate }}</th>
+        <th scope="col">{{ 'catalog.products.column.category' | translate }}</th>
+        <th scope="col" class="text-end">{{ 'catalog.products.column.price' | translate }}</th>
+        <th scope="col">{{ 'catalog.products.column.type' | translate }}</th>
+        <th scope="col">{{ 'common.active' | translate }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (product of products.items(); track product.id) {
+        <tr>
+          <td class="fw-semibold font-monospace">{{ product.sku }}</td>
+          <td class="font-monospace">{{ product.barcode }}</td>
+          <td>{{ product.name }}</td>
+          <td>{{ categoryName(product.categoryId) }}</td>
+          <td class="text-end font-monospace">{{ formatAmount(product.salePrice) }}</td>
+          <td>{{ 'catalog.products.type.' + product.productType | translate }}</td>
+          <td>
+            <span class="badge" [class.text-bg-success]="product.active" [class.text-bg-secondary]="!product.active">
+              {{ (product.active ? 'common.active' : 'common.inactive') | translate }}
+            </span>
+          </td>
+          <td class="text-end text-nowrap">
+            @if (isCentral()) {
+              <button *appIfPrivilege="'PUT_PRODUCTS_ID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="edit(product)">
+                {{ 'common.edit' | translate }}
+              </button>
+              <button *appIfPrivilege="'PUT_PRODUCTS_ID_TAXES'" type="button" class="btn btn-sm btn-outline-secondary ms-1" (click)="taxes(product)">
+                {{ 'catalog.products.action.taxes' | translate }}
+              </button>
+              @if (product.active) {
+                <button *appIfPrivilege="'DELETE_PRODUCTS_ID'" type="button" class="btn btn-sm btn-outline-danger ms-1" (click)="deactivate(product)">
+                  {{ 'common.deactivate' | translate }}
+                </button>
+              }
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="8" class="text-center text-body-secondary">
+            {{ (products.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="products.page()"
+  [size]="products.size()"
+  [total]="products.total()"
+  (pageChange)="products.goToPage($event)"
+  (sizeChange)="products.setSize($event)"
+/>

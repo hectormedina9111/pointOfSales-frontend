@@ -1,0 +1,56 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">
+      {{ (category === null ? 'catalog.categories.form.createTitle' : 'catalog.categories.form.editTitle') | translate }}
+    </h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <app-problem-alert [error]="lookupError()" />
+    <app-problem-alert [error]="error()" />
+
+    @if (lookupsLoading()) {
+      <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+    } @else {
+      <div class="row g-3">
+        <div class="col-12 col-md-7">
+          <label class="form-label" for="category-name">{{ 'catalog.categories.field.name' | translate }}</label>
+          <input id="category-name" type="text" class="form-control" formControlName="name"
+            [class.is-invalid]="isInvalid(form.controls.name)" />
+          <app-field-error [control]="form.controls.name" />
+        </div>
+
+        <div class="col-12 col-md-5">
+          <label class="form-label" for="category-parent">{{ 'catalog.categories.field.parent' | translate }}</label>
+          <select id="category-parent" class="form-select" formControlName="parentId">
+            <option [ngValue]="null">{{ 'catalog.categories.field.noParent' | translate }}</option>
+            @for (row of parentOptions(); track row.item.id) {
+              @if (isSelectable(row)) {
+                <option [ngValue]="row.item.id">
+                  {{ indent(row) }}{{ row.item.name }}{{ row.item.active ? '' : ' ' + ('common.inactiveSuffix' | translate) }}
+                </option>
+              }
+            }
+          </select>
+        </div>
+
+        <div class="col-12">
+          <div class="form-check">
+            <input id="category-active" type="checkbox" class="form-check-input" formControlName="active" />
+            <label class="form-check-label" for="category-active">{{ 'catalog.categories.field.active' | translate }}</label>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="submitting() || lookupsLoading()">
+      {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+    </button>
+  </div>
+</form>

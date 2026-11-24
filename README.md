@@ -24,6 +24,22 @@ Pantallas de administración. Cada botón solo aparece si el usuario tiene su pr
 - En una tienda, las pantallas de administración solo muestran los datos: las escrituras se ocultan y, si se intentan, el backend responde `READ_ONLY_NODE`.
 - En pantallas pequeñas, el menú lateral se abre con el botón de la barra superior.
 
+## Organización y catálogo (paso 4)
+
+Pantallas de datos maestros. La central escribe; en una tienda las pantallas solo muestran los datos y los botones de cambio no aparecen. Cada botón también exige su privilegio (`POST_PRODUCTS`, `PUT_PRODUCTS_ID`, etc.).
+
+- **Países** (`Organización > Países`): listado paginado con alta y edición. Incluye el proveedor de facturación fiscal (`HN_SAR` o `NONE`).
+- **Empresa** (`Organización > Empresa`): un solo formulario. Mientras la empresa no esté configurada, el formulario aparece vacío con un aviso; se guarda con `PUT /company`.
+- **Sucursales** (`Organización > Sucursales`): listado de las sucursales asignadas al usuario, con alta y edición. Una sucursal nueva no aparece hasta asignarla a su usuario en `Administración > Usuarios`. Permite elegir país y lista de precios por defecto (opcional).
+- **Unidades de medida** (`Catálogo > Unidades de medida`): listado paginado con alta y edición. Indica si la unidad admite decimales.
+- **Impuestos** (`Catálogo > Impuestos`): listado filtrado por país, con alta y edición. El país se elige al crear y no cambia después. La tasa va de 0 a 100 con hasta 2 decimales.
+- **Categorías** (`Catálogo > Categorías`): vista de árbol. El padre no puede ser la propia categoría ni una de sus subcategorías. Desactivar pide confirmación.
+- **Productos** (`Catálogo > Productos`): búsqueda por nombre, SKU o código de barras (espera 300 ms al escribir), filtros por categoría, tipo y estado, y listado paginado. Desde el formulario, un servicio no controla inventario ni seriales, y controlar seriales obliga a controlar inventario. El botón **Impuestos por país** asigna un impuesto a cada país donde se vende el producto.
+
+Los montos viajan como texto (`"12.50"`) y se muestran con dos decimales. La web no hace cálculos con ellos.
+
+Los errores de negocio (por ejemplo, SKU repetido o categoría en uso) se traducen con las claves `error.<CODIGO>` de `public/i18n/es.json` y `en.json`.
+
 ## Iniciar sesión
 
 - **Local (máquina virtual):** entre con el usuario `admin` y la contraseña `Admin.Local.2026`. Es la contraseña de desarrollo de `.env.example` del backend. El sistema obliga a cambiarla en el primer ingreso, en la **central**.

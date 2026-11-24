@@ -1,0 +1,73 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'organization.branches.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'organization.branches.intro' | translate }}</p>
+  </div>
+  @if (isCentral()) {
+    <button *appIfPrivilege="'POST_BRANCHES'" type="button" class="btn btn-primary" (click)="create()">
+      {{ 'organization.branches.new' | translate }}
+    </button>
+  }
+</div>
+
+<div class="alert alert-info small" role="note">{{ 'organization.branches.assignHint' | translate }}</div>
+
+@if (notice(); as key) {
+  <div class="alert alert-success alert-dismissible" role="status">
+    {{ key | translate }}
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+  </div>
+}
+
+<app-problem-alert [error]="branches.error()" />
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'organization.branches.column.code' | translate }}</th>
+        <th scope="col">{{ 'organization.branches.column.name' | translate }}</th>
+        <th scope="col">{{ 'organization.branches.column.country' | translate }}</th>
+        <th scope="col">{{ 'organization.branches.column.negativeStock' | translate }}</th>
+        <th scope="col">{{ 'common.active' | translate }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (branch of branches.items(); track branch.id) {
+        <tr>
+          <td class="fw-semibold font-monospace">{{ branch.code }}</td>
+          <td>{{ branch.name }}</td>
+          <td>{{ countryName(branch.countryId) }}</td>
+          <td>{{ (branch.allowNegativeStock ? 'common.yes' : 'common.no') | translate }}</td>
+          <td>
+            <span class="badge" [class.text-bg-success]="branch.active" [class.text-bg-secondary]="!branch.active">
+              {{ (branch.active ? 'common.active' : 'common.inactive') | translate }}
+            </span>
+          </td>
+          <td class="text-end text-nowrap">
+            @if (isCentral()) {
+              <button *appIfPrivilege="'PUT_BRANCHES_ID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="edit(branch)">
+                {{ 'common.edit' | translate }}
+              </button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="text-center text-body-secondary">
+            {{ (branches.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="branches.page()"
+  [size]="branches.size()"
+  [total]="branches.total()"
+  (pageChange)="branches.goToPage($event)"
+  (sizeChange)="branches.setSize($event)"
+/>

@@ -1,0 +1,93 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">
+      {{ (branch === null ? 'organization.branches.form.createTitle' : 'organization.branches.form.editTitle') | translate }}
+    </h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <app-problem-alert [error]="lookupError()" />
+    <app-problem-alert [error]="error()" />
+
+    @if (lookupsLoading()) {
+      <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+    } @else {
+      <div class="row g-3">
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="branch-code">{{ 'organization.branches.field.code' | translate }}</label>
+          <input id="branch-code" type="text" class="form-control font-monospace" formControlName="code"
+            [class.is-invalid]="isInvalid(form.controls.code)" />
+          <app-field-error [control]="form.controls.code" />
+        </div>
+
+        <div class="col-12 col-md-8">
+          <label class="form-label" for="branch-name">{{ 'organization.branches.field.name' | translate }}</label>
+          <input id="branch-name" type="text" class="form-control" formControlName="name"
+            [class.is-invalid]="isInvalid(form.controls.name)" />
+          <app-field-error [control]="form.controls.name" />
+        </div>
+
+        <div class="col-12 col-md-8">
+          <label class="form-label" for="branch-address">{{ 'organization.branches.field.address' | translate }}</label>
+          <input id="branch-address" type="text" class="form-control" formControlName="address"
+            [class.is-invalid]="isInvalid(form.controls.address)" />
+          <app-field-error [control]="form.controls.address" />
+        </div>
+
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="branch-phone">{{ 'organization.branches.field.phone' | translate }}</label>
+          <input id="branch-phone" type="text" class="form-control" formControlName="phone"
+            [class.is-invalid]="isInvalid(form.controls.phone)" />
+          <app-field-error [control]="form.controls.phone" />
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="branch-country">{{ 'organization.branches.field.country' | translate }}</label>
+          <select id="branch-country" class="form-select" formControlName="countryId"
+            [class.is-invalid]="isInvalid(form.controls.countryId)">
+            <option [ngValue]="null">{{ 'common.select' | translate }}</option>
+            @for (country of countryOptions(); track country.id) {
+              <option [ngValue]="country.id">
+                {{ country.isoCode }} - {{ country.name }}{{ country.active ? '' : ' ' + ('common.inactiveSuffix' | translate) }}
+              </option>
+            }
+          </select>
+          <app-field-error [control]="form.controls.countryId" />
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="branch-price-list">{{ 'organization.branches.field.defaultPriceList' | translate }}</label>
+          <select id="branch-price-list" class="form-select" formControlName="defaultPriceListId">
+            <option [ngValue]="null">{{ 'organization.branches.field.noPriceList' | translate }}</option>
+            @for (list of priceListOptions(); track list.id) {
+              <option [ngValue]="list.id">
+                {{ list.code }} - {{ list.name }}{{ list.active ? '' : ' ' + ('common.inactiveSuffix' | translate) }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <div class="col-12">
+          <div class="form-check">
+            <input id="branch-negative-stock" type="checkbox" class="form-check-input" formControlName="allowNegativeStock" />
+            <label class="form-check-label" for="branch-negative-stock">{{ 'organization.branches.field.allowNegativeStock' | translate }}</label>
+          </div>
+          <div class="form-check">
+            <input id="branch-active" type="checkbox" class="form-check-input" formControlName="active" />
+            <label class="form-check-label" for="branch-active">{{ 'organization.branches.field.active' | translate }}</label>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="submitting() || lookupsLoading()">
+      {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+    </button>
+  </div>
+</form>

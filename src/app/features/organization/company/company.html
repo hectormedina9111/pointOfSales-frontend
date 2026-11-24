@@ -1,0 +1,94 @@
+<div class="mb-3">
+  <h1 class="h3 mb-1">{{ 'organization.company.title' | translate }}</h1>
+  <p class="text-body-secondary mb-0">{{ 'organization.company.intro' | translate }}</p>
+</div>
+
+<app-problem-alert [error]="loadError()" />
+
+@if (loading()) {
+  <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+} @else {
+  @if (!configured()) {
+    <div class="alert alert-warning" role="status">{{ 'organization.company.notConfigured' | translate }}</div>
+  }
+  @if (!isCentral()) {
+    <div class="alert alert-info" role="status">{{ 'organization.company.readOnly' | translate }}</div>
+  }
+  @if (saved()) {
+    <div class="alert alert-success alert-dismissible" role="status">
+      {{ 'organization.company.saved' | translate }}
+      <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="saved.set(false)"></button>
+    </div>
+  }
+
+  <app-problem-alert [error]="saveError()" />
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="col-12 col-lg-9">
+    <!-- En una tienda todo el formulario queda deshabilitado: solo se muestra. -->
+    <fieldset class="row g-3" [disabled]="!isCentral()">
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="company-legal-name">{{ 'organization.company.field.legalName' | translate }}</label>
+        <input id="company-legal-name" type="text" class="form-control" formControlName="legalName"
+          [class.is-invalid]="isInvalid(form.controls.legalName)" />
+        <app-field-error [control]="form.controls.legalName" />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="company-trade-name">{{ 'organization.company.field.tradeName' | translate }}</label>
+        <input id="company-trade-name" type="text" class="form-control" formControlName="tradeName"
+          [class.is-invalid]="isInvalid(form.controls.tradeName)" />
+        <app-field-error [control]="form.controls.tradeName" />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="company-tax-id">{{ 'organization.company.field.taxId' | translate }}</label>
+        <input id="company-tax-id" type="text" class="form-control" formControlName="taxId"
+          [class.is-invalid]="isInvalid(form.controls.taxId)" />
+        <app-field-error [control]="form.controls.taxId" />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="company-email">{{ 'organization.company.field.email' | translate }}</label>
+        <input id="company-email" type="email" class="form-control" formControlName="email"
+          [class.is-invalid]="isInvalid(form.controls.email)" />
+        <app-field-error [control]="form.controls.email" />
+      </div>
+
+      <div class="col-12">
+        <label class="form-label" for="company-address">{{ 'organization.company.field.address' | translate }}</label>
+        <input id="company-address" type="text" class="form-control" formControlName="address"
+          [class.is-invalid]="isInvalid(form.controls.address)" />
+        <app-field-error [control]="form.controls.address" />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="company-phone">{{ 'organization.company.field.phone' | translate }}</label>
+        <input id="company-phone" type="text" class="form-control" formControlName="phone"
+          [class.is-invalid]="isInvalid(form.controls.phone)" />
+        <app-field-error [control]="form.controls.phone" />
+      </div>
+
+      <div class="col-12 col-md-3">
+        <label class="form-label" for="company-currency">{{ 'organization.company.field.currency' | translate }}</label>
+        <input id="company-currency" type="text" class="form-control font-monospace" formControlName="currency" maxlength="3"
+          [class.is-invalid]="isInvalid(form.controls.currency)" />
+        <app-field-error [control]="form.controls.currency" invalidKey="validation.uppercaseLetters" />
+      </div>
+
+      <div class="col-12 col-md-3">
+        <label class="form-label" for="company-time-zone">{{ 'organization.company.field.timeZone' | translate }}</label>
+        <input id="company-time-zone" type="text" class="form-control" formControlName="timeZone"
+          [class.is-invalid]="isInvalid(form.controls.timeZone)" />
+        <app-field-error [control]="form.controls.timeZone" />
+      </div>
+    </fieldset>
+
+    @if (isCentral()) {
+      <div class="mt-4">
+        <button *appIfPrivilege="'PUT_COMPANY'" type="submit" class="btn btn-primary" [disabled]="submitting()">
+          {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+        </button>
+      </div>
+    }
+  </form>
+}

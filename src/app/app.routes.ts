@@ -4,13 +4,6 @@ import { authGuard } from './core/auth/auth.guard';
 
 /** Rutas del menú que todavía son provisionales. Cada paso las reemplaza por su pantalla. */
 const PLACEHOLDER_ROUTES: readonly { readonly path: string; readonly menuCode: string }[] = [
-  { path: 'organization/countries', menuCode: 'MENU_ORGANIZATION_COUNTRIES' },
-  { path: 'organization/company', menuCode: 'MENU_ORGANIZATION_COMPANY' },
-  { path: 'organization/branches', menuCode: 'MENU_ORGANIZATION_BRANCHES' },
-  { path: 'catalog/products', menuCode: 'MENU_CATALOG_PRODUCTS' },
-  { path: 'catalog/categories', menuCode: 'MENU_CATALOG_CATEGORIES' },
-  { path: 'catalog/units', menuCode: 'MENU_CATALOG_UNITS' },
-  { path: 'catalog/taxes', menuCode: 'MENU_CATALOG_TAXES' },
   { path: 'pricing/price-lists', menuCode: 'MENU_PRICING_PRICE_LISTS' },
   { path: 'pricing/price-check', menuCode: 'MENU_PRICING_PRICE_CHECK' },
   { path: 'stores/nodes', menuCode: 'MENU_STORES_NODES' },
@@ -46,6 +39,46 @@ export const routes: Routes = [
     path: 'admin/roles',
     canActivate: [authGuard],
     loadComponent: () => import('./features/admin/roles/roles').then((module) => module.RolesComponent),
+  },
+  {
+    path: 'organization/countries',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/organization/countries/countries').then((module) => module.CountriesComponent),
+  },
+  {
+    path: 'organization/company',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/organization/company/company').then((module) => module.CompanyComponent),
+  },
+  {
+    path: 'organization/branches',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/organization/branches/branches').then((module) => module.BranchesComponent),
+  },
+  {
+    path: 'catalog/units',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/catalog/units/units').then((module) => module.UnitsComponent),
+  },
+  {
+    path: 'catalog/taxes',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/catalog/taxes/taxes').then((module) => module.TaxesComponent),
+  },
+  {
+    path: 'catalog/categories',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/catalog/categories/categories').then((module) => module.CategoriesComponent),
+  },
+  {
+    path: 'catalog/products',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/catalog/products/products').then((module) => module.ProductsComponent),
   },
   ...PLACEHOLDER_ROUTES.map(({ path, menuCode }) => ({
     path,
