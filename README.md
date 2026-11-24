@@ -18,7 +18,7 @@ El plan completo está en `docs/plan.md` del backend, sección "MVP del frontend
 
 Pantallas de administración. Cada botón solo aparece si el usuario tiene su privilegio, y los de escritura solo en la central.
 
-- **Usuarios** (`Administración > Usuarios`): listado paginado con alta, edición, sucursales asignadas y restablecimiento de contraseña. La contraseña inicial es obligatoria al dar de alta; el usuario debe cambiarla en su primer ingreso.
+- **Usuarios** (`Administración > Usuarios`): listado paginado con alta, edición, sucursales en las que puede iniciar sesión (`user_branch`) y restablecimiento de contraseña. La visibilidad de sucursales depende del nodo, no del usuario: las sucursales en las que un usuario puede iniciar sesión solo se eligen aquí. La contraseña inicial es obligatoria al dar de alta; el usuario debe cambiarla en su primer ingreso.
 - **Roles y privilegios** (`Administración > Roles y privilegios`): alta y edición de roles, y asignación de privilegios agrupados por tipo (API, menús y acciones) y por módulo. Cambiar los privilegios de un rol afecta a todos sus usuarios, por eso se pide confirmación.
 - **Sucursales:** el diálogo de sucursales de un usuario solo muestra las sucursales que ve quien administra. Si no aparece ninguna, cree las sucursales y asígnelas primero a su propio usuario.
 - En una tienda, las pantallas de administración solo muestran los datos: las escrituras se ocultan y, si se intentan, el backend responde `READ_ONLY_NODE`.
@@ -30,7 +30,7 @@ Pantallas de datos maestros. La central escribe; en una tienda las pantallas sol
 
 - **Países** (`Organización > Países`): listado paginado con alta y edición. Incluye el proveedor de facturación fiscal (`HN_SAR` o `NONE`).
 - **Empresa** (`Organización > Empresa`): un solo formulario. Mientras la empresa no esté configurada, el formulario aparece vacío con un aviso; se guarda con `PUT /company`.
-- **Sucursales** (`Organización > Sucursales`): listado de las sucursales asignadas al usuario, con alta y edición. Una sucursal nueva no aparece hasta asignarla a su usuario en `Administración > Usuarios`. Permite elegir país y lista de precios por defecto (opcional).
+- **Sucursales** (`Organización > Sucursales`): en la central, listado de todas las sucursales, con alta y edición. En una tienda, solo aparece la sucursal que le asignó la central. Permite elegir país y lista de precios por defecto (opcional).
 - **Unidades de medida** (`Catálogo > Unidades de medida`): listado paginado con alta y edición. Indica si la unidad admite decimales.
 - **Impuestos** (`Catálogo > Impuestos`): listado filtrado por país, con alta y edición. El país se elige al crear y no cambia después. La tasa va de 0 a 100 con hasta 2 decimales.
 - **Categorías** (`Catálogo > Categorías`): vista de árbol. El padre no puede ser la propia categoría ni una de sus subcategorías. Desactivar pide confirmación.

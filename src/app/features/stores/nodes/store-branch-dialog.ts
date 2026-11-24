@@ -9,7 +9,7 @@ import { ProblemAlertComponent } from '../../../shared/components/problem-alert/
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 /**
- * Asignar o quitar la sucursal de una tienda. Ofrece las sucursales activas que ve el usuario y,
+ * Asignar o quitar la sucursal de una tienda. Ofrece las sucursales activas y,
  * aunque esté inactiva, la actual de la tienda. Cierra el diálogo con la tienda actualizada.
  * Quien lo abre asigna la tienda en `node`.
  */

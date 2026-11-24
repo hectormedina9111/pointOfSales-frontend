@@ -17,6 +17,7 @@ import { LocalDateTimePipe } from '../../../shared/pipes/local-date-time.pipe';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { autoRefresh } from '../../../shared/polling/auto-refresh';
 import { CaughtUpTracker } from '../../../shared/stores/caught-up-tracker';
+import { TranslationService } from '../../../core/i18n/translation.service';
 import { branchLabel } from '../../../shared/stores/branch-label';
 import { ActivationCodeDialogComponent } from './activation-code-dialog';
 import { StoreNodeFormComponent } from './store-node-form';
@@ -52,6 +53,7 @@ interface Notice {
 export class StoreNodeListComponent {
   private readonly api = inject(StoreNodesApi);
   private readonly branchesApi = inject(BranchesApi);
+  private readonly translation = inject(TranslationService);
   private readonly modal = inject(NgbModal);
   protected readonly isCentral = inject(SystemInfoService).isCentral;
 
@@ -83,12 +85,12 @@ export class StoreNodeListComponent {
     this.autoRefreshOn.set(checkedValue(event));
   }
 
-  /** Nombre de la sucursal. Si el usuario no la ve, muestra su id para no perder la referencia. */
+  /** Nombre de la sucursal, o un aviso si la lista aún no la tiene. */
   protected branchName(node: StoreNodeView): string | null {
     if (node.branchId === null) {
       return null;
     }
-    return branchLabel(this.branches(), node.branchId);
+    return branchLabel(this.branches(), node.branchId) ?? this.translation.translate('stores.nodes.branch.unavailable');
   }
 
   protected register(): void {

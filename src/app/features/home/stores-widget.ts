@@ -10,6 +10,7 @@ import { SyncStateBadgeComponent } from '../../shared/components/sync-state-badg
 import { PagedList } from '../../shared/paging/paged-list';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { autoRefresh } from '../../shared/polling/auto-refresh';
+import { TranslationService } from '../../core/i18n/translation.service';
 import { branchLabel } from '../../shared/stores/branch-label';
 import { CaughtUpTracker } from '../../shared/stores/caught-up-tracker';
 import { downloadProgress } from '../../shared/stores/store-node-progress';
@@ -27,6 +28,7 @@ import { downloadProgress } from '../../shared/stores/store-node-progress';
 export class StoresWidgetComponent {
   private readonly api = inject(StoreNodesApi);
   private readonly branchesApi = inject(BranchesApi);
+  private readonly translation = inject(TranslationService);
   protected readonly branches = signal<ReadonlyMap<number, BranchView>>(new Map());
   protected readonly caughtUp = new CaughtUpTracker();
   protected readonly lastUpdated = signal<Date | null>(null);
@@ -54,7 +56,10 @@ export class StoresWidgetComponent {
 
   /** Código y nombre de la sucursal, o null si la tienda no tiene. */
   protected branchName(node: StoreNodeView): string | null {
-    return node.branchId === null ? null : branchLabel(this.branches(), node.branchId);
+    if (node.branchId === null) {
+      return null;
+    }
+    return branchLabel(this.branches(), node.branchId) ?? this.translation.translate('stores.nodes.branch.unavailable');
   }
 
   protected progress(node: StoreNodeView): number {

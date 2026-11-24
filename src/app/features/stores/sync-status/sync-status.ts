@@ -4,7 +4,9 @@ import { RouterLink } from '@angular/router';
 import { BranchView, BranchesApi } from '../../../core/api/branches-api';
 import { listAllPages } from '../../../core/api/page';
 import { SyncApi, SyncStatusView } from '../../../core/api/sync-api';
+import { TranslationService } from '../../../core/i18n/translation.service';
 import { SystemInfoService } from '../../../core/system/system-info.service';
+import { branchLabel } from '../../../shared/stores/branch-label';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { checkedValue } from '../../../shared/forms/form-values';
 import { LocalDateTimePipe } from '../../../shared/pipes/local-date-time.pipe';
@@ -25,6 +27,7 @@ import { autoRefresh } from '../../../shared/polling/auto-refresh';
 export class SyncStatusComponent {
   private readonly api = inject(SyncApi);
   private readonly branchesApi = inject(BranchesApi);
+  private readonly translation = inject(TranslationService);
   protected readonly systemInfo = inject(SystemInfoService);
 
   protected readonly autoRefreshOn = signal(true);
@@ -45,13 +48,12 @@ export class SyncStatusComponent {
     this.autoRefreshOn.set(checkedValue(event));
   }
 
-  /** Código y nombre de la sucursal; si el usuario no la ve, su id. */
+  /** Código y nombre de la sucursal, o un aviso si la lista aún no la tiene. */
   protected branchLabel(branchId: number | null): string | null {
     if (branchId === null) {
       return null;
     }
-    const branch = this.branches().get(branchId);
-    return branch ? `${branch.code} · ${branch.name}` : `#${branchId}`;
+    return branchLabel(this.branches(), branchId) ?? this.translation.translate('stores.nodes.branch.unavailable');
   }
 
   private load(): void {
