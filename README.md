@@ -21,7 +21,7 @@ El inicio de sesión llega en el siguiente paso.
 
 ## Desarrollo local con `npm start`
 
-1. Levanta el backend en la máquina virtual de Vagrant (repositorio `pointOfSales`). Las tres APIs quedan en `localhost:8080` (central), `8081` (tienda 1) y `8082` (tienda 2).
+1. Levanta el backend en la máquina virtual de Vagrant (IP `192.168.56.10`, configurable en el backend con `POS_VM_IP`) (repositorio `pointOfSales`). Las tres APIs quedan en `192.168.56.10:8080` (central), `8081` (tienda 1) y `8082` (tienda 2).
 2. En esta carpeta ejecuta:
 
    ```bash
@@ -33,7 +33,7 @@ El inicio de sesión llega en el siguiente paso.
 
 ## Dentro de la máquina virtual
 
-Con `vagrant up` desde el repositorio del backend, la web también se construye desde esta carpeta compartida y queda disponible en `http://localhost:4200`, servida por nginx. No hace falta Node.js en Windows para eso.
+Con `vagrant up` desde el repositorio del backend, la web también se construye desde esta carpeta compartida y queda disponible en `http://192.168.56.10:4200`, servida por nginx. No hace falta Node.js en Windows para eso.
 
 ## Uso
 
@@ -42,7 +42,7 @@ Con `vagrant up` desde el repositorio del backend, la web también se construye 
 
 ## Actualizar el cliente de la API
 
-Con el backend levantado en `localhost:8080`:
+Con el backend levantado en `192.168.56.10:8080`:
 
 ```bash
 npm run api:update
