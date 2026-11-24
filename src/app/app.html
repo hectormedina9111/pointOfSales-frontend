@@ -1,0 +1,51 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+  <div class="container-fluid pos-page">
+    <a class="navbar-brand" routerLink="/">{{ 'app.title' | translate }}</a>
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      aria-controls="main-navbar"
+      [attr.aria-label]="'nav.menu' | translate"
+      [attr.aria-expanded]="!menuCollapsed()"
+      (click)="toggleMenu()"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="main-navbar" class="navbar-collapse" [ngbCollapse]="menuCollapsed()">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page">
+            {{ 'nav.home' | translate }}
+          </a>
+        </li>
+      </ul>
+
+      <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center">
+        @if (nodeName(); as name) {
+          <span class="badge text-bg-secondary align-self-start align-self-lg-center">{{ name }}</span>
+        }
+
+        <div class="btn-group btn-group-sm" role="group" [attr.aria-label]="'language.label' | translate">
+          @for (lang of languages; track lang) {
+            <button
+              type="button"
+              class="btn"
+              [class.btn-primary]="lang === language()"
+              [class.btn-outline-secondary]="lang !== language()"
+              [attr.aria-pressed]="lang === language()"
+              (click)="selectLanguage(lang)"
+            >
+              {{ 'language.' + lang | translate }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="container-fluid pos-page py-4">
+  <router-outlet />
+</main>

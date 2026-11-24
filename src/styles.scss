@@ -1,0 +1,10 @@
+@use "styles/variables" as vars;
+@use "bootstrap/scss/bootstrap" with (
+  $primary: vars.$brand-primary
+);
+
+// Margen lateral común para que las pantallas funcionen en teléfono (16 px).
+.pos-page {
+  padding-left: vars.$pos-side-gutter;
+  padding-right: vars.$pos-side-gutter;
+}

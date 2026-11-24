@@ -1,0 +1,5 @@
+{
+  "input": "api/openapi.json",
+  "output": "src/app/api",
+  "ignoreUnusedModels": false
+}

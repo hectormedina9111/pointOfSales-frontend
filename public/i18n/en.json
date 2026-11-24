@@ -1,0 +1,23 @@
+{
+  "app.title": "Point of sale",
+  "nav.menu": "Toggle menu",
+  "nav.home": "Home",
+  "node.central": "Central",
+  "node.store": "Store {number}",
+  "node.role.CENTRAL": "Central",
+  "node.role.STORE": "Store",
+  "language.label": "Language",
+  "language.es": "Español",
+  "language.en": "English",
+  "home.title": "Node information",
+  "home.intro": "Information about the backend this web is connected to.",
+  "home.application": "Application",
+  "home.version": "Version",
+  "home.nodeRole": "Node role",
+  "home.nodeNumber": "Node number",
+  "home.apiBaseUrl": "Backend address",
+  "home.sameOrigin": "Same origin as this web",
+  "error.generic": "The operation could not be completed.",
+  "common.loading": "Loading…",
+  "common.retry": "Retry"
+}
