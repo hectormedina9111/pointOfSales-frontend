@@ -1,0 +1,35 @@
+<button
+  type="button"
+  class="btn btn-outline-secondary w-100 mb-3 d-lg-none"
+  aria-controls="app-sidebar-nav"
+  [attr.aria-expanded]="expanded()"
+  (click)="toggle()"
+>
+  {{ 'nav.sidebar' | translate }}
+</button>
+
+<nav id="app-sidebar-nav" class="d-lg-block" [class.d-none]="!expanded()" [attr.aria-label]="'nav.sidebar' | translate">
+  @for (item of items(); track item.code) {
+    @if (item.children.length > 0) {
+      <h2 class="h6 text-uppercase text-body-secondary mt-3 mb-1 px-2">{{ label(item) }}</h2>
+      <div class="nav flex-column">
+        @for (child of item.children; track child.code) {
+          <a
+            class="nav-link"
+            [routerLink]="child.route"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+          >
+            {{ label(child) }}
+          </a>
+        }
+      </div>
+    } @else if (item.route !== null) {
+      <div class="nav flex-column">
+        <a class="nav-link" [routerLink]="item.route" routerLinkActive="active" ariaCurrentWhenActive="page">
+          {{ label(item) }}
+        </a>
+      </div>
+    }
+  }
+</nav>

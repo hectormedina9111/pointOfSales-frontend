@@ -31,6 +31,11 @@ export class TranslationService {
     await this.fetchDictionary(language);
   }
 
+  /** Indica si el idioma activo tiene la clave, sin usar la propia clave como respaldo. */
+  has(key: string): boolean {
+    return Object.hasOwn(this.dictionary(), key);
+  }
+
   translate(key: string, params?: TranslationParams): string {
     const text = this.dictionary()[key] ?? key;
     if (!params) {

@@ -1,0 +1,20 @@
+@if (view(); as item) {
+  <div class="alert alert-danger" role="alert">
+    <p class="mb-0">{{ item.message }}</p>
+    @if (item.detail; as detail) {
+      <p class="small mb-0 mt-1">{{ detail }}</p>
+    }
+    @if (item.fieldErrors.length > 0) {
+      <ul class="small mb-0 mt-1 ps-3">
+        @for (fieldError of item.fieldErrors; track $index) {
+          <li>
+            @if (fieldError.field; as field) {
+              <span class="fw-semibold">{{ field }}:</span>
+            }
+            {{ fieldError.message }}
+          </li>
+        }
+      </ul>
+    }
+  </div>
+}
