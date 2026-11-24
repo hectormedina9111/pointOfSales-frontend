@@ -1,0 +1,58 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'admin.roles.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'admin.roles.intro' | translate }}</p>
+  </div>
+  @if (isCentral()) {
+    <button *appIfPrivilege="'POST_ROLES'" type="button" class="btn btn-primary" (click)="create()">
+      {{ 'admin.roles.new' | translate }}
+    </button>
+  }
+</div>
+
+@if (notice(); as key) {
+  <div class="alert alert-success alert-dismissible" role="status">
+    {{ key | translate }}
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+  </div>
+}
+
+<app-problem-alert [error]="error()" />
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'admin.roles.column.code' | translate }}</th>
+        <th scope="col">{{ 'admin.roles.column.name' | translate }}</th>
+        <th scope="col">{{ 'admin.roles.column.description' | translate }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (role of roles(); track role.id) {
+        <tr>
+          <td class="font-monospace">{{ role.code }}</td>
+          <td class="fw-semibold">{{ role.name }}</td>
+          <td>{{ role.description }}</td>
+          <td class="text-end text-nowrap">
+            @if (isCentral()) {
+              <button *appIfPrivilege="'PUT_ROLES_ID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="edit(role)">
+                {{ 'common.edit' | translate }}
+              </button>
+              <button *appIfPrivilege="'PUT_ROLES_ID_PRIVILEGES'" type="button" class="btn btn-sm btn-outline-secondary ms-1" (click)="privileges(role)">
+                {{ 'admin.roles.action.privileges' | translate }}
+              </button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="4" class="text-center text-body-secondary">
+            {{ (loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

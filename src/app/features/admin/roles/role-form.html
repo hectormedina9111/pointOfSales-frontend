@@ -1,0 +1,49 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">
+      {{ (role === null ? 'admin.roles.form.createTitle' : 'admin.roles.form.editTitle') | translate }}
+    </h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <app-problem-alert [error]="error()" />
+
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="role-code">{{ 'admin.roles.field.code' | translate }}</label>
+        <input id="role-code" type="text" class="form-control font-monospace" formControlName="code"
+          autocomplete="off" [class.is-invalid]="isInvalid(form.controls.code)" />
+        @if (form.controls.code.hasError('required')) {
+          <div class="invalid-feedback">{{ 'form.required' | translate }}</div>
+        } @else {
+          <div class="invalid-feedback">{{ 'admin.roles.hint.code' | translate }}</div>
+        }
+        <div class="form-text">{{ 'admin.roles.hint.code' | translate }}</div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="role-name">{{ 'admin.roles.field.name' | translate }}</label>
+        <input id="role-name" type="text" class="form-control" formControlName="name"
+          [class.is-invalid]="isInvalid(form.controls.name)" />
+        <div class="invalid-feedback">{{ 'form.required' | translate }}</div>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label" for="role-description">{{ 'admin.roles.field.description' | translate }}</label>
+        <input id="role-description" type="text" class="form-control" formControlName="description"
+          [class.is-invalid]="isInvalid(form.controls.description)" />
+        <div class="invalid-feedback">{{ 'validation.maxLength' | translate: { max: 150 } }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+      {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+    </button>
+  </div>
+</form>

@@ -1,0 +1,94 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">
+      {{ (user === null ? 'admin.users.form.createTitle' : 'admin.users.form.editTitle') | translate }}
+    </h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <app-problem-alert [error]="error()" />
+    <app-problem-alert [error]="rolesError()" />
+
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="user-username">{{ 'admin.users.field.username' | translate }}</label>
+        <input id="user-username" type="text" class="form-control" formControlName="username" autocomplete="off"
+          [class.is-invalid]="isInvalid(form.controls.username)" />
+        <div class="invalid-feedback">{{ 'form.required' | translate }}</div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="user-full-name">{{ 'admin.users.field.fullName' | translate }}</label>
+        <input id="user-full-name" type="text" class="form-control" formControlName="fullName"
+          [class.is-invalid]="isInvalid(form.controls.fullName)" />
+        <div class="invalid-feedback">{{ 'form.required' | translate }}</div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="user-email">{{ 'admin.users.field.email' | translate }}</label>
+        <input id="user-email" type="email" class="form-control" formControlName="email"
+          [class.is-invalid]="isInvalid(form.controls.email)" />
+        <div class="invalid-feedback">{{ 'validation.email' | translate }}</div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="user-external-code">{{ 'admin.users.field.externalCode' | translate }}</label>
+        <input id="user-external-code" type="text" class="form-control" formControlName="externalCode"
+          [class.is-invalid]="isInvalid(form.controls.externalCode)" />
+        <div class="invalid-feedback">{{ 'validation.maxLength' | translate: { max: 50 } }}</div>
+      </div>
+
+      @if (user === null) {
+        <div class="col-12">
+          <label class="form-label" for="user-initial-password">{{ 'admin.users.field.initialPassword' | translate }}</label>
+          <input id="user-initial-password" type="password" class="form-control" formControlName="initialPassword"
+            autocomplete="new-password" [class.is-invalid]="isInvalid(form.controls.initialPassword)" />
+          @if (form.controls.initialPassword.hasError('required')) {
+            <div class="invalid-feedback">{{ 'form.required' | translate }}</div>
+          } @else if (form.controls.initialPassword.hasError('minlength')) {
+            <div class="invalid-feedback">{{ 'validation.minLength' | translate: { min: passwordMinLength } }}</div>
+          } @else if (form.controls.initialPassword.hasError('maxlength')) {
+            <div class="invalid-feedback">{{ 'validation.maxLength' | translate: { max: passwordMaxLength } }}</div>
+          }
+          <div class="form-text">{{ 'admin.users.hint.initialPassword' | translate }}</div>
+        </div>
+      }
+
+      <fieldset class="col-12">
+        <legend class="form-label fs-6 mb-1">{{ 'admin.users.field.roles' | translate }}</legend>
+        @if (rolesLoading()) {
+          <p class="small text-body-secondary mb-0">{{ 'common.loading' | translate }}</p>
+        } @else {
+          @for (role of roles(); track role.id) {
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [id]="'role-' + role.id"
+                [checked]="isSelected(role.code)" (change)="toggleRole(role.code, checkedValue($event))" />
+              <label class="form-check-label" [for]="'role-' + role.id">
+                {{ role.name }} <span class="small text-body-secondary font-monospace">{{ role.code }}</span>
+              </label>
+            </div>
+          } @empty {
+            <p class="small text-body-secondary mb-0">{{ 'admin.users.noRoles' | translate }}</p>
+          }
+        }
+      </fieldset>
+
+      <div class="col-12">
+        <div class="form-check">
+          <input id="user-active" type="checkbox" class="form-check-input" formControlName="active" />
+          <label class="form-check-label" for="user-active">{{ 'admin.users.field.active' | translate }}</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+      {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+    </button>
+  </div>
+</form>

@@ -1,66 +1,54 @@
-<nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
-  <div class="container-fluid pos-page">
+<nav class="navbar bg-body-tertiary border-bottom">
+  <div class="container-fluid pos-page flex-wrap gap-2">
+    @if (showSidebar()) {
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-sm d-lg-none"
+        [attr.aria-label]="'nav.menu' | translate"
+        (click)="openMenu()"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    }
+
     <a class="navbar-brand" routerLink="/">{{ 'app.title' | translate }}</a>
 
-    <button
-      class="navbar-toggler"
-      type="button"
-      aria-controls="main-navbar"
-      [attr.aria-label]="'nav.menu' | translate"
-      [attr.aria-expanded]="!menuCollapsed()"
-      (click)="toggleMenu()"
-    >
-      <span class="navbar-toggler-icon"></span>
-    </button>
+    <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+      @if (nodeName(); as name) {
+        <span class="badge text-bg-secondary">{{ name }}</span>
+      }
 
-    <div id="main-navbar" class="navbar-collapse" [ngbCollapse]="menuCollapsed()">
-      <ul class="navbar-nav me-auto">
-        @if (auth.isAuthenticated()) {
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page">
-              {{ 'nav.home' | translate }}
-            </a>
-          </li>
-        }
-      </ul>
-
-      <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center">
-        @if (nodeName(); as name) {
-          <span class="badge text-bg-secondary align-self-start align-self-lg-center">{{ name }}</span>
-        }
-
-        @if (auth.isAuthenticated()) {
-          <div ngbDropdown class="d-inline-block align-self-start align-self-lg-center">
-            <button
-              id="user-menu-button"
-              type="button"
-              class="btn btn-sm btn-outline-primary"
-              ngbDropdownToggle
-              aria-controls="user-menu"
-            >
-              {{ userName() }}
-            </button>
-            <div id="user-menu" ngbDropdownMenu aria-labelledby="user-menu-button" class="dropdown-menu-end">
-              <a ngbDropdownItem routerLink="/change-password">{{ 'nav.changePassword' | translate }}</a>
-              <button ngbDropdownItem type="button" (click)="logout()">{{ 'nav.logout' | translate }}</button>
-            </div>
+      @if (auth.isAuthenticated()) {
+        <div ngbDropdown class="d-inline-block">
+          <button
+            id="user-menu-button"
+            type="button"
+            class="btn btn-sm btn-outline-primary"
+            ngbDropdownToggle
+            aria-controls="user-menu"
+          >
+            {{ userName() }}
+          </button>
+          <div id="user-menu" ngbDropdownMenu aria-labelledby="user-menu-button" class="dropdown-menu-end">
+            <a ngbDropdownItem routerLink="/change-password">{{ 'nav.changePassword' | translate }}</a>
+            <button ngbDropdownItem type="button" (click)="logout()">{{ 'nav.logout' | translate }}</button>
           </div>
-        }
-
-        <div class="btn-group btn-group-sm" role="group" [attr.aria-label]="'language.label' | translate">
-          @for (lang of languages; track lang) {
-            <button
-              type="button"
-              class="btn"
-              [class.btn-primary]="lang === language()"
-              [class.btn-outline-secondary]="lang !== language()"
-              [attr.aria-pressed]="lang === language()"
-              (click)="selectLanguage(lang)"
-            >
-              {{ 'language.' + lang | translate }}
-            </button>
-          }
         </div>
+      }
+
+      <div class="btn-group btn-group-sm" role="group" [attr.aria-label]="'language.label' | translate">
+        @for (lang of languages; track lang) {
+          <button
+            type="button"
+            class="btn"
+            [class.btn-primary]="lang === language()"
+            [class.btn-outline-secondary]="lang !== language()"
+            [attr.aria-pressed]="lang === language()"
+            (click)="selectLanguage(lang)"
+          >
+            {{ 'language.' + lang | translate }}
+          </button>
+        }
       </div>
     </div>
   </div>
@@ -69,9 +57,9 @@
 <main class="container-fluid pos-page py-4">
   @if (showSidebar()) {
     <div class="row g-4">
-      <div class="col-12 col-lg-3 col-xl-2">
+      <aside class="d-none d-lg-block col-lg-3 col-xl-2">
         <app-sidebar [items]="auth.menus()" />
-      </div>
+      </aside>
       <div class="col-12 col-lg-9 col-xl-10">
         <router-outlet />
       </div>
@@ -80,3 +68,13 @@
     <router-outlet />
   }
 </main>
+
+<ng-template #menuPanel>
+  <div class="offcanvas-header">
+    <h2 class="offcanvas-title h5">{{ 'nav.sidebar' | translate }}</h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="closeMenu()"></button>
+  </div>
+  <div class="offcanvas-body">
+    <app-sidebar [items]="auth.menus()" />
+  </div>
+</ng-template>

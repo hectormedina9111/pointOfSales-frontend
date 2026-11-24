@@ -1,0 +1,83 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'admin.users.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'admin.users.intro' | translate }}</p>
+  </div>
+  @if (isCentral()) {
+    <button *appIfPrivilege="'POST_USERS'" type="button" class="btn btn-primary" (click)="create()">
+      {{ 'admin.users.new' | translate }}
+    </button>
+  }
+</div>
+
+@if (notice(); as key) {
+  <div class="alert alert-success alert-dismissible" role="status">
+    {{ key | translate }}
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+  </div>
+}
+
+<app-problem-alert [error]="users.error()" />
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'admin.users.column.username' | translate }}</th>
+        <th scope="col">{{ 'admin.users.column.fullName' | translate }}</th>
+        <th scope="col">{{ 'admin.users.column.email' | translate }}</th>
+        <th scope="col">{{ 'admin.users.column.externalCode' | translate }}</th>
+        <th scope="col">{{ 'admin.users.column.roles' | translate }}</th>
+        <th scope="col">{{ 'common.active' | translate }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (user of users.items(); track user.id) {
+        <tr>
+          <td class="fw-semibold">{{ user.username }}</td>
+          <td>{{ user.fullName }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.externalCode }}</td>
+          <td>
+            @for (role of user.roles; track role) {
+              <span class="badge text-bg-light border me-1">{{ role }}</span>
+            }
+          </td>
+          <td>
+            <span class="badge" [class.text-bg-success]="user.active" [class.text-bg-secondary]="!user.active">
+              {{ (user.active ? 'common.active' : 'common.inactive') | translate }}
+            </span>
+          </td>
+          <td class="text-end text-nowrap">
+            @if (isCentral()) {
+              <button *appIfPrivilege="'PUT_USERS_ID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="edit(user)">
+                {{ 'common.edit' | translate }}
+              </button>
+              <button *appIfPrivilege="'PUT_USERS_ID_BRANCHES'" type="button" class="btn btn-sm btn-outline-secondary ms-1" (click)="branches(user)">
+                {{ 'admin.users.action.branches' | translate }}
+              </button>
+              <button *appIfPrivilege="'POST_USERS_ID_PASSWORD_RESET'" type="button" class="btn btn-sm btn-outline-secondary ms-1" (click)="resetPassword(user)">
+                {{ 'admin.users.action.resetPassword' | translate }}
+              </button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="text-center text-body-secondary">
+            {{ (users.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="users.page()"
+  [size]="users.size()"
+  [total]="users.total()"
+  (pageChange)="users.goToPage($event)"
+  (sizeChange)="users.setSize($event)"
+/>

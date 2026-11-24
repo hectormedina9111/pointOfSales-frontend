@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { MenuItem } from '../../../core/api/me-api';
@@ -7,7 +7,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 
 /**
  * Menú lateral con el árbol que entrega el backend. Los grupos (con hijos) son títulos y sus
- * hijos son enlaces. En pantallas pequeñas se despliega con un botón.
+ * hijos son enlaces. Se muestra fijo en pantallas grandes y dentro de un panel en las pequeñas.
  */
 @Component({
   selector: 'app-sidebar',
@@ -19,12 +19,6 @@ export class AppSidebarComponent {
   private readonly translation = inject(TranslationService);
 
   readonly items = input.required<readonly MenuItem[]>();
-
-  protected readonly expanded = signal(false);
-
-  protected toggle(): void {
-    this.expanded.update((value) => !value);
-  }
 
   /** Usa el texto traducido de "menu.<CODE>" y, si no existe, el nombre que trae el backend. */
   protected label(item: MenuItem): string {

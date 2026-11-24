@@ -4,8 +4,6 @@ import { authGuard } from './core/auth/auth.guard';
 
 /** Rutas del menú que todavía son provisionales. Cada paso las reemplaza por su pantalla. */
 const PLACEHOLDER_ROUTES: readonly { readonly path: string; readonly menuCode: string }[] = [
-  { path: 'admin/users', menuCode: 'MENU_ADMIN_USERS' },
-  { path: 'admin/roles', menuCode: 'MENU_ADMIN_ROLES' },
   { path: 'organization/countries', menuCode: 'MENU_ORGANIZATION_COUNTRIES' },
   { path: 'organization/company', menuCode: 'MENU_ORGANIZATION_COMPANY' },
   { path: 'organization/branches', menuCode: 'MENU_ORGANIZATION_BRANCHES' },
@@ -38,6 +36,16 @@ export const routes: Routes = [
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('./features/home/home').then((module) => module.HomeComponent),
+  },
+  {
+    path: 'admin/users',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/admin/users/users').then((module) => module.UsersComponent),
+  },
+  {
+    path: 'admin/roles',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/admin/roles/roles').then((module) => module.RolesComponent),
   },
   ...PLACEHOLDER_ROUTES.map(({ path, menuCode }) => ({
     path,

@@ -1,0 +1,44 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{{ 'admin.roles.privileges.title' | translate: { name: role.name } }}</h2>
+  <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <p class="small text-body-secondary">{{ 'admin.roles.privileges.intro' | translate }}</p>
+  <app-problem-alert [error]="loadError()" />
+  <app-problem-alert [error]="saveError()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary mb-0">{{ 'common.loading' | translate }}</p>
+  } @else if (groups().length === 0) {
+    <p class="text-body-secondary mb-0">{{ 'admin.roles.privileges.empty' | translate }}</p>
+  } @else {
+    @for (group of groups(); track group.type) {
+      <h3 class="h6 mt-3 mb-2">{{ ('privilegeType.' + group.type) | translate }}</h3>
+      @for (moduleGroup of group.modules; track moduleGroup.name) {
+        <div class="mb-3">
+          <p class="small text-uppercase text-body-secondary mb-1">{{ moduleGroup.name }}</p>
+          @for (privilege of moduleGroup.privileges; track privilege.id) {
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [id]="'privilege-' + privilege.id"
+                [checked]="isSelected(privilege.code)" (change)="toggle(privilege.code, checkedValue($event))" />
+              <label class="form-check-label" [for]="'privilege-' + privilege.id">
+                {{ privilege.name }}
+                <span class="small text-body-secondary font-monospace d-block d-sm-inline ms-sm-1">{{ privilege.code }}</span>
+              </label>
+            </div>
+          }
+        </div>
+      }
+    }
+  }
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+    {{ 'common.cancel' | translate }}
+  </button>
+  <button type="button" class="btn btn-primary" [disabled]="loading() || submitting()" (click)="save()">
+    {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+  </button>
+</div>
