@@ -1,0 +1,23 @@
+{
+  "/central": {
+    "target": "http://localhost:8080",
+    "pathRewrite": {
+      "^/central": ""
+    },
+    "changeOrigin": true
+  },
+  "/store1": {
+    "target": "http://localhost:8081",
+    "pathRewrite": {
+      "^/store1": ""
+    },
+    "changeOrigin": true
+  },
+  "/store2": {
+    "target": "http://localhost:8082",
+    "pathRewrite": {
+      "^/store2": ""
+    },
+    "changeOrigin": true
+  }
+}

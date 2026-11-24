@@ -1,0 +1,21 @@
+{
+  "app.title": "Point of sale",
+  "nav.menu": "Toggle menu",
+  "nav.home": "Home",
+  "server.label": "Server",
+  "server.central": "Central",
+  "server.store1": "Store 1",
+  "server.store2": "Store 2",
+  "language.label": "Language",
+  "language.es": "Español",
+  "language.en": "English",
+  "home.title": "Node information",
+  "home.intro": "Status of the selected node: {server}.",
+  "home.application": "Application",
+  "home.version": "Version",
+  "home.nodeRole": "Node role",
+  "home.nodeNumber": "Node number",
+  "error.generic": "The operation could not be completed.",
+  "common.loading": "Loading…",
+  "common.retry": "Retry"
+}

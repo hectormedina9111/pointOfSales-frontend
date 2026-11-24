@@ -1,0 +1,42 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-md-10 col-lg-8">
+    <h1 class="h3 mb-2">{{ 'home.title' | translate }}</h1>
+    <p class="text-body-secondary mb-4">
+      {{ 'home.intro' | translate: { server: serverName() } }}
+    </p>
+
+    @if (failed()) {
+      <div class="alert alert-danger" role="alert">
+        <p class="mb-1">{{ 'error.generic' | translate }}</p>
+        @if (errorDetail(); as detail) {
+          <p class="small mb-2">{{ detail }}</p>
+        }
+        <button type="button" class="btn btn-sm btn-outline-danger" (click)="reload()">
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+    } @else if (loading()) {
+      <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+    } @else {
+      @if (info(); as data) {
+        <div class="card">
+          <div class="card-body">
+            <dl class="row mb-0">
+              <dt class="col-sm-4">{{ 'home.application' | translate }}</dt>
+              <dd class="col-sm-8">{{ data.application }}</dd>
+
+              <dt class="col-sm-4">{{ 'home.version' | translate }}</dt>
+              <dd class="col-sm-8">{{ data.version }}</dd>
+
+              <dt class="col-sm-4">{{ 'home.nodeRole' | translate }}</dt>
+              <dd class="col-sm-8">{{ data.nodeRole }}</dd>
+
+              <dt class="col-sm-4">{{ 'home.nodeNumber' | translate }}</dt>
+              <dd class="col-sm-8 mb-0">{{ data.nodeNumber }}</dd>
+            </dl>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

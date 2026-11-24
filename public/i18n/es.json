@@ -1,0 +1,21 @@
+{
+  "app.title": "Punto de venta",
+  "nav.menu": "Mostrar menú",
+  "nav.home": "Inicio",
+  "server.label": "Servidor",
+  "server.central": "Central",
+  "server.store1": "Tienda 1",
+  "server.store2": "Tienda 2",
+  "language.label": "Idioma",
+  "language.es": "Español",
+  "language.en": "English",
+  "home.title": "Información del nodo",
+  "home.intro": "Estado del nodo seleccionado: {server}.",
+  "home.application": "Aplicación",
+  "home.version": "Versión",
+  "home.nodeRole": "Rol del nodo",
+  "home.nodeNumber": "Número de nodo",
+  "error.generic": "No se pudo completar la operación.",
+  "common.loading": "Cargando…",
+  "common.retry": "Reintentar"
+}

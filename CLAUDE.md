@@ -1,0 +1,80 @@
+# CLAUDE.md: Frontend del punto de venta
+
+Reglas permanentes para trabajar en este repositorio. El plan completo está en `docs/plan.md` del backend (repositorio `pointOfSales`), sección "MVP del frontend (Angular)". Consúltalo antes de diseñar o cambiar cualquier pantalla. Si algo aquí contradice el plan, manda este archivo y avisa de la diferencia.
+
+## Idioma
+
+- **Todo el código va en inglés:** nombres de archivos, clases, métodos, variables, claves de traducción, rutas, campos, valores y nombres de pruebas. Los mensajes de commit también van en inglés, en modo imperativo (`Add server selector`).
+- **Solo la documentación va en español:** `docs/`, README, `CLAUDE.md`, `api/README.md` y comentarios dirigidos a personas del equipo.
+- **Ningún texto visible para la persona va escrito en plantillas ni en el código.** Todo texto (incluidos los mensajes de error) sale de `public/i18n/es.json` y `public/i18n/en.json`, con la misma clave en los dos archivos. En las plantillas se usa siempre `{{ 'clave' | translate }}`.
+- El idioma por defecto es español. Se guarda en `localStorage` (con try/catch) y se envía al backend en `Accept-Language`.
+
+## Stack (no cambiar sin acordarlo)
+
+- Angular 22, TypeScript en modo estricto, componentes standalone (sin `NgModule`), signals y `inject()`.
+- Zoneless: `provideZonelessChangeDetection()`. No se instala `zone.js`.
+- Bootstrap 5.3 con ng-bootstrap 21 (MIT). **No usar PrimeNG** (su licencia es de pago para empresas que no son pequeñas).
+- Sin librerías de traducción de terceros: el servicio propio está en `src/app/core/i18n`.
+- Sin pruebas en esta etapa (ver "Pruebas").
+- Dependencias mínimas: no agregar una librería sin acordarlo.
+
+## Arquitectura
+
+- `src/app/core`: servicios transversales (configuración de servidores, selector de servidor, i18n, interceptores HTTP). Se importa desde cualquier parte, pero `core` nunca importa de `features`.
+- `src/app/shared`: pipes y componentes reutilizables sin lógica de negocio.
+- `src/app/features/<nombre>`: una carpeta por pantalla o área funcional (`home`, luego `session`, `users`, `catalog`, etc.).
+- `src/app/api`: cliente HTTP generado desde el OpenAPI del backend (a partir del paso 2). **Nunca se edita a mano.** Se regenera con `npm run api:update`.
+- Las llamadas a la API usan **rutas relativas** que empiezan por `/api/`. El interceptor `api-prefix` les antepone el prefijo del servidor seleccionado (`/central`, `/store1`, `/store2`). Nunca se escribe una URL absoluta ni un puerto en el código.
+- La lógica de negocio no va en las plantillas: si una pantalla necesita decidir algo, eso se calcula en el componente o en un servicio.
+
+## API del backend
+
+- Rutas bajo `/api/v1`. Errores en RFC 9457 (`application/problem+json`) con la propiedad `code`.
+- Al mostrar un error, se muestra el texto traducido de la aplicación; el campo `detail` solo se muestra como detalle adicional.
+- Los permisos de cada botón salen de `/me/privileges` (paso 2). No se fijan roles en el código.
+
+## Testing
+
+- **Dos etapas:** primero solo se construye la aplicación, **sin escribir pruebas nuevas**. Las pruebas se escriben en una segunda etapa, al terminar el frontend. Mientras tanto no hay pruebas en el repositorio y el CI solo compila.
+- Para entonces: pruebas de servicios y pipes con Vitest o Karma (se decidirá entonces), y pruebas de las pantallas contra el backend real cuando aplique.
+- Antes de dar una tarea por terminada: `npm run build` debe compilar sin errores.
+
+## Forma de trabajo
+
+- Alcance actual: **paso 1 (base)** del MVP del frontend. No implementar pantallas fuera del paso en curso.
+- Cambios pequeños y enfocados; un commit por paso lógico.
+- Si una decisión no está en el plan o lo contradice, preguntar antes de implementarla y, una vez decidida, actualizar `docs/plan.md` del backend.
+
+## Flujo de Git
+
+- Nunca hacer push directo a `main`.
+- Cada paso va en su propia rama `feature/step-N-<nombre>`.
+- Al terminar un paso: push de la rama y Pull Request hacia `main`, con la descripción de los requerimientos cubiertos y cómo probarlos.
+- El CI (GitHub Actions) debe pasar antes de unir el PR.
+- No empezar el siguiente paso hasta que el PR esté revisado y unido a `main`.
+- Excepción autorizada por el responsable: cuando él lo pide, los pasos se encadenan en PRs apilados, cada uno apuntando a la rama del anterior.
+- Si el CI genera `package-lock.json` por primera vez, lo sube al PR el propio workflow. Ese archivo siempre se versiona.
+
+## Límite de uso del plan
+
+- El trabajo no debe pasar del **70 %** del límite de 5 horas ni del límite semanal del plan.
+- El control es automático. Los archivos de control del backend (`.claude/statusline.ps1`, `.claude/hooks/usage-guard.ps1`) no se desactivan, no se editan ni se rodean.
+- Trabajar en pasos cortos y hacer commit al terminar cada parte que compile, para que un corte por límite no deje trabajo a medias.
+- Si la sesión se detiene por el límite, en la siguiente sesión empezar resumiendo qué quedó hecho y qué falta, antes de escribir código.
+
+## Entorno de desarrollo
+
+- Se desarrolla en **Windows**. Los dos repositorios están uno al lado del otro:
+  - Backend: `C:\Users\hector.giron\repositorios\pointOfSales`
+  - Frontend: `C:\Users\hector.giron\repositorios\pointOfSales-frontend`
+- En el equipo: Git (con Git Bash), Node 22, VirtualBox, Vagrant y Claude Code.
+- La máquina virtual de Vagrant (Ubuntu) se crea desde el repositorio del backend. Levanta la central, las dos tiendas y también esta web, compilada desde la carpeta compartida.
+- Los scripts deben funcionar en Windows. Los archivos que se ejecutan dentro de Linux (Dockerfile, `nginx/`, scripts `.sh`) usan finales de línea LF, definidos en `.gitattributes`.
+
+## Comandos útiles
+
+- `npm install`: instala dependencias (la primera vez genera `package-lock.json`).
+- `npm start`: servidor de desarrollo en `http://localhost:4200`; reenvía `/central`, `/store1` y `/store2` a los puertos 8080, 8081 y 8082 del backend.
+- `npm run build`: compila la aplicación en `dist/pos-frontend/browser`.
+- `npm run api:update`: descarga el OpenAPI de la central y regenera `src/app/api` (requiere el backend levantado).
+- `docker build -t pos-frontend:ci .`: construye la imagen que sirve nginx.
