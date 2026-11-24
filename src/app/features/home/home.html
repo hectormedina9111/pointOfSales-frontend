@@ -44,6 +44,13 @@
           </div>
         </div>
       }
+
+      @if (isCentral()) {
+        <app-stores-widget *appIfPrivilege="'GET_STORE_NODES'" />
+      }
+      @if (isStore()) {
+        <app-sync-summary-widget *appIfPrivilege="'GET_SYNC_STATUS'" />
+      }
     }
   </div>
 </div>

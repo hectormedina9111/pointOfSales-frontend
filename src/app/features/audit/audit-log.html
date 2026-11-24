@@ -1,0 +1,116 @@
+<div class="mb-3">
+  <h1 class="h3 mb-1">{{ 'audit.title' | translate }}</h1>
+  <p class="text-body-secondary mb-0">{{ 'audit.intro' | translate }}</p>
+</div>
+
+<form class="row g-2 align-items-end mb-3" [formGroup]="form" (ngSubmit)="search()">
+  <div class="col-12 col-md-6 col-xl-3">
+    <label class="form-label" for="audit-entity">{{ 'audit.filter.entity' | translate }}</label>
+    <select id="audit-entity" class="form-select" formControlName="entity">
+      <option value="">{{ 'common.all' | translate }}</option>
+      @for (entity of entities; track entity) {
+        <option [value]="entity">{{ entityLabel(entity) }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="col-6 col-md-3 col-xl-2">
+    <label class="form-label" for="audit-entity-id">{{ 'audit.filter.entityId' | translate }}</label>
+    <input id="audit-entity-id" type="text" inputmode="numeric" class="form-control" formControlName="entityId" />
+  </div>
+
+  <div class="col-6 col-md-3 col-xl-2">
+    <label class="form-label" for="audit-from">{{ 'audit.filter.from' | translate }}</label>
+    <input id="audit-from" type="datetime-local" class="form-control" formControlName="from" />
+  </div>
+
+  <div class="col-6 col-md-3 col-xl-2">
+    <label class="form-label" for="audit-to">{{ 'audit.filter.to' | translate }}</label>
+    <input id="audit-to" type="datetime-local" class="form-control" formControlName="to" />
+  </div>
+
+  <div class="col-12 col-xl-3 d-flex gap-2">
+    <button type="submit" class="btn btn-primary">{{ 'audit.filter.search' | translate }}</button>
+    <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()">{{ 'audit.filter.clear' | translate }}</button>
+  </div>
+</form>
+
+@if (filterError(); as key) {
+  <div class="alert alert-danger py-2" role="alert">{{ key | translate }}</div>
+}
+
+<app-problem-alert [error]="entries.error()" />
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'audit.column.occurredAt' | translate }}</th>
+        <th scope="col">{{ 'audit.column.user' | translate }}</th>
+        <th scope="col">{{ 'audit.column.action' | translate }}</th>
+        <th scope="col">{{ 'audit.column.entity' | translate }}</th>
+        <th scope="col">{{ 'audit.column.entityId' | translate }}</th>
+        <th scope="col">{{ 'audit.column.ip' | translate }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (entry of entries.items(); track entry.id) {
+        <tr>
+          <td class="text-nowrap">{{ entry.occurredAt | localDateTime }}</td>
+          <td>{{ entry.username ?? '—' }}</td>
+          <td class="fw-semibold small">{{ actionLabel(entry.action) }}</td>
+          <td>{{ entityLabel(entry.entity) }}</td>
+          <td>{{ entry.entityId ?? '—' }}</td>
+          <td class="font-monospace small">{{ entry.ipAddress ?? '—' }}</td>
+          <td class="text-end text-nowrap">
+            <button type="button" class="btn btn-sm btn-outline-secondary" [attr.aria-expanded]="isExpanded(entry.id)"
+              (click)="toggle(entry.id)">
+              {{ (isExpanded(entry.id) ? 'audit.changes.hide' : 'audit.changes.show') | translate }}
+            </button>
+          </td>
+        </tr>
+
+        @if (isExpanded(entry.id)) {
+          @let diff = changes(entry);
+          <tr>
+            <td colspan="7" class="bg-body-tertiary">
+              <div class="row g-3 py-2">
+                <div class="col-12 col-lg-6">
+                  <h2 class="h6">{{ 'audit.changes.before' | translate }}</h2>
+                  @if (entry.oldValues) {
+                    <pre class="audit-json bg-body border rounded p-2 mb-0">@for (line of diff.before; track $index) {<span class="d-block" [class.audit-changed]="line.changed">{{ line.text }}</span>}</pre>
+                  } @else {
+                    <p class="small text-body-secondary mb-0">{{ 'audit.changes.none' | translate }}</p>
+                  }
+                </div>
+                <div class="col-12 col-lg-6">
+                  <h2 class="h6">{{ 'audit.changes.after' | translate }}</h2>
+                  @if (entry.newValues) {
+                    <pre class="audit-json bg-body border rounded p-2 mb-0">@for (line of diff.after; track $index) {<span class="d-block" [class.audit-changed]="line.changed">{{ line.text }}</span>}</pre>
+                  } @else {
+                    <p class="small text-body-secondary mb-0">{{ 'audit.changes.none' | translate }}</p>
+                  }
+                </div>
+              </div>
+            </td>
+          </tr>
+        }
+      } @empty {
+        <tr>
+          <td colspan="7" class="text-center text-body-secondary">
+            {{ (entries.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="entries.page()"
+  [size]="entries.size()"
+  [total]="entries.total()"
+  (pageChange)="entries.goToPage($event)"
+  (sizeChange)="entries.setSize($event)"
+/>

@@ -1,0 +1,36 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{{ 'stores.activation.title' | translate: { number: nodeNumber } }}</h2>
+  <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+</div>
+
+@if (view; as code) {
+  <div class="modal-body">
+    <p>{{ 'stores.activation.hint' | translate }}</p>
+
+    <label class="form-label" for="activation-code">{{ 'stores.activation.label' | translate }}</label>
+    <div class="input-group input-group-lg mb-2">
+      <input #codeInput id="activation-code" type="text" readonly class="form-control font-monospace text-center fw-semibold"
+        [value]="code.code" (click)="codeInput.select()" />
+      <button type="button" class="btn btn-outline-primary" (click)="copy(codeInput)">
+        {{ 'stores.activation.copy' | translate }}
+      </button>
+    </div>
+
+    @switch (copyState()) {
+      @case ('copied') {
+        <p class="small text-success mb-2" role="status">{{ 'stores.activation.copied' | translate }}</p>
+      }
+      @case ('failed') {
+        <p class="small text-danger mb-2" role="status">{{ 'stores.activation.copyFailed' | translate }}</p>
+      }
+    }
+
+    <p class="small text-body-secondary mb-0">
+      {{ 'stores.activation.expires' | translate }} {{ code.expiresAt | localDateTime }}
+    </p>
+  </div>
+}
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" (click)="activeModal.close()">{{ 'common.close' | translate }}</button>
+</div>

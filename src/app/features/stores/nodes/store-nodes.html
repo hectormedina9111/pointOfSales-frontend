@@ -1,0 +1,17 @@
+<div class="mb-3">
+  <h1 class="h3 mb-1">{{ 'stores.nodes.title' | translate }}</h1>
+  <p class="text-body-secondary mb-0">{{ 'stores.nodes.intro' | translate }}</p>
+</div>
+
+@if (isCentral()) {
+  <app-store-node-list />
+} @else if (isStore()) {
+  <div class="alert alert-info" role="note">
+    <p class="mb-2">{{ 'stores.nodes.storeNotice' | translate }}</p>
+    <a class="btn btn-sm btn-outline-primary" routerLink="/stores/sync-status">{{ 'stores.nodes.goToSyncStatus' | translate }}</a>
+  </div>
+} @else if (failed()) {
+  <app-problem-alert [error]="systemInfo.state()" />
+} @else {
+  <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+}

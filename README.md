@@ -52,6 +52,35 @@ Ejemplo de cálculo: un producto cuesta L 115.00 con ISV del 15 %. Como el preci
 
 El selector de productos espera 300 ms al escribir y solo muestra productos activos, porque un producto inactivo no tiene precio. La cantidad y los montos viajan como texto y la web no hace cálculos con ellos: el precio lo resuelve el backend.
 
+## Tiendas, sincronización y auditoría (paso 6)
+
+- **Tiendas > Nodos** (solo en la central): una tarjeta por tienda, con su número, sucursal, estado (Activa, Desincronizada, Revocada o Pendiente), conexión, último latido, versiones, cambios pendientes y rango de ids. Se actualiza sola cada 5 segundos mientras la pestaña está visible; el interruptor **Actualizar automáticamente** la pausa. Desde la tarjeta: **Código de activación** (se muestra una sola vez, con botón para copiarlo) y **Revocar** (pide confirmación). **Registrar tienda** da de alta una tienda, con sucursal opcional.
+- **Tiendas > Estado de sincronización** (en una tienda): versión aplicada, última sincronización y último error. En la central solo enlaza al panel.
+- **Auditoría**: bitácora paginada, de la más reciente a la más antigua, con filtros por entidad, id y fechas (en hora local). Cada fila se abre para comparar los valores antes y después; los campos que cambiaron aparecen resaltados.
+- **Inicio**: en la central, un widget con las tiendas; en una tienda, el resumen de sincronización.
+
+### Ver la réplica
+
+Con el entorno levantado (`vagrant up`), las tiendas se activan solas. Estos pasos muestran cómo llega a las tiendas un cambio hecho en la central.
+
+1. Abra la web de la central, `http://192.168.56.10`, e inicie sesión.
+2. Vaya a **Tiendas > Nodos**. Compruebe que la tienda 1 y la tienda 2 aparecen como **Activa**, con los cambios pendientes en 0.
+3. Abra la web de la tienda 1, `http://192.168.56.11`, en otra ventana del navegador, de modo que pueda ver a la vez el panel de la central.
+4. En la central, cambie el precio de un producto: **Precios > Listas de precios**, entre con **Precios** en una lista de precio fijo, cambie el precio del producto y guarde.
+5. Vuelva al panel. En la tarjeta de la tienda 1, los **cambios pendientes** suben y bajan a 0 en unos 30 segundos. Cuando llegan a 0, la tarjeta se resalta durante dos segundos.
+6. En la ventana de la tienda 1, vaya a **Precios > Consulta de precio**, elija el producto y compruebe que aparece el precio nuevo. En **Tiendas > Estado de sincronización**, la última versión aplicada coincide con la versión de la central.
+7. Opcional: en **Auditoría**, filtre por la entidad de precios de lista para ver el cambio con sus valores antes y después.
+
+Prueba de corte (dentro de la máquina virtual, `vagrant ssh`, en la carpeta `/vagrant` del repositorio del backend):
+
+1. Ejecute `scripts/simulate-outage.sh store2 down`. La tienda 2 pierde la conexión con la central, pero sigue funcionando con sus datos.
+2. Cambie otro precio en la central, como en el paso 4.
+3. En el panel, los cambios pendientes de la tienda 1 bajan a 0. Los de la tienda 2 suben, y tras unos dos minutos sin latido la tienda aparece como **Desincronizada**, con conexión **Sin conexión**.
+4. En la web de la tienda 2, `http://192.168.56.12`, **Consulta de precio** sigue mostrando el precio anterior.
+5. Ejecute `scripts/simulate-outage.sh store2 up`. En el siguiente ciclo de sincronización la tienda 2 aplica el cambio: sus pendientes bajan a 0, su tarjeta se resalta y vuelve a **Activa**.
+
+Notas: el panel deja de actualizarse mientras la pestaña está oculta y se pone al día al volver a mostrarla. El estado de una tienda sale de su último latido; una tienda sin latido durante dos minutos se muestra como desincronizada.
+
 ## Iniciar sesión
 
 - **Local (máquina virtual):** entre con el usuario `admin` y la contraseña `Admin.Local.2026`. Es la contraseña de desarrollo de `.env.example` del backend. El sistema obliga a cambiarla en el primer ingreso, en la **central**.

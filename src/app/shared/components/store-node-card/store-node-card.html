@@ -1,0 +1,56 @@
+<div class="card h-100 store-card" [class.pos-caught-up]="highlighted()">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+      <div class="min-w-0 flex-grow-1">
+        <h2 class="h5 mb-1">{{ 'stores.nodes.storeName' | translate: { number: node().nodeNumber } }}</h2>
+        <div class="small text-body-secondary text-truncate">
+          @if (branchName(); as name) {
+            {{ name }}
+          } @else {
+            {{ 'stores.nodes.noBranch' | translate }}
+          }
+        </div>
+      </div>
+      <app-sync-state-badge [state]="node().syncState" />
+    </div>
+
+    <div class="mb-3">
+      <div class="d-flex justify-content-between small mb-1">
+        <span class="fw-semibold">{{ 'stores.nodes.field.pending' | translate }}: {{ node().pendingChanges }}</span>
+        <span class="text-body-secondary">
+          {{ 'stores.nodes.progress' | translate: { downloaded: downloaded(), latest: node().latestVersion } }}
+        </span>
+      </div>
+      <div class="progress" role="progressbar" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100"
+        [attr.aria-label]="'stores.nodes.field.pending' | translate">
+        <div class="progress-bar" [class.bg-success]="progress() === 100" [style.width.%]="progress()"></div>
+      </div>
+    </div>
+
+    <dl class="row small mb-0">
+      <dt class="col-6">{{ 'stores.nodes.field.connection' | translate }}</dt>
+      <dd class="col-6 mb-1">
+        <span class="badge" [class.text-bg-success]="node().connected" [class.text-bg-secondary]="!node().connected">
+          {{ (node().connected ? 'stores.nodes.connection.yes' : 'stores.nodes.connection.no') | translate }}
+        </span>
+      </dd>
+
+      <dt class="col-6">{{ 'stores.nodes.field.heartbeat' | translate }}</dt>
+      <dd class="col-6 mb-1" [title]="node().lastHeartbeatAt ?? ''">{{ node().lastHeartbeatAt | relativeTime }}</dd>
+
+      <dt class="col-6">{{ 'stores.nodes.field.centralVersion' | translate }}</dt>
+      <dd class="col-6 mb-1">{{ node().latestVersion }}</dd>
+
+      <dt class="col-6">{{ 'stores.nodes.field.downloadedVersion' | translate }}</dt>
+      <dd class="col-6 mb-1">{{ node().lastDownloadVersion ?? '—' }}</dd>
+
+      <dt class="col-6">{{ 'stores.nodes.field.appVersion' | translate }}</dt>
+      <dd class="col-6 mb-1">{{ node().appVersion ?? '—' }}</dd>
+
+      <dt class="col-6">{{ 'stores.nodes.field.idRange' | translate }}</dt>
+      <dd class="col-6 mb-0 font-monospace">{{ node().idRangeStart }} – {{ node().idRangeEnd }}</dd>
+    </dl>
+  </div>
+
+  <ng-content />
+</div>

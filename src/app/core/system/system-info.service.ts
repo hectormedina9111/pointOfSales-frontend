@@ -49,6 +49,12 @@ export class SystemInfoService {
     return current.status === 'ready' && current.info.nodeRole === 'CENTRAL';
   });
 
+  /** Verdadero solo en una tienda. Mientras no hay datos vale false. */
+  readonly isStore = computed(() => {
+    const current = this.stateSignal();
+    return current.status === 'ready' && current.info.nodeRole === 'STORE';
+  });
+
   private requestId = 0;
 
   constructor() {

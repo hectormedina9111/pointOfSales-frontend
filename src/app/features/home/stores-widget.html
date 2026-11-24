@@ -1,0 +1,26 @@
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center gap-2">
+    <h2 class="h6 mb-0">{{ 'stores.widget.title' | translate }}</h2>
+    <a routerLink="/stores/nodes" class="small">{{ 'stores.widget.viewAll' | translate }}</a>
+  </div>
+
+  <app-problem-alert [error]="nodes.error()" />
+
+  <ul class="list-group list-group-flush">
+    @for (node of nodes.items(); track node.id) {
+      <li class="list-group-item d-flex flex-wrap align-items-center gap-2" [class.pos-caught-up]="caughtUp.ids().has(node.id)">
+        <span class="fw-semibold me-auto">{{ 'stores.nodes.storeName' | translate: { number: node.nodeNumber } }}</span>
+        <app-sync-state-badge [state]="node.syncState" />
+        <span class="small text-body-secondary">{{ 'stores.nodes.field.pending' | translate }}: {{ node.pendingChanges }}</span>
+        <div class="progress flex-grow-1" style="height: 0.5rem; min-width: 6rem;" role="progressbar"
+          [attr.aria-valuenow]="progress(node)" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-bar" [style.width.%]="progress(node)"></div>
+        </div>
+      </li>
+    } @empty {
+      <li class="list-group-item text-center text-body-secondary">
+        {{ (nodes.loading() ? 'common.loading' : 'common.empty') | translate }}
+      </li>
+    }
+  </ul>
+</div>
