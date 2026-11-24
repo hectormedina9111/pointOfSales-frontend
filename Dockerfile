@@ -9,9 +9,11 @@ RUN if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm inst
 COPY . .
 RUN npx ng build
 
-# Etapa 2: servir los archivos estáticos y reenviar /central/, /store1/ y /store2/ a cada backend.
+# Etapa 2: servir los archivos estáticos. config.json se escribe al arrancar, con API_BASE_URL.
 FROM nginx:1.27-alpine
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY nginx/config.json.template /etc/nginx/templates-config/config.json.template
+COPY --chmod=0755 nginx/40-write-config.sh /docker-entrypoint.d/40-write-config.sh
 COPY --from=build /app/dist/pos-frontend/browser /usr/share/nginx/html
 
 EXPOSE 80

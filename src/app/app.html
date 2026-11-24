@@ -23,26 +23,9 @@
       </ul>
 
       <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center">
-        <div class="d-flex align-items-center gap-2">
-          <span class="small text-body-secondary">{{ 'server.label' | translate }}</span>
-          <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn btn-sm btn-outline-primary" ngbDropdownToggle>
-              {{ selectedServer().labelKey | translate }}
-            </button>
-            <div ngbDropdownMenu>
-              @for (server of servers; track server.id) {
-                <button
-                  type="button"
-                  ngbDropdownItem
-                  [class.active]="server.id === selectedServer().id"
-                  (click)="selectServer(server.id)"
-                >
-                  {{ server.labelKey | translate }}
-                </button>
-              }
-            </div>
-          </div>
-        </div>
+        @if (nodeName(); as name) {
+          <span class="badge text-bg-secondary align-self-start align-self-lg-center">{{ name }}</span>
+        }
 
         <div class="btn-group btn-group-sm" role="group" [attr.aria-label]="'language.label' | translate">
           @for (lang of languages; track lang) {

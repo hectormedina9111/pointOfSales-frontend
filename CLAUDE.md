@@ -4,7 +4,7 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
 
 ## Idioma
 
-- **Todo el código va en inglés:** nombres de archivos, clases, métodos, variables, claves de traducción, rutas, campos, valores y nombres de pruebas. Los mensajes de commit también van en inglés, en modo imperativo (`Add server selector`).
+- **Todo el código va en inglés:** nombres de archivos, clases, métodos, variables, claves de traducción, rutas, campos, valores y nombres de pruebas. Los mensajes de commit también van en inglés, en modo imperativo (`Add node information page`).
 - **Solo la documentación va en español:** `docs/`, README, `CLAUDE.md`, `api/README.md` y comentarios dirigidos a personas del equipo.
 - **Ningún texto visible para la persona va escrito en plantillas ni en el código.** Todo texto (incluidos los mensajes de error) sale de `public/i18n/es.json` y `public/i18n/en.json`, con la misma clave en los dos archivos. En las plantillas se usa siempre `{{ 'clave' | translate }}`.
 - El idioma por defecto es español. Se guarda en `localStorage` (con try/catch) y se envía al backend en `Accept-Language`.
@@ -20,11 +20,13 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
 
 ## Arquitectura
 
-- `src/app/core`: servicios transversales (configuración de servidores, selector de servidor, i18n, interceptores HTTP). Se importa desde cualquier parte, pero `core` nunca importa de `features`.
+- `src/app/core`: servicios transversales (configuración de la web en `config/`, datos del nodo en `system/`, i18n, interceptores HTTP en `http/`). Se importa desde cualquier parte, pero `core` nunca importa de `features`.
 - `src/app/shared`: pipes y componentes reutilizables sin lógica de negocio.
 - `src/app/features/<nombre>`: una carpeta por pantalla o área funcional (`home`, luego `session`, `users`, `catalog`, etc.).
 - `src/app/api`: cliente HTTP generado desde el OpenAPI del backend (a partir del paso 2). **Nunca se edita a mano.** Se regenera con `npm run api:update`.
-- Las llamadas a la API usan **rutas relativas** que empiezan por `/api/`. El interceptor `api-prefix` les antepone el prefijo del servidor seleccionado (`/central`, `/store1`, `/store2`). Nunca se escribe una URL absoluta ni un puerto en el código.
+- Las llamadas a la API usan **rutas relativas** que empiezan por `/api/`. El interceptor `api-base-url` les antepone `apiBaseUrl`, que se lee de `config.json` al arrancar (`AppConfigService`). Nunca se escribe una URL absoluta ni un puerto en el código.
+- **Una web por nodo:** cada nodo (central, tienda 1, tienda 2) sirve su propia web y esa web solo llama a su propio backend, con llamadas directas (CORS). No hay proxy ni selector de servidor.
+- `public/config.json` es la configuración de `npm start` (apunta a la central en la máquina virtual). En Docker, `API_BASE_URL` genera el `config.json` de cada nodo al arrancar el contenedor.
 - La lógica de negocio no va en las plantillas: si una pantalla necesita decidir algo, eso se calcula en el componente o en un servicio.
 
 ## API del backend
@@ -68,13 +70,13 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
   - Backend: `C:\Users\hector.giron\repositorios\pointOfSales`
   - Frontend: `C:\Users\hector.giron\repositorios\pointOfSales-frontend`
 - En el equipo: Git (con Git Bash), Node 22, VirtualBox, Vagrant y Claude Code.
-- La máquina virtual de Vagrant (Ubuntu) se crea desde el repositorio del backend. Levanta la central, las dos tiendas y también esta web, compilada desde la carpeta compartida.
+- La máquina virtual de Vagrant (Ubuntu) se crea desde el repositorio del backend. Levanta cada nodo con su web, compilada desde la carpeta compartida: central en `http://192.168.56.10`, tienda 1 en `http://192.168.56.11` y tienda 2 en `http://192.168.56.12`. Las APIs quedan en el puerto 8080 de cada IP.
 - Los scripts deben funcionar en Windows. Los archivos que se ejecutan dentro de Linux (Dockerfile, `nginx/`, scripts `.sh`) usan finales de línea LF, definidos en `.gitattributes`.
 
 ## Comandos útiles
 
 - `npm install`: instala dependencias (la primera vez genera `package-lock.json`).
-- `npm start`: servidor de desarrollo en `http://localhost:4200`; reenvía `/central`, `/store1` y `/store2` a los puertos 8080, 8081 y 8082 del backend.
+- `npm start`: servidor de desarrollo en `http://localhost:4200`; usa `public/config.json` para saber a qué backend llamar. Para otro nodo, edita ese archivo.
 - `npm run build`: compila la aplicación en `dist/pos-frontend/browser`.
 - `npm run api:update`: descarga el OpenAPI de la central y regenera `src/app/api` (requiere el backend levantado).
 - `docker build -t pos-frontend:ci .`: construye la imagen que sirve nginx.

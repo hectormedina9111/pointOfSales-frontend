@@ -1,9 +1,7 @@
 <div class="row justify-content-center">
   <div class="col-12 col-md-10 col-lg-8">
     <h1 class="h3 mb-2">{{ 'home.title' | translate }}</h1>
-    <p class="text-body-secondary mb-4">
-      {{ 'home.intro' | translate: { server: serverName() } }}
-    </p>
+    <p class="text-body-secondary mb-4">{{ 'home.intro' | translate }}</p>
 
     @if (failed()) {
       <div class="alert alert-danger" role="alert">
@@ -29,10 +27,19 @@
               <dd class="col-sm-8">{{ data.version }}</dd>
 
               <dt class="col-sm-4">{{ 'home.nodeRole' | translate }}</dt>
-              <dd class="col-sm-8">{{ data.nodeRole }}</dd>
+              <dd class="col-sm-8">{{ ('node.role.' + data.nodeRole) | translate }}</dd>
 
               <dt class="col-sm-4">{{ 'home.nodeNumber' | translate }}</dt>
-              <dd class="col-sm-8 mb-0">{{ data.nodeNumber }}</dd>
+              <dd class="col-sm-8">{{ data.nodeNumber }}</dd>
+
+              <dt class="col-sm-4">{{ 'home.apiBaseUrl' | translate }}</dt>
+              <dd class="col-sm-8 mb-0 text-break">
+                @if (apiBaseUrl(); as url) {
+                  {{ url }}
+                } @else {
+                  {{ 'home.sameOrigin' | translate }}
+                }
+              </dd>
             </dl>
           </div>
         </div>

@@ -51,7 +51,7 @@ export class TranslationService {
         this.dictionary.set(dictionary);
       }
     } catch {
-      console.warn(`No se pudo cargar el diccionario de idioma "${language}".`);
+      console.warn(`Could not load the translations for language "${language}".`);
     }
   }
 }
