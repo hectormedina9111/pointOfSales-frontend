@@ -91,6 +91,11 @@ export class ProductsApi {
     return this.http.get<Page<ProductView>>('/api/v1/products', { params });
   }
 
+  /** Producto por id, por ejemplo para mostrar el nombre de un precio. */
+  get(id: number): Observable<ProductView> {
+    return this.http.get<ProductView>(`/api/v1/products/${id}`);
+  }
+
   create(body: ProductRequest): Observable<ProductView> {
     return this.http.post<ProductView>('/api/v1/products', body);
   }

@@ -1,0 +1,30 @@
+<div class="position-relative">
+  <input [id]="inputId()" type="search" class="form-control" autocomplete="off" [formControl]="query"
+    [placeholder]="'pricing.picker.placeholder' | translate" />
+
+  @if (searching()) {
+    <div class="dropdown-menu show w-100">
+      <span class="dropdown-item-text text-body-secondary">{{ 'pricing.picker.searching' | translate }}</span>
+    </div>
+  } @else if (results().length > 0) {
+    <div class="dropdown-menu show w-100">
+      @for (product of results(); track product.id) {
+        <button type="button" class="dropdown-item" (click)="pick(product)">
+          <span class="font-monospace fw-semibold me-2">{{ product.sku }}</span>{{ product.name }}
+        </button>
+      }
+    </div>
+  } @else if (searchedText() !== '') {
+    <div class="dropdown-menu show w-100">
+      <span class="dropdown-item-text text-body-secondary">{{ 'pricing.picker.noResults' | translate }}</span>
+    </div>
+  }
+</div>
+
+<app-problem-alert [error]="searchError()" />
+
+@if (selected(); as product) {
+  <div class="form-text">
+    <span class="font-monospace">{{ product.sku }}</span> - {{ product.name }}
+  </div>
+}

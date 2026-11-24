@@ -4,8 +4,6 @@ import { authGuard } from './core/auth/auth.guard';
 
 /** Rutas del menú que todavía son provisionales. Cada paso las reemplaza por su pantalla. */
 const PLACEHOLDER_ROUTES: readonly { readonly path: string; readonly menuCode: string }[] = [
-  { path: 'pricing/price-lists', menuCode: 'MENU_PRICING_PRICE_LISTS' },
-  { path: 'pricing/price-check', menuCode: 'MENU_PRICING_PRICE_CHECK' },
   { path: 'stores/nodes', menuCode: 'MENU_STORES_NODES' },
   { path: 'stores/sync-status', menuCode: 'MENU_STORES_SYNC_STATUS' },
   { path: 'audit', menuCode: 'MENU_AUDIT' },
@@ -79,6 +77,24 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/catalog/products/products').then((module) => module.ProductsComponent),
+  },
+  {
+    path: 'pricing/price-lists',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/pricing/price-lists/price-lists').then((module) => module.PriceListsComponent),
+  },
+  {
+    path: 'pricing/price-lists/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/pricing/price-lists/price-list-detail').then((module) => module.PriceListDetailComponent),
+  },
+  {
+    path: 'pricing/price-check',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/pricing/price-check/price-check').then((module) => module.PriceCheckComponent),
   },
   ...PLACEHOLDER_ROUTES.map(({ path, menuCode }) => ({
     path,

@@ -1,0 +1,108 @@
+@let list = priceList();
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <a class="small" routerLink="/pricing/price-lists">{{ 'pricing.priceList.back' | translate }}</a>
+    <h1 class="h3 mb-1 mt-1">{{ list?.name }}</h1>
+    @if (list) {
+      <p class="text-body-secondary mb-1">
+        {{ 'pricing.priceList.summary' | translate: { code: list.code, country: countryCode(list.countryId), priority: list.priority } }}
+      </p>
+      <p class="text-body-secondary small mb-0">
+        {{ 'pricing.priceList.validity' | translate: {
+          from: list.validFrom ?? ('pricing.priceList.noLimit' | translate),
+          to: list.validTo ?? ('pricing.priceList.noLimit' | translate)
+        } }}
+      </p>
+    }
+  </div>
+  @if (canAddItems()) {
+    <button *appIfPrivilege="'POST_PRICE_LISTS_ID_ITEMS'" type="button" class="btn btn-primary" (click)="add()">
+      {{ 'pricing.priceList.add' | translate }}
+    </button>
+  }
+</div>
+
+<app-problem-alert [error]="loadError()" />
+
+@if (notFixedPrices()) {
+  <div class="alert alert-info" role="status">{{ 'pricing.priceList.notFixed' | translate }}</div>
+} @else {
+  <div class="row g-2 align-items-end mb-3">
+    <div class="col-12 col-lg-6">
+      <label class="form-label small mb-1" for="price-list-product-filter">{{ 'pricing.priceList.filter.product' | translate }}</label>
+      <app-product-picker inputId="price-list-product-filter" [selected]="productFilter()" (productPicked)="filterByProduct($event)" />
+    </div>
+    @if (productFilter()) {
+      <div class="col-auto">
+        <button type="button" class="btn btn-outline-secondary" (click)="clearFilter()">
+          {{ 'pricing.priceList.filter.clear' | translate }}
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (notice(); as key) {
+    <div class="alert alert-success alert-dismissible" role="status">
+      {{ key | translate }}
+      <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+    </div>
+  }
+
+  <app-problem-alert [error]="items.error()" />
+  <app-problem-alert [error]="actionError()" />
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'pricing.priceList.column.product' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'pricing.priceList.column.minQuantity' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'pricing.priceList.column.price' | translate }}</th>
+          <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of items.items(); track item.id) {
+          @let product = productOf(item);
+          <tr>
+            <td>
+              @if (product) {
+                <div class="fw-semibold">{{ product.name }}</div>
+                <div class="small font-monospace text-body-secondary">{{ product.sku }}</div>
+              } @else {
+                {{ 'pricing.priceList.unknownProduct' | translate: { id: item.productId } }}
+              }
+            </td>
+            <td class="text-end font-monospace">{{ item.minQuantity }}</td>
+            <td class="text-end font-monospace">{{ formatAmount(item.price) }}</td>
+            <td class="text-end text-nowrap">
+              @if (isCentral()) {
+                <button *appIfPrivilege="'PUT_PRICE_LISTS_ID_ITEMS_ITEMID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="edit(item)">
+                  {{ 'common.edit' | translate }}
+                </button>
+                <button *appIfPrivilege="'DELETE_PRICE_LISTS_ID_ITEMS_ITEMID'" type="button" class="btn btn-sm btn-outline-danger ms-1" (click)="remove(item)">
+                  {{ 'common.delete' | translate }}
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="text-center text-body-secondary">
+              {{ (items.loading() ? 'common.loading' : 'common.empty') | translate }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <app-pagination
+    [page]="items.page()"
+    [size]="items.size()"
+    [total]="items.total()"
+    (pageChange)="items.goToPage($event)"
+    (sizeChange)="items.setSize($event)"
+  />
+}

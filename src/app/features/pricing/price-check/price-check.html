@@ -1,0 +1,112 @@
+<div class="mb-3">
+  <h1 class="h3 mb-1">{{ 'pricing.priceCheck.title' | translate }}</h1>
+  <p class="text-body-secondary mb-0">{{ 'pricing.priceCheck.intro' | translate }}</p>
+</div>
+
+<app-problem-alert [error]="lookupError()" />
+
+@if (lookupsLoading()) {
+  <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="submit()" class="row g-3">
+    <div class="col-12 col-lg-6">
+      <label class="form-label" for="price-check-product">{{ 'pricing.priceCheck.field.product' | translate }}</label>
+      <app-product-picker inputId="price-check-product" [selected]="form.controls.product.value" (productPicked)="chooseProduct($event)" />
+      @if (isInvalid(form.controls.product)) {
+        <app-field-error [control]="form.controls.product" />
+      }
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+      <label class="form-label" for="price-check-price-list">{{ 'pricing.priceCheck.field.priceList' | translate }}</label>
+      <select id="price-check-price-list" class="form-select" formControlName="priceListId">
+        <option [ngValue]="null">{{ 'pricing.priceCheck.option.noPriceList' | translate }}</option>
+        @for (list of priceListOptions(); track list.id) {
+          <option [ngValue]="list.id">
+            {{ list.code }} - {{ list.name }}{{ list.active ? '' : ' ' + ('common.inactiveSuffix' | translate) }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
+      <label class="form-label" for="price-check-branch">{{ 'pricing.priceCheck.field.branch' | translate }}</label>
+      <select id="price-check-branch" class="form-select" formControlName="branchId">
+        <option [ngValue]="null">{{ 'pricing.priceCheck.option.noBranch' | translate }}</option>
+        @for (branch of branches(); track branch.id) {
+          <option [ngValue]="branch.id">{{ branch.code }} - {{ branch.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-12 col-md-4 col-lg-3">
+      <label class="form-label" for="price-check-quantity">{{ 'pricing.priceCheck.field.quantity' | translate }}</label>
+      <input id="price-check-quantity" type="text" inputmode="decimal" class="form-control font-monospace"
+        formControlName="quantity" [class.is-invalid]="isInvalid(form.controls.quantity)" />
+      <app-field-error [control]="form.controls.quantity" invalidKey="validation.quantity" />
+    </div>
+
+    <div class="col-12 col-md-4 col-lg-3">
+      <label class="form-label" for="price-check-date">{{ 'pricing.priceCheck.field.date' | translate }}</label>
+      <input id="price-check-date" type="date" class="form-control" formControlName="date" />
+      <div class="form-text">{{ 'pricing.priceCheck.hint.date' | translate }}</div>
+    </div>
+
+    <div class="col-12">
+      <app-problem-alert [error]="error()" />
+      <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+        {{ (submitting() ? 'common.loading' : 'pricing.priceCheck.submit') | translate }}
+      </button>
+    </div>
+  </form>
+
+  @if (result(); as price) {
+    <div class="card mt-4" role="region" [attr.aria-label]="'pricing.priceCheck.result.title' | translate">
+      <div class="card-body">
+        <h2 class="h5 card-title">{{ 'pricing.priceCheck.result.title' | translate }}</h2>
+        <dl class="row mb-0">
+          <dt class="col-sm-4">{{ 'pricing.priceCheck.result.product' | translate }}</dt>
+          <dd class="col-sm-8">
+            @if (resultProduct(); as product) {
+              <span class="font-monospace me-2">{{ product.sku }}</span>{{ product.name }}
+            }
+          </dd>
+
+          <dt class="col-sm-4">{{ 'pricing.priceCheck.result.quantity' | translate }}</dt>
+          <dd class="col-sm-8 font-monospace">{{ price.quantity }}</dd>
+
+          <dt class="col-sm-4">{{ 'pricing.priceCheck.result.unitPrice' | translate }}</dt>
+          <dd class="col-sm-8 font-monospace fw-semibold">{{ money(price.unitPrice) }}</dd>
+
+          <dt class="col-sm-4">{{ 'pricing.priceCheck.result.source' | translate }}</dt>
+          <dd class="col-sm-8">{{ 'pricing.source.' + price.source | translate }}</dd>
+
+          <dt class="col-sm-4">{{ 'pricing.priceCheck.result.priceList' | translate }}</dt>
+          <dd class="col-sm-8">
+            @if (price.priceListId === null) {
+              {{ 'pricing.priceCheck.result.noPriceList' | translate }}
+            } @else {
+              {{ priceListName(price.priceListId) }}
+            }
+          </dd>
+
+          <dt class="col-sm-4">{{ 'pricing.priceCheck.result.taxCode' | translate }}</dt>
+          <dd class="col-sm-8">
+            <span class="font-monospace me-2">{{ price.taxCode }}</span>
+            <span class="text-body-secondary">{{ formatAmount(price.taxRate) }}%</span>
+          </dd>
+
+          <dt class="col-sm-4">{{ 'pricing.priceCheck.result.taxableBase' | translate }}</dt>
+          <dd class="col-sm-8 font-monospace">{{ money(price.taxableBase) }}</dd>
+
+          <dt class="col-sm-4">{{ 'pricing.priceCheck.result.taxAmount' | translate }}</dt>
+          <dd class="col-sm-8 font-monospace">{{ money(price.taxAmount) }}</dd>
+
+          <dt class="col-sm-4">{{ 'pricing.priceCheck.result.date' | translate }}</dt>
+          <dd class="col-sm-8 font-monospace">{{ price.date }}</dd>
+        </dl>
+        <p class="small text-body-secondary mt-3 mb-0">{{ 'pricing.priceCheck.result.note' | translate }}</p>
+      </div>
+    </div>
+  }
+}
