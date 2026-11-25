@@ -39,6 +39,8 @@ export interface SaleLineRequest {
   readonly discountType: DiscountType | null;
   readonly discountValue: string | null;
   readonly unitPrice?: number | null;
+  /** Seriales de un producto que controla seriales; uno por unidad. */
+  readonly serialNumbers?: readonly string[];
 }
 
 /**
@@ -109,6 +111,10 @@ export interface SaleLineView {
   readonly returnedQuantity: number;
   /** En una devolución, la línea de la venta original que se devuelve; null en una venta. */
   readonly originalLineId: number | null;
+  /** Seriales vendidos en esta línea (vacío si el producto no controla seriales). */
+  readonly serialNumbers: readonly string[];
+  /** Seriales de esta línea que ya volvieron en devoluciones. */
+  readonly returnedSerialNumbers: readonly string[];
 }
 
 /** Totales de una venta (record SaleTotalsView). exento + gravado 15 % + gravado 18 % + otros gravados + ISV = total. */
@@ -240,6 +246,8 @@ export interface TicketLine {
   readonly unitPrice: number;
   readonly discount: number;
   readonly total: number;
+  /** Seriales de la línea, si el producto los controla. */
+  readonly serialNumbers?: readonly string[];
 }
 
 /** Datos de la empresa en el ticket (record TicketCompany). */
@@ -301,6 +309,8 @@ export interface SaleFilters {
 export interface ReturnLineRequest {
   readonly saleLineId: number;
   readonly quantity: string;
+  /** Seriales que vuelven; deben ser los de la línea no devueltos aún, y su número es la cantidad. */
+  readonly serialNumbers?: readonly string[];
 }
 
 /** Lo que una venta cobrada puede devolver (record ReturnableView). Las cantidades y montos vienen como número. */
@@ -321,6 +331,12 @@ export interface ReturnableLineView {
   readonly returnableQuantity: number;
   readonly netTotal: number;
   readonly refundedAmount: number;
+  /** Verdadero si el producto controla seriales: la devolución elige cuáles vuelven. */
+  readonly tracksSerials: boolean;
+  /** Seriales vendidos en la línea. */
+  readonly serialNumbers: readonly string[];
+  /** Seriales de la línea que todavía se pueden devolver. */
+  readonly returnableSerialNumbers: readonly string[];
 }
 
 /**

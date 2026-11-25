@@ -93,6 +93,16 @@ export interface InventoryDocumentLineRequest {
   readonly quantity: string | null;
   readonly countedQuantity: string | null;
   readonly unitCost: string | null;
+  /** Seriales de un producto que controla seriales: entrada (nuevos), salida (a retirar) o ajuste (presentes). */
+  readonly serialNumbers?: readonly string[] | null;
+}
+
+/** Existencia de un producto en la sucursal, para la búsqueda y la orden (record InventoryAvailabilityView). */
+export interface InventoryAvailabilityView {
+  readonly productId: number;
+  readonly tracksInventory: boolean;
+  readonly quantity: number;
+  readonly allowNegativeStock: boolean;
 }
 
 /** Body de POST /api/v1/inventory/documents. En una tienda, branchId se ignora. */
@@ -199,6 +209,15 @@ export class InventoryApi {
       params = params.set('to', filters.to);
     }
     return this.http.get<Page<InventoryDocumentView>>('/api/v1/inventory/documents', { params });
+  }
+
+  /** Existencias de hasta 100 productos en una sucursal (en la tienda, la suya). Responde en el mismo orden que pidió. */
+  availability(productIds: readonly number[], branchId: number | null = null): Observable<readonly InventoryAvailabilityView[]> {
+    let params = new HttpParams().set('productIds', productIds.join(','));
+    if (branchId !== null) {
+      params = params.set('branchId', branchId);
+    }
+    return this.http.get<readonly InventoryAvailabilityView[]>('/api/v1/inventory/availability', { params });
   }
 
   document(id: number): Observable<InventoryDocumentView> {
