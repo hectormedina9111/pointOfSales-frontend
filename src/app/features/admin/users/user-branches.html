@@ -1,0 +1,38 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{{ 'admin.users.branches.title' | translate: { username: user.username } }}</h2>
+  <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <p class="small text-body-secondary">{{ 'admin.users.branches.intro' | translate }}</p>
+  <app-problem-alert [error]="loadError()" />
+  <app-problem-alert [error]="saveError()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary mb-0">{{ 'common.loading' | translate }}</p>
+  } @else if (branches().length === 0) {
+    <div class="alert alert-warning mb-0" role="status">{{ 'admin.users.branches.none' | translate }}</div>
+  } @else {
+    @for (branch of branches(); track branch.id) {
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'branch-' + branch.id"
+          [checked]="isSelected(branch.id)" (change)="toggle(branch.id, checkedValue($event))" />
+        <label class="form-check-label" [for]="'branch-' + branch.id">
+          {{ branch.code }} - {{ branch.name }}
+          @if (!branch.active) {
+            <span class="badge text-bg-secondary ms-1">{{ 'common.inactive' | translate }}</span>
+          }
+        </label>
+      </div>
+    }
+  }
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+    {{ 'common.cancel' | translate }}
+  </button>
+  <button type="button" class="btn btn-primary" [disabled]="loading() || submitting()" (click)="save()">
+    {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+  </button>
+</div>

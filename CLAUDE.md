@@ -46,7 +46,7 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
 
 ## Forma de trabajo
 
-- Alcance actual: **paso 2 (sesión y menú)** del MVP del frontend. No implementar pantallas fuera del paso en curso.
+- Alcance actual: **MVP del frontend** (pasos 1 a 7 del plan). Se trabaja paso por paso; no implementar pantallas fuera del MVP.
 - Cambios pequeños y enfocados; un commit por paso lógico.
 - Si una decisión no está en el plan o lo contradice, preguntar antes de implementarla y, una vez decidida, actualizar `docs/plan.md` del backend.
 

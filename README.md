@@ -14,6 +14,16 @@ El plan completo está en `docs/plan.md` del backend, sección "MVP del frontend
 - Menú lateral generado a partir de los menús que el backend entrega al usuario. Las rutas que aún no tienen pantalla muestran un aviso provisional.
 - Contenedor Docker con nginx que solo sirve la web.
 
+## Administración (paso 3)
+
+Pantallas de administración. Cada botón solo aparece si el usuario tiene su privilegio, y los de escritura solo en la central.
+
+- **Usuarios** (`Administración > Usuarios`): listado paginado con alta, edición, sucursales asignadas y restablecimiento de contraseña. La contraseña inicial es obligatoria al dar de alta; el usuario debe cambiarla en su primer ingreso.
+- **Roles y privilegios** (`Administración > Roles y privilegios`): alta y edición de roles, y asignación de privilegios agrupados por tipo (API, menús y acciones) y por módulo. Cambiar los privilegios de un rol afecta a todos sus usuarios, por eso se pide confirmación.
+- **Sucursales:** el diálogo de sucursales de un usuario solo muestra las sucursales que ve quien administra. Si no aparece ninguna, cree las sucursales y asígnelas primero a su propio usuario.
+- En una tienda, las pantallas de administración solo muestran los datos: las escrituras se ocultan y, si se intentan, el backend responde `READ_ONLY_NODE`.
+- En pantallas pequeñas, el menú lateral se abre con el botón de la barra superior.
+
 ## Iniciar sesión
 
 - **Local (máquina virtual):** entre con el usuario `admin` y la contraseña `Admin.Local.2026`. Es la contraseña de desarrollo de `.env.example` del backend. El sistema obliga a cambiarla en el primer ingreso, en la **central**.

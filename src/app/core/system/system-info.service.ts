@@ -40,6 +40,15 @@ export class SystemInfoService {
       : this.translation.translate('node.store', { number: nodeNumber });
   });
 
+  /**
+   * Verdadero solo en la central, donde se escribe. Mientras no hay datos del nodo vale false,
+   * así que los botones de escritura no aparecen antes de saber en qué nodo se está.
+   */
+  readonly isCentral = computed(() => {
+    const current = this.stateSignal();
+    return current.status === 'ready' && current.info.nodeRole === 'CENTRAL';
+  });
+
   private requestId = 0;
 
   constructor() {

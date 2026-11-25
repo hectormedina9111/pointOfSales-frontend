@@ -1,0 +1,17 @@
+@if (options; as item) {
+  <div class="modal-header">
+    <h2 class="modal-title h5">{{ item.titleKey | translate }}</h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p class="mb-0">{{ item.messageKey | translate: item.messageParams }}</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary" (click)="activeModal.close(true)">
+      {{ (item.confirmKey ?? 'common.confirm') | translate }}
+    </button>
+  </div>
+}
