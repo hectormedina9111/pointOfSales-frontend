@@ -33,6 +33,8 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
   - Reutilizar `app-stepper` + `app-step` (`src/app/shared/components/stepper`), solo con Bootstrap. Cada `app-step` recibe `labelKey` y `[controls]`; el asistente emite `finish` solo si todos los pasos son válidos.
   - Reutilizar `app-field-label` (`src/app/shared/components/field-label`) para la etiqueta de todo campo nuevo: `<app-field-label targetId="id-del-control" [required]="true">{{ 'clave' | translate }}</app-field-label>`. Muestra el `*` rojo y el texto "obligatorio" para lectores de pantalla.
 - La lógica de negocio no va en las plantillas: si una pantalla necesita decidir algo, eso se calcula en el componente o en un servicio.
+- **Listados siempre paginados en el servidor:** filtros, orden y paginación se envían al backend (`page`, `size`, `sort` y los filtros); nunca se filtra, ordena ni pagina en el navegador. Los filtros de un listado viven en los parámetros de la URL.
+- **Pocas ventanas emergentes:** las consultas y los detalles son páginas con su propia ruta, no diálogos. Un diálogo solo se usa cuando es necesario: confirmar una acción, pedir una autorización o un formulario corto dentro de un flujo.
 
 ## API del backend
 
