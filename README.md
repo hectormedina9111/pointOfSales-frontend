@@ -18,7 +18,7 @@ El plan completo está en `docs/plan.md` del backend, sección "MVP del frontend
 
 Pantallas de administración. Cada botón solo aparece si el usuario tiene su privilegio, y los de escritura solo en la central.
 
-- **Usuarios** (`Administración > Usuarios`): listado paginado con alta, edición, sucursales asignadas y restablecimiento de contraseña. La contraseña inicial es obligatoria al dar de alta; el usuario debe cambiarla en su primer ingreso.
+- **Usuarios** (`Administración > Usuarios`): listado paginado con alta, edición, sucursales en las que puede iniciar sesión (`user_branch`) y restablecimiento de contraseña. La visibilidad de sucursales depende del nodo, no del usuario: las sucursales en las que un usuario puede iniciar sesión solo se eligen aquí. La contraseña inicial es obligatoria al dar de alta; el usuario debe cambiarla en su primer ingreso.
 - **Roles y privilegios** (`Administración > Roles y privilegios`): alta y edición de roles, y asignación de privilegios agrupados por tipo (API, menús y acciones) y por módulo. Cambiar los privilegios de un rol afecta a todos sus usuarios, por eso se pide confirmación.
 - **Sucursales:** el diálogo de sucursales de un usuario solo muestra las sucursales que ve quien administra. Si no aparece ninguna, cree las sucursales y asígnelas primero a su propio usuario.
 - En una tienda, las pantallas de administración solo muestran los datos: las escrituras se ocultan y, si se intentan, el backend responde `READ_ONLY_NODE`.
@@ -30,7 +30,7 @@ Pantallas de datos maestros. La central escribe; en una tienda las pantallas sol
 
 - **Países** (`Organización > Países`): listado paginado con alta y edición. Incluye el proveedor de facturación fiscal (`HN_SAR` o `NONE`).
 - **Empresa** (`Organización > Empresa`): un solo formulario. Mientras la empresa no esté configurada, el formulario aparece vacío con un aviso; se guarda con `PUT /company`.
-- **Sucursales** (`Organización > Sucursales`): listado de las sucursales asignadas al usuario, con alta y edición. Una sucursal nueva no aparece hasta asignarla a su usuario en `Administración > Usuarios`. Permite elegir país y lista de precios por defecto (opcional).
+- **Sucursales** (`Organización > Sucursales`): en la central, listado de todas las sucursales, con alta y edición. En una tienda, solo aparece la sucursal que le asignó la central. Permite elegir país y lista de precios por defecto (opcional).
 - **Unidades de medida** (`Catálogo > Unidades de medida`): listado paginado con alta y edición. Indica si la unidad admite decimales.
 - **Impuestos** (`Catálogo > Impuestos`): listado filtrado por país, con alta y edición. El país se elige al crear y no cambia después. La tasa va de 0 a 100 con hasta 2 decimales.
 - **Categorías** (`Catálogo > Categorías`): vista de árbol. El padre no puede ser la propia categoría ni una de sus subcategorías. Desactivar pide confirmación.
@@ -51,6 +51,36 @@ Pantallas de precios. Los botones de cambio solo aparecen en la central y con su
 Ejemplo de cálculo: un producto cuesta L 115.00 con ISV del 15 %. Como el precio incluye el impuesto, la base gravable se calcula hacia atrás: base = 115.00 / 1.15 = **100.00**, y el ISV = 115.00 - 100.00 = **15.00**.
 
 El selector de productos espera 300 ms al escribir y solo muestra productos activos, porque un producto inactivo no tiene precio. La cantidad y los montos viajan como texto y la web no hace cálculos con ellos: el precio lo resuelve el backend.
+
+## Tiendas, sincronización y auditoría (paso 6)
+
+- **Tiendas > Nodos** (solo en la central): una tarjeta por tienda, con su número, sucursal, estado (Activa, Desincronizada, Revocada o Pendiente), conexión, último latido, versiones, cambios pendientes y rango de ids. Se actualiza sola cada 5 segundos mientras la pestaña está visible; el interruptor **Actualizar automáticamente** la pausa. Desde la tarjeta: **Código de activación** (se muestra una sola vez, con botón para copiarlo) y **Revocar** (pide confirmación). **Registrar tienda** da de alta una tienda, con sucursal opcional.
+- **Asignar sucursal** (en la tarjeta, solo en la central y con su privilegio): cambia o quita la sucursal de una tienda; una tienda sin sucursal aparece con la etiqueta **Sin sucursal**, y conviene asignarle una para que solo entren los usuarios de esa sucursal.
+- **Tiendas > Estado de sincronización** (en una tienda): versión aplicada, última sincronización y último error. En la central solo enlaza al panel.
+- **Auditoría**: bitácora paginada, de la más reciente a la más antigua, con filtros por entidad, id y fechas (en hora local). Cada fila se abre para comparar los valores antes y después; los campos que cambiaron aparecen resaltados.
+- **Inicio**: en la central, un widget con las tiendas; en una tienda, el resumen de sincronización.
+
+### Ver la réplica
+
+Con el entorno levantado (`vagrant up`), las tiendas se activan solas. Estos pasos muestran cómo llega a las tiendas un cambio hecho en la central.
+
+1. Abra la web de la central, `http://192.168.56.10`, e inicie sesión.
+2. Vaya a **Tiendas > Nodos**. Compruebe que la tienda 1 y la tienda 2 aparecen como **Activa**, con los cambios pendientes en 0.
+3. Abra la web de la tienda 1, `http://192.168.56.11`, en otra ventana del navegador, de modo que pueda ver a la vez el panel de la central.
+4. En la central, cambie el precio de un producto: **Precios > Listas de precios**, entre con **Precios** en una lista de precio fijo, cambie el precio del producto y guarde.
+5. Vuelva al panel. En la tarjeta de la tienda 1, los **cambios pendientes** suben y bajan a 0 en unos 30 segundos. Cuando llegan a 0, la tarjeta se resalta durante dos segundos.
+6. En la ventana de la tienda 1, vaya a **Precios > Consulta de precio**, elija el producto y compruebe que aparece el precio nuevo. En **Tiendas > Estado de sincronización**, la última versión aplicada coincide con la versión de la central.
+7. Opcional: en **Auditoría**, filtre por la entidad de precios de lista para ver el cambio con sus valores antes y después.
+
+Prueba de corte (dentro de la máquina virtual, `vagrant ssh`, en la carpeta `/vagrant` del repositorio del backend):
+
+1. Ejecute `scripts/simulate-outage.sh store2 down`. La tienda 2 pierde la conexión con la central, pero sigue funcionando con sus datos.
+2. Cambie otro precio en la central, como en el paso 4.
+3. En el panel, los cambios pendientes de la tienda 1 bajan a 0. Los de la tienda 2 suben, y tras unos dos minutos sin latido la tienda aparece como **Desincronizada**, con conexión **Sin conexión**.
+4. En la web de la tienda 2, `http://192.168.56.12`, **Consulta de precio** sigue mostrando el precio anterior.
+5. Ejecute `scripts/simulate-outage.sh store2 up`. En el siguiente ciclo de sincronización la tienda 2 aplica el cambio: sus pendientes bajan a 0, su tarjeta se resalta y vuelve a **Activa**.
+
+Notas: el panel deja de actualizarse mientras la pestaña está oculta y se pone al día al volver a mostrarla. El estado de una tienda sale de su último latido; una tienda sin latido durante dos minutos se muestra como desincronizada.
 
 ## Iniciar sesión
 

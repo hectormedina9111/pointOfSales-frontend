@@ -1,0 +1,35 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{{ 'stores.nodes.form.title' | translate }}</h2>
+  <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-body">
+    <p class="small text-body-secondary">{{ 'stores.nodes.form.intro' | translate }}</p>
+
+    <app-problem-alert [error]="lookupError()" />
+    <app-problem-alert [error]="error()" />
+
+    @if (lookupsLoading()) {
+      <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+    } @else {
+      <label class="form-label" for="store-branch">{{ 'stores.nodes.form.branch' | translate }}</label>
+      <select id="store-branch" class="form-select" formControlName="branchId">
+        <option [ngValue]="null">{{ 'stores.nodes.noBranch' | translate }}</option>
+        @for (branch of branches(); track branch.id) {
+          <option [ngValue]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+        }
+      </select>
+      <div class="form-text">{{ 'stores.nodes.form.branchHint' | translate }}</div>
+    }
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="lookupsLoading() || submitting()">
+      {{ 'stores.nodes.form.submit' | translate }}
+    </button>
+  </div>
+</form>

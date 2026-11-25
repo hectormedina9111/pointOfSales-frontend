@@ -1,0 +1,80 @@
+<div class="mb-3">
+  <h1 class="h3 mb-1">{{ 'stores.sync.title' | translate }}</h1>
+  <p class="text-body-secondary mb-0">{{ 'stores.sync.intro' | translate }}</p>
+</div>
+
+<app-problem-alert [error]="error()" />
+
+@if (status(); as view) {
+  @if (view.node === 'CENTRAL') {
+    <div class="alert alert-info" role="note">
+      <p class="mb-2">{{ 'stores.sync.centralNotice' | translate }}</p>
+      <a class="btn btn-sm btn-outline-primary" routerLink="/stores/nodes">{{ 'stores.sync.goToPanel' | translate }}</a>
+    </div>
+  } @else {
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div class="form-check form-switch mb-0">
+        <input id="sync-auto-refresh" class="form-check-input" type="checkbox" role="switch"
+          [checked]="autoRefreshOn()" (change)="toggleAutoRefresh($event)" />
+        <label class="form-check-label" for="sync-auto-refresh">{{ 'stores.nodes.autoRefresh' | translate }}</label>
+      </div>
+      <span class="small text-body-secondary" aria-live="polite">
+        {{ 'stores.nodes.lastUpdate' | translate }} {{ lastUpdated() | localDateTime }}
+      </span>
+    </div>
+
+    @if (!view.activated) {
+      <div class="alert alert-warning" role="note">{{ 'stores.sync.notActivated' | translate }}</div>
+    }
+
+    <div class="card">
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4">{{ 'stores.sync.field.activated' | translate }}</dt>
+          <dd class="col-sm-8">{{ (view.activated ? 'common.yes' : 'common.no') | translate }}</dd>
+
+          <dt class="col-sm-4">{{ 'stores.sync.field.nodeNumber' | translate }}</dt>
+          <dd class="col-sm-8">{{ view.nodeNumber ?? '—' }}</dd>
+
+          <dt class="col-sm-4">{{ 'stores.nodes.field.branch' | translate }}</dt>
+          <dd class="col-sm-8">{{ branchLabel(view.branchId) ?? ('stores.nodes.noBranch' | translate) }}</dd>
+
+          <dt class="col-sm-4">{{ 'stores.nodes.field.idRange' | translate }}</dt>
+          <dd class="col-sm-8 font-monospace">
+            @if (view.idRangeStart !== null && view.idRangeEnd !== null) {
+              {{ view.idRangeStart }} – {{ view.idRangeEnd }}
+            } @else {
+              —
+            }
+          </dd>
+
+          <dt class="col-sm-4">{{ 'stores.sync.field.centralUrl' | translate }}</dt>
+          <dd class="col-sm-8 text-break">{{ view.centralUrl ?? '—' }}</dd>
+
+          <dt class="col-sm-4">{{ 'stores.sync.field.lastApplied' | translate }}</dt>
+          <dd class="col-sm-8 fw-semibold">{{ view.lastAppliedVersion ?? '—' }}</dd>
+
+          <dt class="col-sm-4">{{ 'stores.sync.field.snapshot' | translate }}</dt>
+          <dd class="col-sm-8">{{ view.snapshotCompletedAt ? (view.snapshotCompletedAt | localDateTime) : '—' }}</dd>
+
+          <dt class="col-sm-4">{{ 'stores.sync.field.lastSync' | translate }}</dt>
+          <dd class="col-sm-8 mb-0">
+            <span [title]="view.lastSyncAt ?? ''">{{ view.lastSyncAt | relativeTime }}</span>
+            @if (view.lastSyncAt) {
+              <span class="small text-body-secondary"> ({{ view.lastSyncAt | localDateTime }})</span>
+            }
+          </dd>
+        </dl>
+      </div>
+    </div>
+
+    @if (view.lastSyncError; as message) {
+      <div class="alert alert-danger mt-3" role="alert">
+        <p class="fw-semibold mb-1">{{ 'stores.sync.lastError' | translate }}</p>
+        <p class="mb-0 text-break">{{ message }}</p>
+      </div>
+    }
+  }
+} @else if (!error()) {
+  <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+}

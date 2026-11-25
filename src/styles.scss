@@ -8,3 +8,23 @@
   padding-left: vars.$pos-side-gutter;
   padding-right: vars.$pos-side-gutter;
 }
+
+// Resalta dos segundos una tienda cuyos cambios pendientes acaban de llegar a cero (CaughtUpTracker).
+.pos-caught-up {
+  animation: pos-caught-up 2s ease-out;
+}
+
+@keyframes pos-caught-up {
+  from {
+    box-shadow: 0 0 0 0.35rem rgba(var(--bs-success-rgb), 0.7);
+  }
+  to {
+    box-shadow: 0 0 0 0 rgba(var(--bs-success-rgb), 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pos-caught-up {
+    animation: none;
+  }
+}

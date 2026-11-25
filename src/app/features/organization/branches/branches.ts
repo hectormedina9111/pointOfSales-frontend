@@ -13,8 +13,8 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { BranchFormComponent } from './branch-form';
 
 /**
- * Listado de sucursales con alta y edición. El backend solo devuelve las sucursales asignadas
- * al usuario, así que una sucursal nueva no aparece hasta asignarla a ese usuario.
+ * Listado de sucursales con alta y edición. La central ve todas las sucursales; una tienda solo ve
+ * la que le asignó la central, y por eso muestra un aviso.
  */
 @Component({
   selector: 'app-branches',
@@ -28,7 +28,9 @@ export class BranchesComponent implements OnInit {
   private readonly modal = inject(NgbModal);
 
   /** Solo la central escribe: en una tienda no aparece ningún botón de cambio. */
-  protected readonly isCentral = inject(SystemInfoService).isCentral;
+  private readonly systemInfo = inject(SystemInfoService);
+  protected readonly isCentral = this.systemInfo.isCentral;
+  protected readonly isStore = this.systemInfo.isStore;
   protected readonly branches = new PagedList<BranchView>((request) => this.api.list(request), 'code');
   protected readonly countries = signal<readonly CountryView[]>([]);
   protected readonly countryNames = computed(

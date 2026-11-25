@@ -10,7 +10,9 @@
   }
 </div>
 
-<div class="alert alert-info small" role="note">{{ 'organization.branches.assignHint' | translate }}</div>
+@if (isStore()) {
+  <div class="alert alert-info small" role="note">{{ 'organization.branches.storeHint' | translate }}</div>
+}
 
 @if (notice(); as key) {
   <div class="alert alert-success alert-dismissible" role="status">

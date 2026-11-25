@@ -2,11 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 
 import { AppConfigService } from '../../core/config/app-config.service';
 import { SystemInfoService } from '../../core/system/system-info.service';
+import { IfPrivilegeDirective } from '../../shared/directives/if-privilege.directive';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { StoresWidgetComponent } from './stores-widget';
+import { SyncSummaryWidgetComponent } from './sync-summary-widget';
 
 @Component({
   selector: 'app-home',
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, IfPrivilegeDirective, StoresWidgetComponent, SyncSummaryWidgetComponent],
   templateUrl: './home.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -19,6 +22,9 @@ export class HomeComponent {
     const state = this.systemInfo.state();
     return state.status === 'ready' ? state.info : null;
   });
+  /** Según el nodo, el inicio muestra el widget de tiendas (central) o el resumen de sincronización (tienda). */
+  protected readonly isCentral = computed(() => this.info()?.nodeRole === 'CENTRAL');
+  protected readonly isStore = computed(() => this.info()?.nodeRole === 'STORE');
   protected readonly loading = computed(() => this.systemInfo.state().status === 'loading');
   protected readonly failed = computed(() => this.systemInfo.state().status === 'error');
   protected readonly errorDetail = computed(() => {

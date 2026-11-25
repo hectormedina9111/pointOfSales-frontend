@@ -2,12 +2,11 @@ import { Routes } from '@angular/router';
 
 import { authGuard } from './core/auth/auth.guard';
 
-/** Rutas del menú que todavía son provisionales. Cada paso las reemplaza por su pantalla. */
-const PLACEHOLDER_ROUTES: readonly { readonly path: string; readonly menuCode: string }[] = [
-  { path: 'stores/nodes', menuCode: 'MENU_STORES_NODES' },
-  { path: 'stores/sync-status', menuCode: 'MENU_STORES_SYNC_STATUS' },
-  { path: 'audit', menuCode: 'MENU_AUDIT' },
-];
+/**
+ * Rutas del menú que todavía son provisionales. Ahora no queda ninguna: cada paso nuevo que tenga
+ * menú sin pantalla la añade aquí hasta que se construya.
+ */
+const PLACEHOLDER_ROUTES: readonly { readonly path: string; readonly menuCode: string }[] = [];
 
 export const routes: Routes = [
   {
@@ -95,6 +94,22 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/pricing/price-check/price-check').then((module) => module.PriceCheckComponent),
+  },
+  {
+    path: 'stores/nodes',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/stores/nodes/store-nodes').then((module) => module.StoreNodesComponent),
+  },
+  {
+    path: 'stores/sync-status',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/stores/sync-status/sync-status').then((module) => module.SyncStatusComponent),
+  },
+  {
+    path: 'audit',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/audit/audit-log').then((module) => module.AuditLogComponent),
   },
   ...PLACEHOLDER_ROUTES.map(({ path, menuCode }) => ({
     path,

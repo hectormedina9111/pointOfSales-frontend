@@ -31,8 +31,8 @@ export interface BranchRequest {
 }
 
 /**
- * Llamadas a /api/v1/branches. El listado solo devuelve las sucursales asignadas al usuario que
- * ha iniciado sesión: una sucursal nueva no aparece hasta asignarla a ese usuario.
+ * Llamadas a /api/v1/branches. La central devuelve todas las sucursales; una tienda solo devuelve
+ * la que le asignó la central.
  */
 @Injectable({ providedIn: 'root' })
 export class BranchesApi {

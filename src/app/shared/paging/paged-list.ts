@@ -29,12 +29,18 @@ export class PagedList<T> {
 
   /**
    * @param loader llamada a la API para una página.
-   * @param sort orden por defecto, por ejemplo "username".
+   * @param sort orden por defecto, por ejemplo "username" o "occurredAt,desc".
+   * @param pageSize filas por página al abrir el listado (por defecto, DEFAULT_PAGE_SIZE).
    */
   constructor(
     private readonly loader: (request: PageRequest) => Observable<Page<T>>,
     private readonly sort?: string,
-  ) {}
+    pageSize?: number,
+  ) {
+    if (pageSize !== undefined) {
+      this.sizeSignal.set(pageSize);
+    }
+  }
 
   load(): void {
     const id = ++this.requestId;
@@ -67,6 +73,12 @@ export class PagedList<T> {
 
   setSize(size: number): void {
     this.sizeSignal.set(size);
+    this.pageSignal.set(0);
+    this.load();
+  }
+
+  /** Vuelve a la primera página y carga; se usa al cambiar los filtros. */
+  restart(): void {
     this.pageSignal.set(0);
     this.load();
   }
