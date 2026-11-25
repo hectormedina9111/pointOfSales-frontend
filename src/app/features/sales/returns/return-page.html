@@ -3,7 +3,7 @@
     <h1 class="h3 mb-1">{{ 'sales.return.title' | translate }}</h1>
     <p class="text-body-secondary mb-0">{{ 'sales.return.intro' | translate }}</p>
   </div>
-  <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ 'sales.return.back' | translate }}</button>
+  <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ backLabelKey() | translate }}</button>
 </div>
 
 @if (invalidId()) {
@@ -14,6 +14,11 @@
   <app-problem-alert [error]="loadError()" />
 
   @if (store.returnable(); as returnable) {
+    @if (returnable.foreign) {
+      <div class="alert alert-info" role="status" data-testid="foreign-return-banner">
+        {{ 'sales.return.foreign.banner' | translate: { branch: returnable.branchName } }}
+      </div>
+    }
     @if (store.hasReturnable()) {
       <div class="card">
         <div class="card-body">

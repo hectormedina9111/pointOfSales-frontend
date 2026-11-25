@@ -1156,5 +1156,15 @@
   "creditNotes.uses.status.CONFIRMED": "Confirmado",
   "creditNotes.uses.status.RELEASED": "Liberado",
   "creditNotes.uses.openSale": "Ver venta",
-  "creditNotes.uses.unknownStore": "Tienda (id {id})"
+  "creditNotes.uses.unknownStore": "Tienda (id {id})",
+  "sales.list.returnByReceipt": "Devolver por recibo",
+  "sales.returnLookup.title": "Devolver por recibo",
+  "sales.returnLookup.intro": "Busque una venta hecha en otra sucursal por su número de recibo. Necesita conexión con la central.",
+  "sales.returnLookup.receipt": "Número de recibo",
+  "sales.returnLookup.search": "Buscar venta",
+  "sales.returnLookup.notFound": "No hay ninguna venta con ese número de recibo.",
+  "sales.returnLookup.back": "Volver a las ventas",
+  "sales.return.backToLookup": "Volver a la búsqueda",
+  "sales.return.foreign.banner": "Esta venta se hizo en {branch}, otra sucursal. La devolución se registra aquí y la central aparta las cantidades devueltas.",
+  "error.FOREIGN_RETURNS_DISABLED": "Esta sucursal no acepta devoluciones de ventas de otras sucursales."
 }

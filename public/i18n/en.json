@@ -1156,5 +1156,15 @@
   "creditNotes.uses.status.CONFIRMED": "Confirmed",
   "creditNotes.uses.status.RELEASED": "Released",
   "creditNotes.uses.openSale": "Open sale",
-  "creditNotes.uses.unknownStore": "Store (id {id})"
+  "creditNotes.uses.unknownStore": "Store (id {id})",
+  "sales.list.returnByReceipt": "Return by receipt",
+  "sales.returnLookup.title": "Return by receipt",
+  "sales.returnLookup.intro": "Find a sale made in another branch by its receipt number. This needs a connection to the central node.",
+  "sales.returnLookup.receipt": "Receipt number",
+  "sales.returnLookup.search": "Search sale",
+  "sales.returnLookup.notFound": "No sale has that receipt number.",
+  "sales.returnLookup.back": "Back to orders",
+  "sales.return.backToLookup": "Back to search",
+  "sales.return.foreign.banner": "This sale was made in {branch}, another branch. The return is recorded here and the central node reserves the returned quantities.",
+  "error.FOREIGN_RETURNS_DISABLED": "This branch does not accept returns of sales made in other branches."
 }
