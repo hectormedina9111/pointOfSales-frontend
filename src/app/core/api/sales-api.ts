@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { CustomerDocumentType } from './customers-api';
 import { Page, PageRequest, pageParams } from './page';
 
 /** Estado de una venta (enum SaleStatus del backend). ON_HOLD está en espera; PAID está cobrada. */
@@ -10,20 +11,36 @@ export type SaleStatus = 'ON_HOLD' | 'PAID';
 /** Forma de un descuento (enum DiscountType del backend): monto fijo o porcentaje. */
 export type DiscountType = 'AMOUNT' | 'PERCENTAGE';
 
-/** Línea de un borrador o de una venta (record LineRequest). La cantidad y el descuento viajan como texto. */
+/** Id del consumidor final (cliente único que no se edita). Una venta a su nombre no lleva datos de cliente. */
+export const FINAL_CONSUMER_ID = 1;
+
+/** Tipo de venta (enum OrderType del backend): al contado o a crédito. CREDIT todavía no se acepta. */
+export type OrderType = 'CASH' | 'CREDIT';
+
+/**
+ * Línea de un borrador o de una venta (record LineRequest). La cantidad y el descuento viajan como
+ * texto. unitPrice es el precio cambiado a mano; null (o sin valor) usa el precio de lista.
+ */
 export interface SaleLineRequest {
   readonly productId: number;
   readonly quantity: string;
   readonly discountType: DiscountType | null;
   readonly discountValue: string | null;
+  readonly unitPrice?: number | null;
 }
 
-/** Borrador de venta para cotizar o dejar en espera (record DraftRequest). */
+/**
+ * Borrador de venta para cotizar, guardar o actualizar (record DraftRequest). authorization solo
+ * va en el reintento de guardar, tras pedir la autorización de un jefe de tienda; nunca se guarda.
+ */
 export interface SaleDraftRequest {
+  readonly customerId: number | null;
+  readonly orderType: OrderType;
   readonly lines: readonly SaleLineRequest[];
   readonly discountType: DiscountType | null;
   readonly discountValue: string | null;
   readonly notes: string | null;
+  readonly authorization?: AuthorizationRequest | null;
 }
 
 /** Un pago de la venta (record PaymentRequest). amountReceived solo para métodos que dan vuelto. */
@@ -42,21 +59,20 @@ export interface AuthorizationRequest {
 }
 
 /**
- * Body de POST /api/v1/sales (record CheckoutRequest). holdId reanuda una venta en espera; la
- * clave de idempotencia hace que un reintento devuelva la misma venta.
+ * Body de POST /api/v1/sales/holds/{id}/checkout (record HoldCheckoutRequest). Cobra una venta en
+ * espera que ya no se puede modificar. La clave de idempotencia hace que un reintento devuelva la
+ * misma venta.
  */
-export interface CheckoutRequest {
-  readonly holdId: number | null;
-  readonly lines: readonly SaleLineRequest[];
-  readonly discountType: DiscountType | null;
-  readonly discountValue: string | null;
+export interface HoldCheckoutRequest {
   readonly payments: readonly PaymentRequest[];
   readonly idempotencyKey: string;
-  readonly authorization: AuthorizationRequest | null;
   readonly notes: string | null;
 }
 
-/** Línea calculada por el servidor (record SaleLineView). Los montos llegan como número con dos decimales. */
+/**
+ * Línea calculada por el servidor (record SaleLineView). Los montos llegan como número con dos
+ * decimales. listPrice es el precio de lista; priceOverridden indica que el precio se cambió a mano.
+ */
 export interface SaleLineView {
   readonly lineNumber: number;
   readonly productId: number;
@@ -64,6 +80,8 @@ export interface SaleLineView {
   readonly description: string;
   readonly quantity: number;
   readonly unitPrice: number;
+  readonly listPrice: number;
+  readonly priceOverridden: boolean;
   readonly taxCode: string;
   readonly taxRate: number;
   readonly priceListId: number | null;
@@ -87,6 +105,18 @@ export interface SaleTotalsView {
   readonly total: number;
 }
 
+/**
+ * Datos del cliente que trae cada venta (en SaleView, SaleSummaryView y TicketView). Para el
+ * consumidor final, customerId es FINAL_CONSUMER_ID y los demás datos vienen vacíos.
+ */
+export interface SaleCustomerFields {
+  readonly customerId: number;
+  readonly customerName: string;
+  readonly customerDocumentType: CustomerDocumentType;
+  readonly customerDocumentNumber: string | null;
+  readonly orderType: OrderType;
+}
+
 /** Pago de una venta (record PaymentView). cardLast4 son solo los cuatro últimos dígitos. */
 export interface PaymentView {
   readonly paymentMethodCode: string;
@@ -98,7 +128,7 @@ export interface PaymentView {
 }
 
 /** Venta completa con líneas y pagos (record SaleView). */
-export interface SaleView {
+export interface SaleView extends SaleCustomerFields {
   readonly id: number;
   readonly internalNumber: number | null;
   readonly receiptNumber: string | null;
@@ -129,7 +159,7 @@ export interface SaleView {
  * Venta sin líneas ni pagos, como sale en el listado (record SaleSummaryView). branchId es la
  * sucursal de la venta. El listado no trae pagos ni fecha de recepción; eso está en SaleView.
  */
-export interface SaleSummaryView {
+export interface SaleSummaryView extends SaleCustomerFields {
   readonly id: number;
   readonly internalNumber: number | null;
   readonly receiptNumber: string | null;
@@ -145,12 +175,14 @@ export interface SaleSummaryView {
 
 /**
  * Totales de un borrador (record SaleQuoteView). No se guardan. discountAuthorizationRequired es
- * verdadero cuando los descuentos superan el máximo y el usuario no puede darlos solo.
+ * verdadero cuando los descuentos superan el máximo y el usuario no puede darlos solo;
+ * priceAuthorizationRequired, cuando hay un precio cambiado que necesita un jefe de tienda.
  */
 export interface SaleQuoteView {
   readonly lines: readonly SaleLineView[];
   readonly totals: SaleTotalsView;
   readonly discountAuthorizationRequired: boolean;
+  readonly priceAuthorizationRequired: boolean;
 }
 
 /** Línea del ticket (record TicketLine). discount es el descuento de la línea, con su parte de la venta. */
@@ -179,7 +211,7 @@ export interface TicketBranch {
  * Ticket de una venta cobrada (record TicketView). date y time vienen en la zona horaria de la
  * empresa, indicada en timeZone.
  */
-export interface TicketView {
+export interface TicketView extends SaleCustomerFields {
   readonly company: TicketCompany;
   readonly branch: TicketBranch;
   readonly cashRegisterName: string;
@@ -221,8 +253,14 @@ export class SalesApi {
     return this.http.post<SaleQuoteView>('/api/v1/sales/quote', body);
   }
 
+  /** Guarda el borrador como venta en espera. */
   createHold(body: SaleDraftRequest): Observable<SaleView> {
     return this.http.post<SaleView>('/api/v1/sales/holds', body);
+  }
+
+  /** Reemplaza el contenido de una venta en espera por el borrador. */
+  updateHold(id: number, body: SaleDraftRequest): Observable<SaleView> {
+    return this.http.put<SaleView>(`/api/v1/sales/holds/${id}`, body);
   }
 
   listHolds(request: PageRequest): Observable<Page<SaleSummaryView>> {
@@ -237,9 +275,9 @@ export class SalesApi {
     return this.http.delete<void>(`/api/v1/sales/holds/${id}`);
   }
 
-  /** Cobra la venta. El servidor responde 201 si la crea o 200 si la clave de idempotencia ya la creó. */
-  checkout(body: CheckoutRequest): Observable<SaleView> {
-    return this.http.post<SaleView>('/api/v1/sales', body);
+  /** Cobra una venta en espera con sus pagos. Responde 201; con la misma clave de idempotencia, la misma venta. */
+  checkoutHold(id: number, body: HoldCheckoutRequest): Observable<SaleView> {
+    return this.http.post<SaleView>(`/api/v1/sales/holds/${id}/checkout`, body);
   }
 
   list(request: PageRequest, filters: SaleFilters): Observable<Page<SaleSummaryView>> {

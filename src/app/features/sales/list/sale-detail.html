@@ -12,6 +12,19 @@
     <dl class="row mb-4">
       <dt class="col-sm-4">{{ 'sales.list.column.receipt' | translate }}</dt>
       <dd class="col-sm-8 font-monospace">{{ item.receiptNumber ?? '—' }}</dd>
+      <dt class="col-sm-4">{{ 'sales.list.detail.customer' | translate }}</dt>
+      <dd class="col-sm-8">
+        @if (item.customerId === finalConsumerId) {
+          {{ 'customers.finalConsumer' | translate }}
+        } @else {
+          {{ item.customerName }}
+          @if (item.customerDocumentNumber) {
+            <span class="small text-body-secondary ms-1">{{ 'customers.documentType.' + item.customerDocumentType | translate }} {{ item.customerDocumentNumber }}</span>
+          }
+        }
+      </dd>
+      <dt class="col-sm-4">{{ 'sales.list.detail.orderType' | translate }}</dt>
+      <dd class="col-sm-8">{{ 'sales.order.type.' + item.orderType | translate }}</dd>
       <dt class="col-sm-4">{{ 'sales.list.column.status' | translate }}</dt>
       <dd class="col-sm-8">
         <span class="badge" [class.text-bg-success]="item.status === 'PAID'" [class.text-bg-warning]="item.status === 'ON_HOLD'">

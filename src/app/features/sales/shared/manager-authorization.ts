@@ -21,6 +21,9 @@ export class ManagerAuthorizationComponent {
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly activeModal = inject(NgbActiveModal);
 
+  /** Clave del texto que explica por qué se pide la autorización. Lo asigna quien abre el diálogo. */
+  introKey = 'sales.pos.authorization.intro';
+
   protected readonly isInvalid = isInvalidControl;
   protected readonly form = this.fb.group({
     username: this.fb.control('', [Validators.required, Validators.maxLength(50)]),

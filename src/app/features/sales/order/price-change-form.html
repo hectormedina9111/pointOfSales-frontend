@@ -1,0 +1,32 @@
+<form [formGroup]="form" novalidate (submit)="$event.preventDefault(); submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">{{ 'sales.order.price.title' | translate }}</h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <dl class="row mb-3">
+      <dt class="col-6 fw-normal">{{ 'sales.order.price.listPrice' | translate }}</dt>
+      <dd class="col-6 text-end font-monospace mb-0" data-testid="list-price">{{ listPriceText() }}</dd>
+    </dl>
+
+    <div class="mb-3">
+      <app-field-label targetId="order-unit-price" [required]="true">{{ 'sales.order.price.newPrice' | translate }}</app-field-label>
+      <input id="order-unit-price" type="text" inputmode="decimal" class="form-control font-monospace text-end" formControlName="unitPrice"
+        [class.is-invalid]="isInvalid(form.controls.unitPrice)" />
+      <app-field-error [control]="form.controls.unitPrice" invalidKey="sales.order.price.invalid" />
+    </div>
+
+    @if (!canOverride) {
+      <div class="alert alert-warning py-2 small mb-0" role="note">{{ 'sales.order.price.needsManager' | translate }}</div>
+    }
+  </div>
+
+  <div class="modal-footer justify-content-between">
+    @if (current !== null) {
+      <button type="button" class="btn btn-outline-danger me-auto" (click)="useListPrice()">{{ 'sales.order.price.useList' | translate }}</button>
+    }
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">{{ 'common.cancel' | translate }}</button>
+    <button type="submit" class="btn btn-primary">{{ 'common.save' | translate }}</button>
+  </div>
+</form>

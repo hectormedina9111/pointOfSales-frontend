@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map, catchError, of } from 'rxjs';
 
 import { CompanyApi } from '../../../core/api/company-api';
-import { SalesApi, TicketView } from '../../../core/api/sales-api';
+import { FINAL_CONSUMER_ID, SalesApi, TicketView } from '../../../core/api/sales-api';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { SystemInfoService } from '../../../core/system/system-info.service';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
@@ -28,6 +28,7 @@ export class SaleTicketComponent implements OnInit {
   private readonly language = inject(LanguageService);
   /** El punto de venta solo existe en las tiendas: la central no ofrece "Nueva venta". */
   protected readonly isStore = inject(SystemInfoService).isStore;
+  protected readonly finalConsumerId = FINAL_CONSUMER_ID;
 
   protected readonly loading = signal(true);
   protected readonly invalidId = signal(false);

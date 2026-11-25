@@ -17,6 +17,7 @@
         <thead>
           <tr>
             <th scope="col">{{ 'sales.pos.holds.column.createdAt' | translate }}</th>
+            <th scope="col">{{ 'sales.order.holds.column.customer' | translate }}</th>
             <th scope="col" class="text-end">{{ 'sales.pos.holds.column.total' | translate }}</th>
             <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
           </tr>
@@ -25,11 +26,19 @@
           @for (hold of holds.items(); track hold.id) {
             <tr>
               <td>{{ hold.createdAt | localDateTime }}</td>
+              <td>
+                @if (isFinalConsumer(hold)) {
+                  {{ 'customers.finalConsumer' | translate }}
+                } @else {
+                  {{ hold.customerName }}
+                }
+              </td>
               <td class="text-end font-monospace">{{ money(hold.total) }}</td>
               <td class="text-end text-nowrap">
-                <button type="button" class="btn btn-sm btn-primary me-1" [disabled]="busyId() !== null" (click)="resume(hold)">
-                  {{ 'sales.pos.holds.resume' | translate }}
-                </button>
+                <button *appIfPrivilege="'PUT_SALES_HOLDS_ID'" type="button" class="btn btn-sm btn-outline-primary me-1"
+                  [disabled]="busyId() !== null" (click)="edit(hold)">{{ 'common.edit' | translate }}</button>
+                <button *appIfPrivilege="'POST_SALES_HOLDS_ID_CHECKOUT'" type="button" class="btn btn-sm btn-primary me-1"
+                  [disabled]="busyId() !== null" (click)="charge(hold)">{{ 'sales.order.holds.charge' | translate }}</button>
                 <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="busyId() !== null" (click)="remove(hold)">
                   {{ (busyId() === hold.id ? 'common.saving' : 'common.delete') | translate }}
                 </button>

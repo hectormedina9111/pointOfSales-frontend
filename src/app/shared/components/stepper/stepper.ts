@@ -104,7 +104,8 @@ export class StepperComponent {
   /** Intro en un campo de texto avanza al siguiente paso. Nunca envía el formulario desde un campo. */
   protected onKeydown(event: KeyboardEvent): void {
     const target = event.target;
-    if (event.key !== 'Enter' || event.isComposing || !(target instanceof HTMLInputElement)) {
+    // Un campo que ya atendió la tecla (por ejemplo, la búsqueda de productos) no avanza el paso.
+    if (event.defaultPrevented || event.key !== 'Enter' || event.isComposing || !(target instanceof HTMLInputElement)) {
       return;
     }
     if (['checkbox', 'radio', 'button', 'submit', 'reset'].includes(target.type)) {

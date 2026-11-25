@@ -1,0 +1,65 @@
+@let s = sale();
+<div class="card h-100">
+  <div class="card-body">
+    <h2 class="h5 mb-3">{{ 'sales.checkout.review.title' | translate }}</h2>
+
+    <dl class="row mb-3">
+      <dt class="col-sm-4 fw-normal">{{ 'sales.order.summary.customer' | translate }}</dt>
+      <dd class="col-sm-8 mb-1" data-testid="review-customer">
+        @if (s.customerId === finalConsumerId) {
+          {{ 'customers.finalConsumer' | translate }}
+        } @else {
+          {{ s.customerName }}
+          @if (s.customerDocumentNumber) {
+            <span class="small text-body-secondary ms-1">{{ 'customers.documentType.' + s.customerDocumentType | translate }} {{ s.customerDocumentNumber }}</span>
+          }
+        }
+      </dd>
+      <dt class="col-sm-4 fw-normal">{{ 'sales.order.summary.orderType' | translate }}</dt>
+      <dd class="col-sm-8 mb-0">{{ 'sales.order.type.' + s.orderType | translate }}</dd>
+    </dl>
+
+    <div class="table-responsive mb-3">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'sales.pos.lines.description' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.pos.lines.quantity' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.pos.lines.unitPrice' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.pos.lines.discount' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.pos.lines.total' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of s.lines; track line.lineNumber) {
+            <tr>
+              <td>
+                {{ line.description }}
+                <div class="small font-monospace text-body-secondary">{{ line.sku }}</div>
+              </td>
+              <td class="text-end font-monospace">{{ line.quantity.toFixed(3) }}</td>
+              <td class="text-end">
+                <div class="font-monospace">{{ money(line.unitPrice) }}</div>
+                @if (line.priceOverridden) {
+                  <span class="badge text-bg-warning">{{ 'sales.order.products.listPrice' | translate }}: {{ money(line.listPrice) }}</span>
+                }
+              </td>
+              <td class="text-end font-monospace">{{ money(line.discountAmount) }}</td>
+              <td class="text-end font-monospace">{{ money(line.total) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (s.discountType !== null) {
+      <p class="small mb-3">
+        {{ 'sales.pos.saleDiscount.button' | translate }}:
+        {{ ('sales.pos.discount.type.' + s.discountType) | translate }} {{ s.discountType === 'PERCENTAGE' ? numeric(s.discountValue) + ' %' : money(numeric(s.discountValue)) }}
+      </p>
+    }
+
+    <app-sale-totals [totals]="s.totals" [currency]="currency()" />
+    <p class="small text-body-secondary mt-3 mb-0">{{ 'sales.checkout.review.readOnly' | translate }}</p>
+  </div>
+</div>
