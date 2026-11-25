@@ -18,6 +18,7 @@ import { LocalDateTimePipe } from '../../../shared/pipes/local-date-time.pipe';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { branchLabel } from '../../../shared/stores/branch-label';
 import { SaleTotalsComponent } from '../shared/sale-totals';
+import { saleStatusClass } from '../shared/sale-status';
 
 /** Destino del botón "Volver": el listado con los filtros con que el usuario llegó, o /sales. */
 const LIST_URL = /^\/sales(\?|$)/;
@@ -52,7 +53,7 @@ export class OrderDetailPageComponent implements OnInit {
   private readonly canViewAll = this.privileges.has('ACTION_SALES_VIEW_ALL');
 
   /** Listado al que vuelve el botón. El listado lo pasa en el estado de la navegación. */
-  private readonly backUrl = this.listUrlFromState();
+  protected readonly backUrl = this.listUrlFromState();
 
   protected readonly invalidId = signal(false);
   protected readonly loading = signal(true);
@@ -141,6 +142,21 @@ export class OrderDetailPageComponent implements OnInit {
 
   protected money(value: number | null): string {
     return formatMoney(value, this.currency(), this.language.current());
+  }
+
+  /** Clase del distintivo de estado. */
+  protected statusClass(sale: SaleView): string {
+    return saleStatusClass(sale.status);
+  }
+
+  /** Una venta cobrada (total o parcialmente devuelta) se devuelve desde una tienda. */
+  protected canReturn(sale: SaleView): boolean {
+    return !this.isCentral() && sale.type === 'SALE' && (sale.status === 'PAID' || sale.status === 'PARTIALLY_RETURNED');
+  }
+
+  /** Toda orden cobrada, venta o devolución, tiene ticket para reimprimir. */
+  protected canReprint(sale: SaleView): boolean {
+    return sale.status !== 'ON_HOLD';
   }
 
   protected branchName(branchId: number): string {

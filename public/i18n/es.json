@@ -877,6 +877,8 @@
   "sales.list.filter.clear": "Limpiar filtros",
   "sales.list.status.PAID": "Cobrada",
   "sales.list.status.ON_HOLD": "En espera",
+  "sales.list.status.PARTIALLY_RETURNED": "Devuelta en parte",
+  "sales.list.status.RETURNED": "Devuelta",
   "sales.list.ownOnlyHint": "Solo ve sus propias ventas.",
   "sales.list.count": "Órdenes encontradas: {count}",
   "sales.list.rangeInvalid": "La fecha inicial es posterior a la final.",
@@ -1038,5 +1040,18 @@
   "sales.ticket.customer": "Cliente",
   "sales.ticket.orderType": "Tipo de venta",
   "sales.list.detail.customer": "Cliente",
-  "sales.list.detail.orderType": "Tipo de venta"
+  "sales.list.detail.orderType": "Tipo de venta",
+  "sales.list.detail.returnedQuantity": "Devuelto",
+  "sales.list.detail.returnInfo": "Devolución",
+  "sales.list.detail.originalSale": "Venta original",
+  "sales.list.detail.reason": "Motivo",
+  "sales.list.detail.refundMethod": "Reembolso",
+  "sales.list.detail.creditNote": "Nota de crédito",
+  "sales.list.detail.returns": "Devoluciones de esta venta",
+  "sales.list.type.SALE": "Venta",
+  "sales.list.type.RETURN": "Devolución",
+  "sales.return.action": "Devolver",
+  "sales.return.method.CASH": "Efectivo",
+  "sales.return.method.ORIGINAL_METHOD": "Mismo método de pago",
+  "sales.return.method.CREDIT_NOTE": "Nota de crédito"
 }

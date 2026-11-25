@@ -877,6 +877,8 @@
   "sales.list.filter.clear": "Clear filters",
   "sales.list.status.PAID": "Paid",
   "sales.list.status.ON_HOLD": "On hold",
+  "sales.list.status.PARTIALLY_RETURNED": "Partially returned",
+  "sales.list.status.RETURNED": "Returned",
   "sales.list.ownOnlyHint": "You only see your own sales.",
   "sales.list.count": "Orders found: {count}",
   "sales.list.rangeInvalid": "The start date is after the end date.",
@@ -1038,5 +1040,18 @@
   "sales.ticket.customer": "Customer",
   "sales.ticket.orderType": "Order type",
   "sales.list.detail.customer": "Customer",
-  "sales.list.detail.orderType": "Order type"
+  "sales.list.detail.orderType": "Order type",
+  "sales.list.detail.returnedQuantity": "Returned",
+  "sales.list.detail.returnInfo": "Return",
+  "sales.list.detail.originalSale": "Original sale",
+  "sales.list.detail.reason": "Reason",
+  "sales.list.detail.refundMethod": "Refund",
+  "sales.list.detail.creditNote": "Credit note",
+  "sales.list.detail.returns": "Returns of this sale",
+  "sales.list.type.SALE": "Sale",
+  "sales.list.type.RETURN": "Return",
+  "sales.return.action": "Return",
+  "sales.return.method.CASH": "Cash",
+  "sales.return.method.ORIGINAL_METHOD": "Original payment method",
+  "sales.return.method.CREDIT_NOTE": "Credit note"
 }
