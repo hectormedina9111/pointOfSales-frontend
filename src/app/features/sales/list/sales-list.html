@@ -2,43 +2,97 @@
 <p class="text-body-secondary mb-3">{{ 'sales.list.intro' | translate }}</p>
 
 <form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" role="search" (submit)="$event.preventDefault()">
+  <div class="col-12 col-sm-6 col-lg-3">
+    <label class="form-label small mb-1" for="order-filter-search">{{ 'sales.list.filter.search' | translate }}</label>
+    <input id="order-filter-search" type="search" class="form-control" autocomplete="off" formControlName="search" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-3">
+    <label class="form-label small mb-1" for="order-filter-customer">{{ 'sales.list.filter.customer' | translate }}</label>
+    @if (customer(); as chosen) {
+      <div class="form-control d-flex align-items-center justify-content-between gap-2" data-testid="order-filter-customer">
+        <span class="text-truncate">{{ chosen.name }}</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearCustomer()">
+          {{ 'sales.list.filter.clearCustomer' | translate }}
+        </button>
+      </div>
+    } @else {
+      <div class="position-relative">
+        <input id="order-filter-customer" type="search" class="form-control" autocomplete="off" [formControl]="customerSearch"
+          [placeholder]="'customers.search.placeholder' | translate" />
+        @if (customerResults().length > 0) {
+          <div class="dropdown-menu show w-100 top-100 start-0 mt-1 p-1">
+            @for (item of customerResults(); track item.id) {
+              <button type="button" class="dropdown-item" (click)="chooseCustomer(item)">{{ item.displayName }}</button>
+            }
+          </div>
+        } @else if (customerQuery() !== '' && !customerSearching()) {
+          <div class="dropdown-menu show w-100 top-100 start-0 mt-1 p-2 small text-body-secondary">
+            {{ 'sales.list.filter.noCustomers' | translate }}
+          </div>
+        }
+      </div>
+    }
+  </div>
   <div class="col-12 col-sm-6 col-lg-2">
-    <label class="form-label small mb-1" for="sale-filter-status">{{ 'sales.list.filter.status' | translate }}</label>
-    <select id="sale-filter-status" class="form-select" formControlName="status">
-      <option [ngValue]="null">{{ 'common.all' | translate }}</option>
-      <option value="PAID">{{ 'sales.list.status.PAID' | translate }}</option>
-      <option value="ON_HOLD">{{ 'sales.list.status.ON_HOLD' | translate }}</option>
+    <label class="form-label small mb-1" for="order-filter-status">{{ 'sales.list.filter.status' | translate }}</label>
+    <select id="order-filter-status" class="form-select" formControlName="status">
+      <option value="">{{ 'common.all' | translate }}</option>
+      @for (status of statuses; track status) {
+        <option [value]="status">{{ 'sales.list.status.' + status | translate }}</option>
+      }
     </select>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="order-filter-type">{{ 'sales.list.filter.orderType' | translate }}</label>
+    <select id="order-filter-type" class="form-select" formControlName="orderType">
+      <option value="">{{ 'common.all' | translate }}</option>
+      @for (type of orderTypes; track type) {
+        <option [value]="type">{{ 'sales.order.type.' + type | translate }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="order-filter-from">{{ 'sales.list.filter.from' | translate }}</label>
+    <input id="order-filter-from" type="date" class="form-control" formControlName="from" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="order-filter-to">{{ 'sales.list.filter.to' | translate }}</label>
+    <input id="order-filter-to" type="date" class="form-control" formControlName="to" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="order-filter-min">{{ 'sales.list.filter.minTotal' | translate }}</label>
+    <input id="order-filter-min" type="text" inputmode="decimal" class="form-control font-monospace" autocomplete="off" formControlName="minTotal" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="order-filter-max">{{ 'sales.list.filter.maxTotal' | translate }}</label>
+    <input id="order-filter-max" type="text" inputmode="decimal" class="form-control font-monospace" autocomplete="off" formControlName="maxTotal" />
   </div>
   @if (canViewAll()) {
     <div class="col-12 col-sm-6 col-lg-2">
-      <label class="form-label small mb-1" for="sale-filter-cashier">{{ 'sales.list.filter.cashier' | translate }}</label>
-      <select id="sale-filter-cashier" class="form-select" formControlName="cashierId">
-        <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+      <label class="form-label small mb-1" for="order-filter-cashier">{{ 'sales.list.filter.cashier' | translate }}</label>
+      <select id="order-filter-cashier" class="form-select" formControlName="cashierId">
+        <option value="">{{ 'common.all' | translate }}</option>
         @for (user of users(); track user.id) {
-          <option [ngValue]="user.id">{{ user.username }}</option>
+          <option [value]="user.id">{{ user.username }}</option>
         }
       </select>
     </div>
   }
   @if (isCentral()) {
     <div class="col-12 col-sm-6 col-lg-2">
-      <label class="form-label small mb-1" for="sale-filter-branch">{{ 'sales.list.filter.branch' | translate }}</label>
-      <select id="sale-filter-branch" class="form-select" formControlName="branchId">
-        <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+      <label class="form-label small mb-1" for="order-filter-branch">{{ 'sales.list.filter.branch' | translate }}</label>
+      <select id="order-filter-branch" class="form-select" formControlName="branchId">
+        <option value="">{{ 'common.all' | translate }}</option>
         @for (branch of branches(); track branch.id) {
-          <option [ngValue]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+          <option [value]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
         }
       </select>
     </div>
   }
   <div class="col-12 col-sm-6 col-lg-2">
-    <label class="form-label small mb-1" for="sale-filter-from">{{ 'sales.list.filter.from' | translate }}</label>
-    <input id="sale-filter-from" type="date" class="form-control" formControlName="from" />
-  </div>
-  <div class="col-12 col-sm-6 col-lg-2">
-    <label class="form-label small mb-1" for="sale-filter-to">{{ 'sales.list.filter.to' | translate }}</label>
-    <input id="sale-filter-to" type="date" class="form-control" formControlName="to" />
+    <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+      {{ 'sales.list.filter.clear' | translate }}
+    </button>
   </div>
 </form>
 
@@ -49,41 +103,71 @@
 @if (rangeInvalid()) {
   <div class="alert alert-warning" role="alert">{{ 'sales.list.rangeInvalid' | translate }}</div>
 }
+@if (amountTextInvalid()) {
+  <div class="alert alert-warning" role="alert">{{ 'sales.list.amountInvalid' | translate }}</div>
+} @else if (amountRangeInvalid()) {
+  <div class="alert alert-warning" role="alert">{{ 'sales.list.amountRangeInvalid' | translate }}</div>
+}
 
 <app-problem-alert [error]="sales.error()" />
 <app-problem-alert [error]="lookupError()" />
+<app-problem-alert [error]="customerError()" />
+
+<p class="small text-body-secondary mb-2" data-testid="orders-total">
+  {{ 'sales.list.count' | translate: { count: sales.total() } }}
+</p>
 
 <div class="table-responsive">
   <table class="table table-hover align-middle">
     <thead>
       <tr>
-        <th scope="col">{{ 'sales.list.column.receipt' | translate }}</th>
-        <th scope="col">{{ 'sales.list.column.date' | translate }}</th>
+        <th scope="col">{{ 'sales.list.column.number' | translate }}</th>
+        <th scope="col" [attr.aria-sort]="sortAria('createdAt')">
+          <button type="button" class="btn btn-link p-0 text-reset text-decoration-none fw-semibold" (click)="sortBy('createdAt')">
+            {{ 'sales.list.column.date' | translate }} <span aria-hidden="true">{{ sortMark('createdAt') }}</span>
+          </button>
+        </th>
         @if (isCentral()) {
           <th scope="col">{{ 'sales.list.column.branch' | translate }}</th>
         }
-        <th scope="col">{{ 'sales.list.column.register' | translate }}</th>
-        <th scope="col">{{ 'sales.list.column.cashier' | translate }}</th>
-        <th scope="col" class="text-end">{{ 'sales.list.column.total' | translate }}</th>
+        <th scope="col">{{ 'sales.list.column.customer' | translate }}</th>
+        <th scope="col">{{ 'sales.list.column.orderType' | translate }}</th>
         <th scope="col">{{ 'sales.list.column.status' | translate }}</th>
+        <th scope="col">{{ 'sales.list.column.cashier' | translate }}</th>
+        <th scope="col" class="text-end" [attr.aria-sort]="sortAria('total')">
+          <button type="button" class="btn btn-link p-0 text-reset text-decoration-none fw-semibold" (click)="sortBy('total')">
+            {{ 'sales.list.column.total' | translate }} <span aria-hidden="true">{{ sortMark('total') }}</span>
+          </button>
+        </th>
       </tr>
     </thead>
     <tbody>
       @for (sale of sales.items(); track sale.id) {
-        <tr (click)="open(sale)">
-          <td class="font-monospace">{{ sale.receiptNumber ?? '—' }}</td>
+        <tr>
+          <td class="font-monospace">
+            <a [routerLink]="['/sales/orders', sale.id]" [state]="{ returnUrl: currentUrl() }">
+              {{ sale.receiptNumber ?? sale.internalNumber ?? '—' }}
+            </a>
+          </td>
           <td class="small">{{ (sale.paidAt ?? sale.createdAt) | localDateTime }}</td>
           @if (isCentral()) {
             <td>{{ branchName(sale.branchId) }}</td>
           }
-          <td>{{ registerLabel(sale) }}</td>
-          <td>{{ cashierLabel(sale.cashierId) }}</td>
-          <td class="text-end font-monospace">{{ money(sale.total) }}</td>
+          <td>
+            @if (sale.customerId === finalConsumerId) {
+              {{ 'customers.finalConsumer' | translate }}
+            } @else {
+              {{ sale.customerName }}
+            }
+          </td>
+          <td>{{ 'sales.order.type.' + sale.orderType | translate }}</td>
           <td>
             <span class="badge" [class.text-bg-success]="sale.status === 'PAID'" [class.text-bg-warning]="sale.status === 'ON_HOLD'">
               {{ 'sales.list.status.' + sale.status | translate }}
             </span>
           </td>
+          <td>{{ cashierLabel(sale.cashierId) }}</td>
+          <td class="text-end font-monospace">{{ money(sale.total) }}</td>
         </tr>
       } @empty {
         <tr>
