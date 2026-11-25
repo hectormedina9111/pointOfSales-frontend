@@ -1,0 +1,30 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'sales.returnLookup.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'sales.returnLookup.intro' | translate }}</p>
+  </div>
+  <a class="btn btn-outline-secondary" routerLink="/sales">{{ 'sales.returnLookup.back' | translate }}</a>
+</div>
+
+<form class="card" [formGroup]="form" novalidate (ngSubmit)="search()">
+  <div class="card-body">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-6">
+        <app-field-label targetId="return-lookup-receipt" [required]="true">{{ 'sales.returnLookup.receipt' | translate }}</app-field-label>
+        <input id="return-lookup-receipt" type="text" class="form-control font-monospace" autocomplete="off"
+          [attr.maxlength]="receiptMax" formControlName="receiptNumber" [class.is-invalid]="isInvalid(form.controls.receiptNumber)" />
+        <app-field-error [control]="form.controls.receiptNumber" />
+      </div>
+      <div class="col-12 col-md-auto">
+        <button type="submit" class="btn btn-primary" [disabled]="searching()">
+          {{ (searching() ? 'common.loading' : 'sales.returnLookup.search') | translate }}
+        </button>
+      </div>
+    </div>
+
+    @if (notFound()) {
+      <div class="alert alert-warning mt-3 mb-0" role="alert">{{ 'sales.returnLookup.notFound' | translate }}</div>
+    }
+    <app-problem-alert [error]="error()" />
+  </div>
+</form>

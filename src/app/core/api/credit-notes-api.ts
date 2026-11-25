@@ -26,6 +26,37 @@ export interface CreditNoteView {
 }
 
 /**
+ * Resultado de buscar una nota por número (record CreditNoteLookupView). El saldo viene de la central:
+ * solo con conexión. amount y balance son números con dos decimales.
+ */
+export interface CreditNoteLookupView {
+  readonly id: number;
+  readonly number: string;
+  readonly customerId: number;
+  readonly customerName: string;
+  readonly amount: number;
+  readonly balance: number;
+  readonly status: CreditNoteStatus;
+}
+
+/** Estado de un uso de la nota (enum RedemptionStatus del backend). */
+export type CreditNoteRedemptionStatus = 'APPLIED' | 'CONFIRMED' | 'RELEASED';
+
+/**
+ * Uso de una nota de crédito en una compra (record CreditNoteRedemptionView). saleId es la venta que
+ * la usó; storeNodeId, la tienda donde se hizo.
+ */
+export interface CreditNoteRedemptionView {
+  readonly id: number;
+  readonly redemptionKey: string;
+  readonly amount: number;
+  readonly status: CreditNoteRedemptionStatus;
+  readonly storeNodeId: number;
+  readonly saleId: number | null;
+  readonly createdAt: string;
+}
+
+/**
  * Filtros del listado de notas de crédito. Un valor null no filtra. search busca por número; from y
  * to son instantes ISO-8601. branchId solo tiene efecto en la central.
  */
@@ -64,5 +95,17 @@ export class CreditNotesApi {
 
   get(id: number): Observable<CreditNoteView> {
     return this.http.get<CreditNoteView>(`/api/v1/credit-notes/${id}`);
+  }
+
+  /** Busca una nota por su número y devuelve el saldo actual de la central. Solo en la tienda. */
+  lookup(number: string): Observable<CreditNoteLookupView> {
+    return this.http.get<CreditNoteLookupView>('/api/v1/credit-notes/lookup', { params: { number } });
+  }
+
+  /** Usos de una nota en la central, paginados. El orden va en request.sort. */
+  redemptions(id: number, request: PageRequest): Observable<Page<CreditNoteRedemptionView>> {
+    return this.http.get<Page<CreditNoteRedemptionView>>(`/api/v1/credit-notes/${id}/redemptions`, {
+      params: pageParams(request),
+    });
   }
 }

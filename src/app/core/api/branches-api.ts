@@ -16,6 +16,8 @@ export interface BranchView {
   readonly allowNegativeStock: boolean;
   readonly active: boolean;
   readonly defaultPriceListId: number | null;
+  /** Acepta devoluciones de ventas hechas en otras sucursales. Solo la central lo edita. */
+  readonly acceptsForeignReturns: boolean;
 }
 
 /** Body de POST y PUT /api/v1/branches (record BranchRequest). */
@@ -28,6 +30,7 @@ export interface BranchRequest {
   readonly allowNegativeStock: boolean;
   readonly active: boolean;
   readonly defaultPriceListId: number | null;
+  readonly acceptsForeignReturns: boolean;
 }
 
 /**

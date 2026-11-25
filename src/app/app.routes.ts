@@ -122,6 +122,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/sales/returns/return-page').then((module) => module.ReturnPageComponent),
   },
   {
+    path: 'sales/returns/lookup',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/sales/returns/return-lookup-page').then((module) => module.ReturnLookupPageComponent),
+  },
+  {
     path: 'sales/pos',
     canActivate: [authGuard],
     loadComponent: () => import('./features/sales/order/order-page').then((module) => module.OrderPageComponent),

@@ -46,6 +46,9 @@
               @if (payment.request.reference) {
                 <div class="small text-body-secondary">{{ payment.request.reference }}</div>
               }
+              @if (payment.request.creditNoteNumber) {
+                <div class="small text-body-secondary">{{ 'sales.checkout.creditNote.applied' | translate: { number: payment.request.creditNoteNumber } }}</div>
+              }
               @if (payment.request.cardLast4) {
                 <div class="small text-body-secondary">{{ 'sales.ticket.cardEnding' | translate: { last4: payment.request.cardLast4 } }}</div>
               }

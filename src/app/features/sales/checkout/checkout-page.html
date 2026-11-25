@@ -31,7 +31,12 @@
           <div class="card-body">
             <h2 class="h5 mb-3">{{ 'sales.checkout.payments' | translate }}</h2>
 
-            <app-payment-entry-form [pendingCents]="pendingCents()" (added)="addPayment($event)" />
+            <app-payment-entry-form
+              [pendingCents]="pendingCents()"
+              [currency]="currency()"
+              [usedCreditNoteNumbers]="creditNoteNumbers()"
+              (added)="addPayment($event)"
+            />
 
             <app-payment-list
               [payments]="payments()"

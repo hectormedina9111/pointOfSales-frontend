@@ -40,7 +40,83 @@
             <dd class="col-sm-8 col-lg-9">{{ branchName(item.branchId) }}</dd>
           }
         </dl>
+
+        @if (isStore()) {
+          <div class="border-top mt-3 pt-3">
+            <p class="small text-body-secondary mb-2">{{ 'creditNotes.detail.balanceHint' | translate }}</p>
+            <button type="button" class="btn btn-outline-primary" [disabled]="checking()" (click)="checkBalance(item.number)">
+              {{ (checking() ? 'creditNotes.detail.checking' : 'creditNotes.detail.check') | translate }}
+            </button>
+            <app-problem-alert [error]="checkError()" />
+            @if (currentBalance(); as current) {
+              <div class="alert alert-success py-2 mt-3 mb-0" role="status" data-testid="current-balance">
+                {{ 'creditNotes.detail.currentBalance' | translate: { balance: money(current.balance) } }}
+              </div>
+            }
+          </div>
+        }
       </div>
     </div>
+
+    @if (isCentral()) {
+      <div class="card mt-4">
+        <div class="card-body">
+          <h2 class="h5 mb-1">{{ 'creditNotes.detail.uses.title' | translate }}</h2>
+          <p class="small text-body-secondary mb-3">{{ 'creditNotes.detail.uses.intro' | translate }}</p>
+
+          <app-problem-alert [error]="uses.error()" />
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th scope="col">{{ 'creditNotes.uses.column.date' | translate }}</th>
+                  <th scope="col">{{ 'creditNotes.uses.column.store' | translate }}</th>
+                  <th scope="col" class="text-end">{{ 'creditNotes.uses.column.amount' | translate }}</th>
+                  <th scope="col">{{ 'creditNotes.uses.column.status' | translate }}</th>
+                  <th scope="col">{{ 'creditNotes.uses.column.sale' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (use of uses.items(); track use.id) {
+                  <tr>
+                    <td class="small">{{ use.createdAt | localDateTime }}</td>
+                    <td>
+                      @if (storeNumber(use.storeNodeId); as storeNo) {
+                        {{ 'stores.nodes.storeName' | translate: { number: storeNo } }}
+                      } @else {
+                        {{ 'creditNotes.uses.unknownStore' | translate: { id: use.storeNodeId } }}
+                      }
+                    </td>
+                    <td class="text-end font-monospace">{{ money(use.amount) }}</td>
+                    <td><span [class]="redemptionClass(use.status)">{{ 'creditNotes.uses.status.' + use.status | translate }}</span></td>
+                    <td>
+                      @if (use.saleId !== null) {
+                        <a [routerLink]="['/sales/orders', use.saleId]">{{ 'creditNotes.uses.openSale' | translate }}</a>
+                      } @else {
+                        —
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="text-center text-body-secondary">
+                      {{ (uses.loading() ? 'common.loading' : 'common.empty') | translate }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <app-pagination
+            [page]="uses.page()"
+            [size]="uses.size()"
+            [total]="uses.total()"
+            (pageChange)="uses.goToPage($event)"
+            (sizeChange)="uses.setSize($event)"
+          />
+        </div>
+      </div>
+    }
   }
 }

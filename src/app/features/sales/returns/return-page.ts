@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -54,6 +54,12 @@ export class ReturnPageComponent implements OnInit {
   protected readonly loading = signal(true);
   protected readonly loadError = signal<unknown>(null);
 
+  /** Una venta de otra sucursal no tiene detalle en esta tienda: su vuelta es la búsqueda. */
+  protected readonly foreign = computed(() => this.store.returnable()?.foreign ?? false);
+  protected readonly backLabelKey = computed(() =>
+    this.foreign() ? 'sales.return.backToLookup' : 'sales.return.back',
+  );
+
   protected readonly lineControls: readonly AbstractControl[] = [this.store.linesControl];
   protected readonly refundControls: readonly AbstractControl[] = [this.store.reasonControl, this.store.refundsControl];
   protected readonly summaryControls: readonly AbstractControl[] = [this.store.summaryControl];
@@ -91,7 +97,7 @@ export class ReturnPageComponent implements OnInit {
   }
 
   protected back(): void {
-    void this.router.navigateByUrl(`/sales/orders/${this.store.saleId}`);
+    void this.router.navigateByUrl(this.foreign() ? '/sales/returns/lookup' : `/sales/orders/${this.store.saleId}`);
   }
 
   /**

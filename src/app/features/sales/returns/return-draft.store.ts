@@ -17,6 +17,7 @@ import { randomUuid } from '../../../shared/ids/random-uuid';
 import {
   RefundDraft,
   RefundOption,
+  canRefundWithOriginal,
   quantityThousandths,
   returnQuantityError,
   sumRefundsCents,
@@ -96,7 +97,7 @@ export class ReturnDraftStore {
     }
     if (current.allowedRefundMethods.includes('ORIGINAL_METHOD')) {
       for (const payment of current.payments) {
-        if (payment.refundable > 0 && payment.paymentMethodCode !== 'CASH') {
+        if (payment.refundable > 0 && canRefundWithOriginal(payment.paymentMethodCode)) {
           options.push({
             code: payment.paymentMethodCode,
             name: payment.paymentMethodName,

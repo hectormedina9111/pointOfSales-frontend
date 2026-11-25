@@ -23,6 +23,9 @@ export type DiscountType = 'AMOUNT' | 'PERCENTAGE';
 /** Id del consumidor final (cliente único que no se edita). Una venta a su nombre no lleva datos de cliente. */
 export const FINAL_CONSUMER_ID = 1;
 
+/** Código del método de pago con nota de crédito. Exige el número de la nota en el pago (creditNoteNumber). */
+export const CREDIT_NOTE_PAYMENT_METHOD = 'CREDIT_NOTE';
+
 /** Tipo de venta (enum OrderType del backend): al contado o a crédito. CREDIT todavía no se acepta. */
 export type OrderType = 'CASH' | 'CREDIT';
 
@@ -59,6 +62,8 @@ export interface PaymentRequest {
   readonly amountReceived: string | null;
   readonly reference: string | null;
   readonly cardLast4: string | null;
+  /** Número de la nota de crédito; solo con el método CREDIT_NOTE. */
+  readonly creditNoteNumber?: string | null;
 }
 
 /** Credenciales de un jefe de tienda para autorizar un descuento (record AuthorizationRequest). Nunca se guardan. */
@@ -130,7 +135,10 @@ export interface SaleCustomerFields {
   readonly orderType: OrderType;
 }
 
-/** Pago de una venta (record PaymentView). cardLast4 son solo los cuatro últimos dígitos. */
+/**
+ * Pago de una venta (record PaymentView). cardLast4 son solo los cuatro últimos dígitos;
+ * creditNoteNumber solo viene con el método CREDIT_NOTE.
+ */
 export interface PaymentView {
   readonly paymentMethodCode: string;
   readonly paymentMethodName: string;
@@ -138,6 +146,7 @@ export interface PaymentView {
   readonly amountReceived: number | null;
   readonly reference: string | null;
   readonly cardLast4: string | null;
+  readonly creditNoteNumber: string | null;
 }
 
 /** Venta completa con líneas y pagos (record SaleView). */
@@ -329,6 +338,11 @@ export interface ReturnableView {
   readonly allowedRefundMethods: readonly RefundMethod[];
   readonly payments: readonly ReturnablePaymentView[];
   readonly lines: readonly ReturnableLineView[];
+  /** Sucursal en la que se hizo la venta. */
+  readonly branchId: number;
+  readonly branchName: string;
+  /** Verdadero si la venta es de otra sucursal: su devolución se hace en esta tienda por la central. */
+  readonly foreign: boolean;
 }
 
 /** Cuerpo de POST /sales/{id}/return-quote (record ReturnQuoteRequest). */
@@ -442,6 +456,14 @@ export class SalesApi {
   /** Lo que queda por devolver de una venta cobrada, con sus pagos y si es del mismo día. */
   returnable(id: number): Observable<ReturnableView> {
     return this.http.get<ReturnableView>(`/api/v1/sales/${id}/returnable`);
+  }
+
+  /**
+   * Busca una venta por número de recibo para devolverla, en la central (solo en la tienda). Errores:
+   * NOT_FOUND, FOREIGN_RETURNS_DISABLED y CENTRAL_UNAVAILABLE. Después se usa el id con returnable().
+   */
+  returnableLookup(receiptNumber: string): Observable<ReturnableView> {
+    return this.http.get<ReturnableView>('/api/v1/sales/returnable-lookup', { params: { receiptNumber } });
   }
 
   /** Total de la devolución con esas cantidades, sin guardarla. Se llama al cambiar las cantidades (con pausa). */

@@ -41,6 +41,29 @@
       </div>
     }
 
+    @if (isCreditNote()) {
+      <div class="col-12 col-md-6">
+        <app-field-label targetId="checkout-pay-credit-note" [required]="true">{{ 'sales.checkout.creditNote.number' | translate }}</app-field-label>
+        <div class="input-group">
+          <input id="checkout-pay-credit-note" type="text" class="form-control font-monospace" [attr.maxlength]="maxCreditNoteNumber"
+            formControlName="creditNoteNumber" [class.is-invalid]="isInvalid(form.controls.creditNoteNumber)" />
+          <button type="button" class="btn btn-outline-secondary" [disabled]="!canCheckCreditNote()" (click)="checkCreditNote()">
+            {{ (checking() ? 'sales.checkout.creditNote.checking' : 'sales.checkout.creditNote.check') | translate }}
+          </button>
+        </div>
+        <app-field-error [control]="form.controls.creditNoteNumber" />
+      </div>
+
+      <div class="col-12">
+        <app-problem-alert [error]="checkError()" />
+        @if (matchingCheck(); as found) {
+          <div class="alert alert-success py-2 mb-2" role="status" data-testid="credit-note-balance">
+            {{ 'sales.checkout.creditNote.balance' | translate: { customer: found.note.customerName, balance: money(found.note.balance) } }}
+          </div>
+        }
+      </div>
+    }
+
     @if (selectedMethod()?.code === 'CARD') {
       <div class="col-6 col-md-4">
         <app-field-label targetId="checkout-pay-card">{{ 'sales.checkout.cardLast4' | translate }}</app-field-label>

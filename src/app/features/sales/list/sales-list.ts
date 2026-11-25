@@ -23,6 +23,7 @@ import { LanguageService } from '../../../core/i18n/language.service';
 import { SystemInfoService } from '../../../core/system/system-info.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
+import { IfPrivilegeDirective } from '../../../shared/directives/if-privilege.directive';
 import { formatMoney } from '../../../shared/forms/amounts';
 import { PagedList } from '../../../shared/paging/paged-list';
 import { LocalDateTimePipe } from '../../../shared/pipes/local-date-time.pipe';
@@ -168,7 +169,15 @@ function isAmountText(value: string): boolean {
  */
 @Component({
   selector: 'app-sales-list',
-  imports: [ReactiveFormsModule, RouterLink, ProblemAlertComponent, PaginationComponent, LocalDateTimePipe, TranslatePipe],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    ProblemAlertComponent,
+    PaginationComponent,
+    LocalDateTimePipe,
+    TranslatePipe,
+    IfPrivilegeDirective,
+  ],
   templateUrl: './sales-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -187,6 +196,8 @@ export class SalesListComponent implements OnInit {
 
   /** Solo la central ve todas las sucursales: el filtro y la columna Sucursal aparecen allí. */
   protected readonly isCentral = this.systemInfo.isCentral;
+  /** Las devoluciones de ventas de otra sucursal se buscan desde una tienda. */
+  protected readonly isStore = this.systemInfo.isStore;
   /** Sin ACTION_SALES_VIEW_ALL el servidor muestra solo las ventas del usuario: el filtro de cajero no aparece. */
   protected readonly canViewAll = computed(() => this.privileges.has('ACTION_SALES_VIEW_ALL'));
   protected readonly columnCount = computed(() => (this.isCentral() ? 8 : 7));

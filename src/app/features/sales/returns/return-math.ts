@@ -1,3 +1,4 @@
+import { CREDIT_NOTE_PAYMENT_METHOD } from '../../../core/api/sales-api';
 import { QUANTITY_PATTERN, amountToCents, numberToCents } from '../../../shared/forms/amounts';
 
 /**
@@ -21,6 +22,14 @@ export interface RefundOption {
   readonly name: string;
   readonly requiresReference: boolean;
   readonly refundable: number | null;
+}
+
+/**
+ * Verdadero si un pago de la venta se puede devolver con su método original. La nota de crédito
+ * nunca se reembolsa: una devolución en nota de crédito emite otra nota, no dinero.
+ */
+export function canRefundWithOriginal(paymentMethodCode: string): boolean {
+  return paymentMethodCode !== 'CASH' && paymentMethodCode !== CREDIT_NOTE_PAYMENT_METHOD;
 }
 
 /**

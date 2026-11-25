@@ -29,6 +29,8 @@ export interface StoreNodeView {
   readonly pendingUploadCount: number;
   /** Momento del envío pendiente más antiguo; null si no hay ninguno. */
   readonly oldestPendingAt: string | null;
+  /** Devoluciones subidas que superaron lo devolvible por devoluciones sin conexión; para revisar. */
+  readonly returnConflicts: number;
   readonly connected: boolean;
   readonly syncState: StoreNodeState;
 }

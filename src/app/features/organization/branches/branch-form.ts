@@ -48,6 +48,7 @@ export class BranchFormComponent implements OnInit {
     phone: this.fb.control('', [Validators.maxLength(20)]),
     countryId: this.fb.control<number | null>(null, [Validators.required]),
     allowNegativeStock: this.fb.control(false),
+    acceptsForeignReturns: this.fb.control(false),
     defaultPriceListId: this.fb.control<number | null>(null),
     active: this.fb.control(true),
   });
@@ -95,6 +96,7 @@ export class BranchFormComponent implements OnInit {
       phone: blankToNull(value.phone),
       countryId: value.countryId,
       allowNegativeStock: value.allowNegativeStock,
+      acceptsForeignReturns: value.acceptsForeignReturns,
       active: value.active,
       defaultPriceListId: value.defaultPriceListId,
     };
@@ -124,6 +126,7 @@ export class BranchFormComponent implements OnInit {
         phone: branch.phone ?? '',
         countryId: branch.countryId,
         allowNegativeStock: branch.allowNegativeStock,
+        acceptsForeignReturns: branch.acceptsForeignReturns,
         defaultPriceListId: branch.defaultPriceListId,
         active: branch.active,
       });
