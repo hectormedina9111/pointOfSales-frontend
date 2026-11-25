@@ -1,0 +1,181 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-0">{{ 'sales.list.detail.title' | translate }}</h1>
+  </div>
+  <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ 'sales.list.detail.back' | translate }}</button>
+</div>
+
+@if (invalidId()) {
+  <div class="alert alert-warning" role="alert">{{ 'sales.order.invalidId' | translate }}</div>
+} @else {
+  <app-problem-alert [error]="loadError()" />
+  <app-problem-alert [error]="actionError()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (sale(); as item) {
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="h5 font-monospace mb-0">{{ item.receiptNumber ?? item.internalNumber ?? '—' }}</span>
+            <span class="badge" [class.text-bg-success]="item.status === 'PAID'" [class.text-bg-warning]="item.status === 'ON_HOLD'">
+              {{ 'sales.list.status.' + item.status | translate }}
+            </span>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            @if (item.status === 'ON_HOLD' && !isCentral()) {
+              <a *appIfPrivilege="'PUT_SALES_HOLDS_ID'" class="btn btn-outline-primary" [routerLink]="['/sales/pos', item.id]">
+                {{ 'sales.list.detail.edit' | translate }}
+              </a>
+              <a *appIfPrivilege="'POST_SALES_HOLDS_ID_CHECKOUT'" class="btn btn-primary" [routerLink]="['/sales/checkout', item.id]">
+                {{ 'sales.pos.actions.charge' | translate }}
+              </a>
+              <button *appIfPrivilege="'DELETE_SALES_HOLDS_ID'" type="button" class="btn btn-outline-danger"
+                [disabled]="busy()" (click)="remove()">
+                {{ (busy() ? 'common.saving' : 'common.delete') | translate }}
+              </button>
+            }
+            @if (item.status === 'PAID') {
+              <a class="btn btn-outline-primary" [routerLink]="['/sales/tickets', item.id]">
+                {{ 'sales.list.detail.reprint' | translate }}
+              </a>
+            }
+          </div>
+        </div>
+
+        <dl class="row mb-0">
+          <dt class="col-sm-4 col-lg-3">{{ 'sales.list.detail.customer' | translate }}</dt>
+          <dd class="col-sm-8 col-lg-9">
+            @if (item.customerId === finalConsumerId) {
+              {{ 'customers.finalConsumer' | translate }}
+            } @else {
+              {{ item.customerName }}
+              @if (item.customerDocumentNumber) {
+                <span class="small text-body-secondary ms-1">{{ 'customers.documentType.' + item.customerDocumentType | translate }} {{ item.customerDocumentNumber }}</span>
+              }
+            }
+          </dd>
+          <dt class="col-sm-4 col-lg-3">{{ 'sales.list.detail.orderType' | translate }}</dt>
+          <dd class="col-sm-8 col-lg-9">{{ 'sales.order.type.' + item.orderType | translate }}</dd>
+          <dt class="col-sm-4 col-lg-3">{{ 'sales.list.detail.createdAt' | translate }}</dt>
+          <dd class="col-sm-8 col-lg-9">{{ item.createdAt | localDateTime }}</dd>
+          <dt class="col-sm-4 col-lg-3">{{ 'sales.list.detail.paidAt' | translate }}</dt>
+          <dd class="col-sm-8 col-lg-9">{{ item.paidAt ? (item.paidAt | localDateTime) : ('common.none' | translate) }}</dd>
+          <dt class="col-sm-4 col-lg-3">{{ 'sales.list.detail.received' | translate }}</dt>
+          <dd class="col-sm-8 col-lg-9">{{ item.syncedAt ? (item.syncedAt | localDateTime) : ('common.none' | translate) }}</dd>
+          <dt class="col-sm-4 col-lg-3">{{ 'sales.list.column.cashier' | translate }}</dt>
+          <dd class="col-sm-8 col-lg-9">{{ userLabel(item.cashierId) }}</dd>
+          @if (isCentral()) {
+            <dt class="col-sm-4 col-lg-3">{{ 'sales.list.column.branch' | translate }}</dt>
+            <dd class="col-sm-8 col-lg-9">{{ branchName(item.branchId) }}</dd>
+          }
+          @if (item.discountType) {
+            <dt class="col-sm-4 col-lg-3">{{ 'sales.list.detail.discount' | translate }}</dt>
+            <dd class="col-sm-8 col-lg-9">
+              {{ ('sales.pos.discount.type.' + item.discountType) | translate }}: {{ item.discountValue }}
+              @if (item.discountAuthorizedBy !== null) {
+                <div class="small text-body-secondary">
+                  {{ 'sales.list.detail.authorizedBy' | translate }}: {{ userLabel(item.discountAuthorizedBy) }}
+                </div>
+              }
+            </dd>
+          }
+          @if (item.notes; as notes) {
+            <dt class="col-sm-4 col-lg-3">{{ 'sales.list.detail.notes' | translate }}</dt>
+            <dd class="col-sm-8 col-lg-9">{{ notes }}</dd>
+          }
+        </dl>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-body">
+        <h2 class="h6">{{ 'sales.list.detail.lines' | translate }}</h2>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">{{ 'sales.pos.lines.description' | translate }}</th>
+                <th scope="col" class="text-end">{{ 'sales.pos.lines.quantity' | translate }}</th>
+                <th scope="col" class="text-end">{{ 'sales.order.products.listPrice' | translate }}</th>
+                <th scope="col" class="text-end">{{ 'sales.pos.lines.unitPrice' | translate }}</th>
+                <th scope="col" class="text-end">{{ 'sales.pos.lines.discount' | translate }}</th>
+                <th scope="col" class="text-end">{{ 'sales.pos.lines.total' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of item.lines; track line.lineNumber) {
+                <tr>
+                  <td>
+                    {{ line.description }}
+                    <span class="small text-body-secondary font-monospace ms-1">{{ line.sku }}</span>
+                  </td>
+                  <td class="text-end font-monospace">{{ line.quantity.toFixed(3) }}</td>
+                  <td class="text-end font-monospace">
+                    {{ money(line.listPrice) }}
+                    @if (line.priceOverridden) {
+                      <span class="badge text-bg-info ms-1">{{ 'sales.list.detail.priceChanged' | translate }}</span>
+                    }
+                  </td>
+                  <td class="text-end font-monospace">{{ money(line.unitPrice) }}</td>
+                  <td class="text-end font-monospace">{{ money(line.discountAmount) }}</td>
+                  <td class="text-end font-monospace">{{ money(line.total) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h2 class="h6">{{ 'sales.pos.totals.title' | translate }}</h2>
+            <app-sale-totals [totals]="item.totals" [currency]="currency()" />
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h2 class="h6">{{ 'sales.list.detail.payments' | translate }}</h2>
+            <table class="table table-sm align-middle mb-2">
+              <thead>
+                <tr>
+                  <th scope="col">{{ 'sales.list.detail.method' | translate }}</th>
+                  <th scope="col" class="text-end">{{ 'sales.list.detail.amount' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (payment of item.payments; track $index) {
+                  <tr>
+                    <td>
+                      {{ payment.paymentMethodName }}
+                      @if (payment.reference) {
+                        <div class="small text-body-secondary">{{ payment.reference }}</div>
+                      }
+                      @if (payment.cardLast4) {
+                        <div class="small text-body-secondary">{{ 'sales.ticket.cardEnding' | translate: { last4: payment.cardLast4 } }}</div>
+                      }
+                    </td>
+                    <td class="text-end font-monospace">{{ money(payment.amount) }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="2" class="text-center text-body-secondary">{{ 'sales.list.detail.noPayments' | translate }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            @if (item.changeDue !== null && item.changeDue > 0) {
+              <p class="small mb-0">{{ 'sales.list.detail.change' | translate }}: <span class="font-monospace">{{ money(item.changeDue) }}</span></p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+}
