@@ -21,10 +21,14 @@ export interface CountLine {
   readonly difference: number;
 }
 
-/** Sesión sin movimientos, como sale en el listado (record CashSessionView). Lo de cierre es null mientras está abierta. */
+/**
+ * Sesión sin movimientos, como sale en el listado (record CashSessionView). branchId es la sucursal
+ * de su caja. Lo de cierre es null mientras está abierta.
+ */
 export interface CashSessionView {
   readonly id: number;
   readonly cashRegisterId: number;
+  readonly branchId: number;
   readonly userId: number;
   readonly status: CashSessionStatus;
   readonly openedAt: string;
@@ -62,10 +66,14 @@ export interface SessionSummaryView {
   readonly expectedTotal: number;
 }
 
-/** Filtros del listado de sesiones. Un valor null no filtra. Las fechas son instantes ISO-8601. */
+/**
+ * Filtros del listado de sesiones. Un valor null no filtra. Las fechas son instantes ISO-8601.
+ * branchId solo tiene efecto en la central; en una tienda, otra sucursal da una lista vacía.
+ */
 export interface CashSessionFilters {
   readonly status: CashSessionStatus | null;
   readonly cashRegisterId: number | null;
+  readonly branchId: number | null;
   readonly from: string | null;
   readonly to: string | null;
 }
@@ -136,6 +144,9 @@ export class CashSessionsApi {
     }
     if (filters.cashRegisterId !== null) {
       params = params.set('cashRegisterId', filters.cashRegisterId);
+    }
+    if (filters.branchId !== null) {
+      params = params.set('branchId', filters.branchId);
     }
     if (filters.from !== null) {
       params = params.set('from', filters.from);

@@ -53,13 +53,13 @@ Para apuntar la web a otro nodo, edite `public/config.json`. El backend debe per
 
 El menú lateral sale de los menús que el backend entrega a cada usuario. Cada botón de escritura aparece solo si el usuario tiene su privilegio.
 
-- **Inicio:** en la central, un widget con las tiendas; en una tienda, el resumen de sincronización.
+- **Inicio:** en la central, un widget con las tiendas y la tabla "Ventas de hoy por tienda"; en una tienda, el resumen de sincronización y el widget "Ventas de hoy".
 - **Administración:** usuarios (alta, edición, sucursales de inicio de sesión y restablecimiento de contraseña) y roles y privilegios.
 - **Organización:** países (uno por servidor central), empresa (un solo formulario), y sucursales.
 - **Catálogo:** unidades de medida, impuestos por país, categorías en forma de árbol, y productos con búsqueda y asignación de impuestos por país.
 - **Precios:** listas de precios con sus precios por producto, y consulta de precio (precio unitario, base gravable, impuesto y tasa).
 - **Tiendas:** nodos (solo en la central: estado, latidos, cambios pendientes, código de activación, asignación de sucursal y revocación) y estado de sincronización (solo en una tienda).
-- **Ventas:** el punto de venta de la tienda está en la sección Punto de venta. Las ventas realizadas siguen en construcción (se muestran como "En construcción" hasta su etapa). Mi caja y sesiones de caja están en la sección Caja. Las rutas que no existen muestran "Página no encontrada".
+- **Ventas:** el punto de venta de la tienda está en la sección Punto de venta. Las ventas realizadas (`/sales`) se consultan en la central y en las tiendas, ver Consulta de ventas. Mi caja y sesiones de caja están en la sección Caja. Las rutas que no existen muestran "Página no encontrada".
 - **Configuración de ventas:** cajas por sucursal (filtros por sucursal y estado; alta y edición solo en la central) y métodos de pago (solo edición en la central; los códigos los define el sistema).
 - **Auditoría:** bitácora paginada con filtros, y comparación de valores antes y después de cada cambio.
 - **Cambio de contraseña:** disponible en la central y en las tiendas, desde el menú del usuario.
@@ -71,7 +71,7 @@ Las pantallas de caja se operan en las tiendas. En la central, las rutas de caja
 - **Mi caja (`/cash/session`):** si el cajero no tiene sesión abierta, un asistente abre la caja en tres pasos (caja activa de la tienda, fondo inicial y resumen). Con sesión abierta muestra la caja, el resumen esperado por método de pago y los movimientos. Desde ahí:
   - **Depósito y retiro:** piden monto y motivo. Un retiro pide la autorización de un jefe de tienda (usuario y contraseña), salvo que el cajero tenga el privilegio `ACTION_CASH_WITHDRAWAL`. La contraseña del jefe se envía solo en esa petición y no se guarda.
   - **Cerrar caja:** asistente de tres pasos: conteo por cada método de pago activo (cero permitido), diferencias (vista previa en centavos: rojo si falta, amarillo si sobra, verde si cuadra) y confirmación. Al terminar se muestra el cierre con el botón Imprimir, que imprime solo ese cierre.
-- **Sesiones de caja (`/cash/sessions`):** listado paginado con filtros de estado, caja y rango de fechas. Cada fila abre el detalle con el conteo al cierre y los movimientos. Es de solo lectura.
+- **Sesiones de caja (`/cash/sessions`):** listado paginado con filtros de estado, caja, rango de fechas y, en la central, sucursal (columna Sucursal incluida). Cada fila abre el detalle con el conteo al cierre y los movimientos. Es de solo lectura. Sin el privilegio `ACTION_SALES_VIEW_ALL`, el listado solo muestra las sesiones del usuario, y la pantalla lo indica.
 
 Los botones aparecen solo si el usuario tiene el privilegio de la acción (`POST_CASH_SESSIONS`, `POST_CASH_SESSIONS_ID_MOVEMENTS`, `POST_CASH_SESSIONS_ID_CLOSE`) y el nodo es una tienda. Los montos se muestran con la moneda de la empresa; si la empresa no está configurada, solo con dos decimales.
 
@@ -90,6 +90,17 @@ La pantalla **Ventas > Punto de venta** (`/sales/pos`) funciona en la tienda y r
 Atajos: **F2** enfoca la búsqueda y **F9** cobra. No actúan mientras hay un diálogo abierto.
 
 Los botones aparecen según los privilegios de la venta: `POST_SALES` (cobrar), `POST_SALES_HOLDS` (poner en espera) y `GET_SALES_HOLDS` (ventas en espera).
+
+## Consulta de ventas
+
+La pantalla **Ventas > Ventas realizadas** (`/sales`) funciona en la central y en las tiendas. Es de solo lectura.
+
+- **Listado:** paginado, de la venta más reciente a la más antigua. Columnas: recibo, fecha (en la hora local), caja, cajero, total y estado. En la central se agregan la sucursal de cada venta y el filtro de sucursal (todas por defecto).
+- **Filtros:** estado (cobrada o en espera), rango de fechas (desde y hasta, en días locales) y cajero. El filtro de cajero aparece solo con `ACTION_SALES_VIEW_ALL`; sin ese privilegio, el listado muestra solo las ventas del usuario y la pantalla lo indica.
+- **Detalle:** al hacer clic en una fila se abre el detalle con las líneas, los totales (exento, gravado 15 %, gravado 18 %, otros gravados, ISV y total), los pagos con su vuelto, el descuento y quién lo autorizó.
+- **Reimprimir ticket:** el botón del detalle abre `/sales/tickets/{id}`. La central puede servir el ticket de las ventas recibidas de las tiendas, así que el botón aparece en los dos nodos. El botón **Nueva venta** del ticket solo aparece en las tiendas.
+
+Los datos de la venta llegan de la API del nodo: en la central, las ventas de las tiendas llegan por la subida de cada tienda.
 
 ## Reglas de negocio visibles en la web
 

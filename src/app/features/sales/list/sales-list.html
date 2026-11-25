@@ -1,0 +1,105 @@
+<h1 class="h3 mb-1">{{ 'sales.list.title' | translate }}</h1>
+<p class="text-body-secondary mb-3">{{ 'sales.list.intro' | translate }}</p>
+
+<form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" role="search" (submit)="$event.preventDefault()">
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="sale-filter-status">{{ 'sales.list.filter.status' | translate }}</label>
+    <select id="sale-filter-status" class="form-select" formControlName="status">
+      <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+      <option value="PAID">{{ 'sales.list.status.PAID' | translate }}</option>
+      <option value="ON_HOLD">{{ 'sales.list.status.ON_HOLD' | translate }}</option>
+    </select>
+  </div>
+  @if (canViewAll()) {
+    <div class="col-12 col-sm-6 col-lg-2">
+      <label class="form-label small mb-1" for="sale-filter-cashier">{{ 'sales.list.filter.cashier' | translate }}</label>
+      <select id="sale-filter-cashier" class="form-select" formControlName="cashierId">
+        <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+        @for (user of users(); track user.id) {
+          <option [ngValue]="user.id">{{ user.username }}</option>
+        }
+      </select>
+    </div>
+  }
+  @if (isCentral()) {
+    <div class="col-12 col-sm-6 col-lg-2">
+      <label class="form-label small mb-1" for="sale-filter-branch">{{ 'sales.list.filter.branch' | translate }}</label>
+      <select id="sale-filter-branch" class="form-select" formControlName="branchId">
+        <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+        @for (branch of branches(); track branch.id) {
+          <option [ngValue]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+        }
+      </select>
+    </div>
+  }
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="sale-filter-from">{{ 'sales.list.filter.from' | translate }}</label>
+    <input id="sale-filter-from" type="date" class="form-control" formControlName="from" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="sale-filter-to">{{ 'sales.list.filter.to' | translate }}</label>
+    <input id="sale-filter-to" type="date" class="form-control" formControlName="to" />
+  </div>
+</form>
+
+@if (!canViewAll()) {
+  <p class="small text-body-secondary mb-3">{{ 'sales.list.ownOnlyHint' | translate }}</p>
+}
+
+@if (rangeInvalid()) {
+  <div class="alert alert-warning" role="alert">{{ 'sales.list.rangeInvalid' | translate }}</div>
+}
+
+<app-problem-alert [error]="sales.error()" />
+<app-problem-alert [error]="lookupError()" />
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'sales.list.column.receipt' | translate }}</th>
+        <th scope="col">{{ 'sales.list.column.date' | translate }}</th>
+        @if (isCentral()) {
+          <th scope="col">{{ 'sales.list.column.branch' | translate }}</th>
+        }
+        <th scope="col">{{ 'sales.list.column.register' | translate }}</th>
+        <th scope="col">{{ 'sales.list.column.cashier' | translate }}</th>
+        <th scope="col" class="text-end">{{ 'sales.list.column.total' | translate }}</th>
+        <th scope="col">{{ 'sales.list.column.status' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (sale of sales.items(); track sale.id) {
+        <tr (click)="open(sale)">
+          <td class="font-monospace">{{ sale.receiptNumber ?? '—' }}</td>
+          <td class="small">{{ (sale.paidAt ?? sale.createdAt) | localDateTime }}</td>
+          @if (isCentral()) {
+            <td>{{ branchName(sale.branchId) }}</td>
+          }
+          <td>{{ registerLabel(sale) }}</td>
+          <td>{{ cashierLabel(sale.cashierId) }}</td>
+          <td class="text-end font-monospace">{{ money(sale.total) }}</td>
+          <td>
+            <span class="badge" [class.text-bg-success]="sale.status === 'PAID'" [class.text-bg-warning]="sale.status === 'ON_HOLD'">
+              {{ 'sales.list.status.' + sale.status | translate }}
+            </span>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td [attr.colspan]="columnCount()" class="text-center text-body-secondary">
+            {{ (sales.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="sales.page()"
+  [size]="sales.size()"
+  [total]="sales.total()"
+  (pageChange)="sales.goToPage($event)"
+  (sizeChange)="sales.setSize($event)"
+/>

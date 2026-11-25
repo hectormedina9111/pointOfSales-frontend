@@ -2,7 +2,9 @@
   <h1 class="h3 mb-0">{{ 'sales.ticket.title' | translate }}</h1>
   <div class="d-flex flex-wrap gap-2">
     <button type="button" class="btn btn-outline-primary" [disabled]="!ticket()" (click)="print()">{{ 'sales.ticket.print' | translate }}</button>
-    <a class="btn btn-primary" routerLink="/sales/pos">{{ 'sales.ticket.newSale' | translate }}</a>
+    @if (isStore()) {
+      <a class="btn btn-primary" routerLink="/sales/pos">{{ 'sales.ticket.newSale' | translate }}</a>
+    }
   </div>
 </div>
 

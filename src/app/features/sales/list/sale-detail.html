@@ -1,0 +1,142 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{{ 'sales.list.detail.title' | translate }}</h2>
+  <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <app-problem-alert [error]="error()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (sale(); as item) {
+    <dl class="row mb-4">
+      <dt class="col-sm-4">{{ 'sales.list.column.receipt' | translate }}</dt>
+      <dd class="col-sm-8 font-monospace">{{ item.receiptNumber ?? '—' }}</dd>
+      <dt class="col-sm-4">{{ 'sales.list.column.status' | translate }}</dt>
+      <dd class="col-sm-8">
+        <span class="badge" [class.text-bg-success]="item.status === 'PAID'" [class.text-bg-warning]="item.status === 'ON_HOLD'">
+          {{ 'sales.list.status.' + item.status | translate }}
+        </span>
+      </dd>
+      <dt class="col-sm-4">{{ 'sales.list.detail.paidAt' | translate }}</dt>
+      <dd class="col-sm-8">{{ item.paidAt | localDateTime }}</dd>
+      @if (branchLabel !== null) {
+        <dt class="col-sm-4">{{ 'sales.list.column.branch' | translate }}</dt>
+        <dd class="col-sm-8">{{ branchLabel }}</dd>
+      }
+      <dt class="col-sm-4">{{ 'sales.list.column.register' | translate }}</dt>
+      <dd class="col-sm-8">{{ registerLabel }}</dd>
+      <dt class="col-sm-4">{{ 'sales.list.column.cashier' | translate }}</dt>
+      <dd class="col-sm-8">{{ cashierLabel }}</dd>
+      <dt class="col-sm-4">{{ 'sales.list.detail.received' | translate }}</dt>
+      <dd class="col-sm-8">{{ item.syncedAt ? (item.syncedAt | localDateTime) : ('common.none' | translate) }}</dd>
+      @if (item.discountType) {
+        <dt class="col-sm-4">{{ 'sales.list.detail.discount' | translate }}</dt>
+        <dd class="col-sm-8">
+          {{ ('sales.pos.discount.type.' + item.discountType) | translate }}: {{ item.discountValue }}
+          @if (item.discountAuthorizedBy !== null) {
+            <div class="small text-body-secondary">
+              {{ 'sales.list.detail.authorizedBy' | translate }}: {{ userLabel(item.discountAuthorizedBy) }}
+            </div>
+          }
+        </dd>
+      }
+      @if (item.notes; as notes) {
+        <dt class="col-sm-4">{{ 'sales.list.detail.notes' | translate }}</dt>
+        <dd class="col-sm-8">{{ notes }}</dd>
+      }
+    </dl>
+
+    <h3 class="h6">{{ 'sales.list.detail.lines' | translate }}</h3>
+    <div class="table-responsive mb-4">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'sales.pos.lines.description' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.pos.lines.quantity' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.pos.lines.unitPrice' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.pos.lines.discount' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.pos.lines.total' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of item.lines; track line.lineNumber) {
+            <tr>
+              <td>{{ line.description }}</td>
+              <td class="text-end font-monospace">{{ line.quantity.toFixed(3) }}</td>
+              <td class="text-end font-monospace">{{ money(line.unitPrice) }}</td>
+              <td class="text-end font-monospace">{{ money(line.discountAmount) }}</td>
+              <td class="text-end font-monospace">{{ money(line.total) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12 col-md-6">
+        <h3 class="h6">{{ 'sales.pos.totals.title' | translate }}</h3>
+        <dl class="row mb-0 font-monospace small">
+          <dt class="col-7 fw-normal">{{ 'sales.pos.totals.subtotal' | translate }}</dt>
+          <dd class="col-5 text-end">{{ money(item.totals.subtotal) }}</dd>
+          <dt class="col-7 fw-normal">{{ 'sales.pos.totals.discounts' | translate }}</dt>
+          <dd class="col-5 text-end">{{ money(item.totals.discountTotal) }}</dd>
+          <dt class="col-7 fw-normal">{{ 'sales.pos.totals.exempt' | translate }}</dt>
+          <dd class="col-5 text-end">{{ money(item.totals.exemptAmount) }}</dd>
+          <dt class="col-7 fw-normal">{{ 'sales.pos.totals.taxable15' | translate }}</dt>
+          <dd class="col-5 text-end">{{ money(item.totals.taxableAmount15) }}</dd>
+          <dt class="col-7 fw-normal">{{ 'sales.pos.totals.taxable18' | translate }}</dt>
+          <dd class="col-5 text-end">{{ money(item.totals.taxableAmount18) }}</dd>
+          <dt class="col-7 fw-normal">{{ 'sales.pos.totals.otherTaxable' | translate }}</dt>
+          <dd class="col-5 text-end">{{ money(item.totals.otherTaxableAmount) }}</dd>
+          <dt class="col-7 fw-normal">{{ 'sales.pos.totals.tax' | translate }}</dt>
+          <dd class="col-5 text-end">{{ money(item.totals.taxTotal) }}</dd>
+          <dt class="col-7 fw-bold">{{ 'sales.pos.totals.total' | translate }}</dt>
+          <dd class="col-5 text-end fw-bold">{{ money(item.totals.total) }}</dd>
+        </dl>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <h3 class="h6">{{ 'sales.list.detail.payments' | translate }}</h3>
+        <table class="table table-sm align-middle mb-2">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'sales.list.detail.method' | translate }}</th>
+              <th scope="col" class="text-end">{{ 'sales.list.detail.amount' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (payment of item.payments; track $index) {
+              <tr>
+                <td>
+                  {{ payment.paymentMethodName }}
+                  @if (payment.reference) {
+                    <div class="small text-body-secondary">{{ payment.reference }}</div>
+                  }
+                  @if (payment.cardLast4) {
+                    <div class="small text-body-secondary">{{ 'sales.ticket.cardEnding' | translate: { last4: payment.cardLast4 } }}</div>
+                  }
+                </td>
+                <td class="text-end font-monospace">{{ money(payment.amount) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        @if (item.changeDue !== null && item.changeDue > 0) {
+          <p class="small mb-0">{{ 'sales.list.detail.change' | translate }}: <span class="font-monospace">{{ money(item.changeDue) }}</span></p>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<div class="modal-footer">
+  @if (sale(); as item) {
+    @if (item.status === 'PAID') {
+      <a class="btn btn-outline-primary" [routerLink]="['/sales/tickets', item.id]" (click)="activeModal.close()">
+        {{ 'sales.list.detail.reprint' | translate }}
+      </a>
+    }
+  }
+  <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">{{ 'common.close' | translate }}</button>
+</div>
