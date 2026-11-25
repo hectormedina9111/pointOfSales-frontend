@@ -1,0 +1,154 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{{ 'sales.pos.checkout.title' | translate }}</h2>
+  <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <app-problem-alert [error]="error()" />
+
+  <app-stepper [saving]="saving()" saveLabelKey="sales.pos.checkout.confirm" (finish)="submit()" (cancel)="activeModal.dismiss()">
+    <!-- Paso 1: revisar. Solo lectura. -->
+    <app-step labelKey="sales.pos.checkout.step.review" [controls]="noControls">
+      <div class="table-responsive mb-3">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'sales.pos.lines.description' | translate }}</th>
+              <th scope="col" class="text-end">{{ 'sales.pos.lines.quantity' | translate }}</th>
+              <th scope="col" class="text-end">{{ 'sales.pos.lines.unitPrice' | translate }}</th>
+              <th scope="col" class="text-end">{{ 'sales.pos.lines.total' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (line of quote.lines; track line.lineNumber) {
+              <tr>
+                <td>{{ line.description }} <span class="small text-body-secondary font-monospace">{{ line.sku }}</span></td>
+                <td class="text-end font-monospace">{{ line.quantity.toFixed(3) }}</td>
+                <td class="text-end font-monospace">{{ money(line.unitPrice) }}</td>
+                <td class="text-end font-monospace">{{ money(line.total) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-sale-totals [totals]="quote.totals" [currency]="currency" />
+    </app-step>
+
+    <!-- Paso 2: pagos. La suma debe ser el total exacto. -->
+    <app-step labelKey="sales.pos.checkout.step.payments" [controls]="stepControls">
+      <div class="row g-2 mb-3">
+        <div class="col-4">
+          <div class="border rounded p-2 h-100">
+            <div class="small text-body-secondary">{{ 'sales.pos.checkout.total' | translate }}</div>
+            <div class="h5 font-monospace mb-0">{{ money(quote.totals.total) }}</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="border rounded p-2 h-100">
+            <div class="small text-body-secondary">{{ 'sales.pos.checkout.pending' | translate }}</div>
+            <div class="h5 font-monospace mb-0" [class.text-danger]="pendingCents() > 0" [class.text-warning]="pendingCents() < 0" [class.text-success]="pendingCents() === 0" data-testid="pending-amount">{{ centsMoney(pendingCents()) }}</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="border rounded p-2 h-100">
+            <div class="small text-body-secondary">{{ 'sales.pos.checkout.change' | translate }}</div>
+            <div class="h5 font-monospace mb-0" data-testid="change-amount">{{ centsMoney(changeCents()) }}</div>
+          </div>
+        </div>
+      </div>
+
+      @if (paymentsError(); as key) {
+        <div class="alert alert-warning py-2" role="alert">{{ key | translate }}</div>
+      }
+
+      @for (row of payments.controls; track $index; let i = $index) {
+        <div class="border rounded p-3 mb-2">
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-4">
+              <app-field-label [targetId]="'pay-method-' + i" [required]="true">{{ 'sales.pos.checkout.method' | translate }}</app-field-label>
+              <select [id]="'pay-method-' + i" class="form-select" [formControl]="row.controls.paymentMethodCode"
+                [class.is-invalid]="controlError(row.controls.paymentMethodCode)">
+                <option value="" disabled>{{ 'common.select' | translate }}</option>
+                @for (method of methods(); track method.code) {
+                  <option [value]="method.code">{{ method.name }}</option>
+                }
+              </select>
+              @if (controlError(row.controls.paymentMethodCode); as key) {
+                <div class="invalid-feedback d-block">{{ key | translate }}</div>
+              }
+            </div>
+
+            <div class="col-6 col-md-3">
+              <app-field-label [targetId]="'pay-amount-' + i" [required]="true">{{ 'sales.pos.checkout.amount' | translate }}</app-field-label>
+              <input [id]="'pay-amount-' + i" type="text" inputmode="decimal" class="form-control font-monospace text-end"
+                [formControl]="row.controls.amount" [class.is-invalid]="controlError(row.controls.amount, 'validation.amount')" />
+              @if (controlError(row.controls.amount, 'validation.amount'); as key) {
+                <div class="invalid-feedback d-block">{{ key | translate }}</div>
+              }
+            </div>
+
+            @if (methodOf(row)?.allowsChange) {
+              <div class="col-6 col-md-3">
+                <app-field-label [targetId]="'pay-received-' + i">{{ 'sales.pos.checkout.amountReceived' | translate }}</app-field-label>
+                <input [id]="'pay-received-' + i" type="text" inputmode="decimal" class="form-control font-monospace text-end"
+                  [formControl]="row.controls.amountReceived" [class.is-invalid]="controlError(row.controls.amountReceived, 'validation.amount')" />
+                @if (controlError(row.controls.amountReceived, 'validation.amount'); as key) {
+                  <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                }
+              </div>
+            }
+
+            @if (methodOf(row)?.requiresReference) {
+              <div class="col-12 col-md-4">
+                <app-field-label [targetId]="'pay-reference-' + i" [required]="true">{{ 'sales.pos.checkout.reference' | translate }}</app-field-label>
+                <input [id]="'pay-reference-' + i" type="text" class="form-control" maxlength="60" [formControl]="row.controls.reference" />
+              </div>
+            }
+
+            @if (methodOf(row)?.code === 'CARD') {
+              <div class="col-6 col-md-3">
+                <app-field-label [targetId]="'pay-card-' + i">{{ 'sales.pos.checkout.cardLast4' | translate }}</app-field-label>
+                <input [id]="'pay-card-' + i" type="text" inputmode="numeric" class="form-control font-monospace" maxlength="4"
+                  [formControl]="row.controls.cardLast4" [class.is-invalid]="controlError(row.controls.cardLast4, 'validation.invalid')" />
+                @if (controlError(row.controls.cardLast4, 'validation.invalid'); as key) {
+                  <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                }
+              </div>
+            }
+
+            <div class="col-12 col-md-auto ms-md-auto">
+              <button type="button" class="btn btn-outline-danger w-100" (click)="removeRow(i)">{{ 'sales.pos.checkout.removeRow' | translate }}</button>
+            </div>
+          </div>
+          @if (rowError(row); as key) {
+            <div class="invalid-feedback d-block">{{ key | translate }}</div>
+          }
+        </div>
+      }
+
+      <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-outline-primary" (click)="addRow()">{{ 'sales.pos.checkout.addRow' | translate }}</button>
+        <button type="button" class="btn btn-outline-success" [disabled]="pendingCents() <= 0" (click)="exact()">{{ 'sales.pos.checkout.exact' | translate }}</button>
+      </div>
+    </app-step>
+
+    <!-- Paso 3: confirmar. Resumen antes de cobrar. -->
+    <app-step labelKey="sales.pos.checkout.step.confirm" [controls]="noControls">
+      <app-sale-totals [totals]="quote.totals" [currency]="currency" />
+
+      <h3 class="h6 mt-4">{{ 'sales.pos.checkout.payments' | translate }}</h3>
+      <ul class="list-unstyled mb-3">
+        @for (row of payments.controls; track $index) {
+          <li class="d-flex justify-content-between border-bottom py-1">
+            <span>{{ methodName(row) }}</span>
+            <span class="font-monospace">{{ money(rowAmount(row)) }}</span>
+          </li>
+        }
+      </ul>
+      <p class="mb-0">{{ 'sales.pos.checkout.changeTotal' | translate }}: <span class="font-monospace">{{ centsMoney(changeCents()) }}</span></p>
+      @if (holdId !== null) {
+        <p class="small text-body-secondary mt-2 mb-0">{{ 'sales.pos.checkout.fromHold' | translate }}</p>
+      }
+    </app-step>
+  </app-stepper>
+</div>

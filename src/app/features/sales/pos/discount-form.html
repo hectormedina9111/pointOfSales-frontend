@@ -1,0 +1,31 @@
+<form [formGroup]="form" novalidate (submit)="$event.preventDefault(); submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">{{ titleKey | translate }}</h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <div class="mb-3">
+      <app-field-label targetId="discount-type" [required]="true">{{ 'sales.pos.discount.type' | translate }}</app-field-label>
+      <select id="discount-type" class="form-select" formControlName="type">
+        <option value="PERCENTAGE">{{ 'sales.pos.discount.type.PERCENTAGE' | translate }}</option>
+        <option value="AMOUNT">{{ 'sales.pos.discount.type.AMOUNT' | translate }}</option>
+      </select>
+    </div>
+
+    <div class="mb-0">
+      <app-field-label targetId="discount-value" [required]="true">{{ 'sales.pos.discount.value' | translate }}</app-field-label>
+      <input id="discount-value" type="text" inputmode="decimal" class="form-control font-monospace" formControlName="value"
+        [class.is-invalid]="isInvalid(form.controls.value)" />
+      <app-field-error [control]="form.controls.value" invalidKey="sales.pos.discount.invalidValue" />
+    </div>
+  </div>
+
+  <div class="modal-footer justify-content-between">
+    @if (current.type !== null) {
+      <button type="button" class="btn btn-outline-danger me-auto" (click)="clear()">{{ 'sales.pos.discount.remove' | translate }}</button>
+    }
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">{{ 'common.cancel' | translate }}</button>
+    <button type="submit" class="btn btn-primary">{{ 'sales.pos.discount.apply' | translate }}</button>
+  </div>
+</form>

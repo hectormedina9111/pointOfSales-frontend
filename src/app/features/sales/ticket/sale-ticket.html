@@ -1,0 +1,86 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ 'sales.ticket.title' | translate }}</h1>
+  <div class="d-flex flex-wrap gap-2">
+    <button type="button" class="btn btn-outline-primary" [disabled]="!ticket()" (click)="print()">{{ 'sales.ticket.print' | translate }}</button>
+    <a class="btn btn-primary" routerLink="/sales/pos">{{ 'sales.ticket.newSale' | translate }}</a>
+  </div>
+</div>
+
+@if (invalidId()) {
+  <div class="alert alert-warning" role="alert">{{ 'sales.ticket.invalidId' | translate }}</div>
+} @else if (loading()) {
+  <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+} @else {
+  <app-problem-alert [error]="loadError()" />
+
+  @if (ticket(); as t) {
+    <article class="sale-ticket-print" aria-label="{{ 'sales.ticket.title' | translate }}">
+      <header class="text-center mb-2">
+        <div class="fw-bold">{{ t.company.legalName }}</div>
+        @if (t.company.tradeName) {
+          <div>{{ t.company.tradeName }}</div>
+        }
+        <div>{{ 'sales.ticket.taxId' | translate }}: {{ t.company.taxId }}</div>
+        <div>{{ t.branch.name }}</div>
+        @if (t.branch.address) {
+          <div>{{ t.branch.address }}</div>
+        }
+      </header>
+
+      <hr />
+
+      <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.receipt' | translate }}</span><span>{{ t.receiptNumber }}</span></div>
+      <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.register' | translate }}</span><span>{{ t.cashRegisterName }}</span></div>
+      <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.date' | translate }}</span><span>{{ t.date }} {{ t.time.slice(0, 5) }}</span></div>
+      <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.cashier' | translate }}</span><span>{{ t.cashierName }}</span></div>
+
+      <hr />
+
+      @for (line of t.lines; track $index) {
+        <div class="mb-1">
+          <div>{{ line.description }}</div>
+          <div class="d-flex justify-content-between">
+            <span>{{ line.quantity.toFixed(3) }} x {{ money(line.unitPrice) }}</span>
+            <span>{{ money(line.total) }}</span>
+          </div>
+          @if (line.discount > 0) {
+            <div class="d-flex justify-content-between">
+              <span>{{ 'sales.ticket.discount' | translate }}</span>
+              <span>-{{ money(line.discount) }}</span>
+            </div>
+          }
+        </div>
+      }
+
+      <hr />
+
+      <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.subtotal' | translate }}</span><span>{{ money(t.totals.subtotal) }}</span></div>
+      <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.discounts' | translate }}</span><span>{{ money(t.totals.discountTotal) }}</span></div>
+      <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.exempt' | translate }}</span><span>{{ money(t.totals.exemptAmount) }}</span></div>
+      <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.taxable15' | translate }}</span><span>{{ money(t.totals.taxableAmount15) }}</span></div>
+      <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.taxable18' | translate }}</span><span>{{ money(t.totals.taxableAmount18) }}</span></div>
+      @if (t.totals.otherTaxableAmount !== 0) {
+        <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.otherTaxable' | translate }}</span><span>{{ money(t.totals.otherTaxableAmount) }}</span></div>
+      }
+      <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.tax' | translate }}</span><span>{{ money(t.totals.taxTotal) }}</span></div>
+      <div class="d-flex justify-content-between fw-bold fs-5 mt-1"><span>{{ 'sales.ticket.total' | translate }}</span><span>{{ money(t.totals.total) }}</span></div>
+
+      <hr />
+
+      @for (payment of t.payments; track $index) {
+        <div class="d-flex justify-content-between">
+          <span>
+            {{ payment.paymentMethodName }}
+            @if (payment.cardLast4) {
+              {{ 'sales.ticket.cardEnding' | translate: { last4: payment.cardLast4 } }}
+            }
+          </span>
+          <span>{{ money(payment.amount) }}</span>
+        </div>
+      }
+      @if (t.changeDue !== null && t.changeDue > 0) {
+        <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.change' | translate }}</span><span>{{ money(t.changeDue) }}</span></div>
+      }
+    </article>
+  }
+}

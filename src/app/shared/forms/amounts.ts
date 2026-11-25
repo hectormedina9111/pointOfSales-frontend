@@ -65,3 +65,32 @@ export function formatMoney(value: number | null, currency: string | null, local
     return `${currency} ${value.toFixed(2)}`;
   }
 }
+
+/**
+ * Convierte una cantidad escrita ("2.5", "2.500") a milésimas enteras, para sumar y restar sin
+ * coma flotante. Devuelve null si no es una cantidad válida mayor que cero.
+ */
+export function quantityToThousandths(text: string): number | null {
+  const value = text.trim();
+  if (!QUANTITY_PATTERN.test(value)) {
+    return null;
+  }
+  const [whole, fraction = ''] = value.split('.');
+  const thousandths = Number(whole) * 1000 + Number(fraction.padEnd(3, '0'));
+  return thousandths > 0 ? thousandths : null;
+}
+
+/** Milésimas enteras a cantidad con tres decimales ("2.500"), listo para enviar como texto. */
+export function thousandthsToQuantity(thousandths: number): string {
+  return (thousandths / 1000).toFixed(3);
+}
+
+/** Convierte una cantidad del backend (número) a milésimas enteras. */
+export function numberToThousandths(value: number): number {
+  return Math.round(value * 1000);
+}
+
+/** Centavos enteros a número con dos decimales, solo para mostrar con formatMoney. */
+export function centsToNumber(cents: number): number {
+  return cents / 100;
+}

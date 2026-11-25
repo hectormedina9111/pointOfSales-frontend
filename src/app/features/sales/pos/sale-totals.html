@@ -1,0 +1,37 @@
+@let t = totals();
+<dl class="mb-2">
+  <div class="d-flex justify-content-between">
+    <dt class="fw-normal">{{ 'sales.pos.totals.subtotal' | translate }}</dt>
+    <dd class="font-monospace mb-0">{{ money(t.subtotal) }}</dd>
+  </div>
+  <div class="d-flex justify-content-between">
+    <dt class="fw-normal">{{ 'sales.pos.totals.discounts' | translate }}</dt>
+    <dd class="font-monospace mb-0">{{ money(t.discountTotal) }}</dd>
+  </div>
+  <div class="d-flex justify-content-between">
+    <dt class="fw-normal">{{ 'sales.pos.totals.exempt' | translate }}</dt>
+    <dd class="font-monospace mb-0">{{ money(t.exemptAmount) }}</dd>
+  </div>
+  <div class="d-flex justify-content-between">
+    <dt class="fw-normal">{{ 'sales.pos.totals.taxable15' | translate }}</dt>
+    <dd class="font-monospace mb-0">{{ money(t.taxableAmount15) }}</dd>
+  </div>
+  <div class="d-flex justify-content-between">
+    <dt class="fw-normal">{{ 'sales.pos.totals.taxable18' | translate }}</dt>
+    <dd class="font-monospace mb-0">{{ money(t.taxableAmount18) }}</dd>
+  </div>
+  @if (t.otherTaxableAmount !== 0) {
+    <div class="d-flex justify-content-between">
+      <dt class="fw-normal">{{ 'sales.pos.totals.otherTaxable' | translate }}</dt>
+      <dd class="font-monospace mb-0">{{ money(t.otherTaxableAmount) }}</dd>
+    </div>
+  }
+  <div class="d-flex justify-content-between">
+    <dt class="fw-normal">{{ 'sales.pos.totals.tax' | translate }}</dt>
+    <dd class="font-monospace mb-0">{{ money(t.taxTotal) }}</dd>
+  </div>
+</dl>
+<div class="d-flex justify-content-between align-items-baseline border-top pt-2">
+  <dt class="h5 mb-0">{{ 'sales.pos.totals.total' | translate }}</dt>
+  <dd class="display-6 fw-bold font-monospace mb-0" data-testid="sale-total">{{ money(t.total) }}</dd>
+</div>
