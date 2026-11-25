@@ -59,10 +59,21 @@ El menú lateral sale de los menús que el backend entrega a cada usuario. Cada 
 - **Catálogo:** unidades de medida, impuestos por país, categorías en forma de árbol, y productos con búsqueda y asignación de impuestos por país.
 - **Precios:** listas de precios con sus precios por producto, y consulta de precio (precio unitario, base gravable, impuesto y tasa).
 - **Tiendas:** nodos (solo en la central: estado, latidos, cambios pendientes, código de activación, asignación de sucursal y revocación) y estado de sincronización (solo en una tienda).
-- **Ventas:** las pantallas de punto de venta, ventas realizadas, mi caja y sesiones de caja están en construcción (se muestran como "En construcción" hasta su etapa). Las rutas que no existen muestran "Página no encontrada".
+- **Ventas:** las pantallas de punto de venta y de ventas realizadas están en construcción (se muestran como "En construcción" hasta su etapa). Mi caja y sesiones de caja están en la sección Caja. Las rutas que no existen muestran "Página no encontrada".
 - **Configuración de ventas:** cajas por sucursal (filtros por sucursal y estado; alta y edición solo en la central) y métodos de pago (solo edición en la central; los códigos los define el sistema).
 - **Auditoría:** bitácora paginada con filtros, y comparación de valores antes y después de cada cambio.
 - **Cambio de contraseña:** disponible en la central y en las tiendas, desde el menú del usuario.
+
+## Caja (tienda)
+
+Las pantallas de caja se operan en las tiendas. En la central, las rutas de caja muestran un aviso; la única pantalla que consulta la central es "Sesiones de caja".
+
+- **Mi caja (`/cash/session`):** si el cajero no tiene sesión abierta, un asistente abre la caja en tres pasos (caja activa de la tienda, fondo inicial y resumen). Con sesión abierta muestra la caja, el resumen esperado por método de pago y los movimientos. Desde ahí:
+  - **Depósito y retiro:** piden monto y motivo. Un retiro pide la autorización de un jefe de tienda (usuario y contraseña), salvo que el cajero tenga el privilegio `ACTION_CASH_WITHDRAWAL`. La contraseña del jefe se envía solo en esa petición y no se guarda.
+  - **Cerrar caja:** asistente de tres pasos: conteo por cada método de pago activo (cero permitido), diferencias (vista previa en centavos: rojo si falta, amarillo si sobra, verde si cuadra) y confirmación. Al terminar se muestra el cierre con el botón Imprimir, que imprime solo ese cierre.
+- **Sesiones de caja (`/cash/sessions`):** listado paginado con filtros de estado, caja y rango de fechas. Cada fila abre el detalle con el conteo al cierre y los movimientos. Es de solo lectura.
+
+Los botones aparecen solo si el usuario tiene el privilegio de la acción (`POST_CASH_SESSIONS`, `POST_CASH_SESSIONS_ID_MOVEMENTS`, `POST_CASH_SESSIONS_ID_CLOSE`) y el nodo es una tienda. Los montos se muestran con la moneda de la empresa; si la empresa no está configurada, solo con dos decimales.
 
 ## Reglas de negocio visibles en la web
 
@@ -71,7 +82,7 @@ El menú lateral sale de los menús que el backend entrega a cada usuario. Cada 
 - La contraseña se puede cambiar en una tienda. El cambio surte efecto allí al momento y se replica a la central y a las demás tiendas.
 - Solo la central escribe catálogo, precios, usuarios, roles y privilegios; en una tienda esas pantallas solo muestran datos, y las escrituras responden 403 (`READ_ONLY_NODE`).
 - Cada servidor central atiende un solo país. Las pantallas con selector de país lo preseleccionan.
-- Los montos viajan como texto y la web no hace cálculos con ellos: el backend resuelve precios e impuestos.
+- Los montos viajan como texto y la web no hace cálculos con ellos: el backend resuelve precios e impuestos. La única excepción es la vista previa de diferencias del cierre de caja, que la web calcula en centavos (el backend recalcula al cerrar).
 
 ## Ver la réplica
 

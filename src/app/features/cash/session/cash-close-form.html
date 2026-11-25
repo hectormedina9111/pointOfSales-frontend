@@ -1,0 +1,85 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">{{ 'cash.close.title' | translate }}</h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    @if (loading()) {
+      <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+    } @else {
+      <app-problem-alert [error]="loadError()" />
+      <app-problem-alert [error]="error()" />
+
+      @if (!loadError()) {
+        <app-stepper [saving]="submitting()" saveLabelKey="cash.close.submit" (finish)="submit()" (cancel)="activeModal.dismiss()">
+          <!-- 1. Conteo: un monto por método de pago activo, cero permitido -->
+          <app-step labelKey="cash.close.step.count" [controls]="countList">
+            <p class="small text-body-secondary">{{ 'cash.close.count.intro' | translate }}</p>
+            <div class="row g-3">
+              @for (method of methods; track method.id) {
+                <div class="col-12 col-md-6">
+                  <app-field-label [targetId]="'count-' + method.code" [required]="true">{{ method.name }}</app-field-label>
+                  <input [id]="'count-' + method.code" type="text" inputmode="decimal" class="form-control font-monospace"
+                    [formControl]="countControls[method.code]"
+                    [class.is-invalid]="isInvalid(countControls[method.code])" />
+                  <app-field-error [control]="countControls[method.code]" invalidKey="validation.amount" />
+                </div>
+              }
+            </div>
+          </app-step>
+
+          <!-- 2. Diferencias: vista previa; el backend recalcula al cerrar -->
+          <app-step labelKey="cash.close.step.differences" [controls]="notesControls">
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ 'cash.close.column.method' | translate }}</th>
+                    <th scope="col" class="text-end">{{ 'cash.close.column.expected' | translate }}</th>
+                    <th scope="col" class="text-end">{{ 'cash.close.column.counted' | translate }}</th>
+                    <th scope="col" class="text-end">{{ 'cash.close.column.difference' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of rows(); track row.code) {
+                    <tr>
+                      <td>{{ row.name }}</td>
+                      <td class="text-end font-monospace">{{ money(row.expectedCents) }}</td>
+                      <td class="text-end font-monospace">{{ money(row.countedCents) }}</td>
+                      <td class="text-end">
+                        <span class="badge font-monospace" [class]="badge(row.differenceCents)">{{ money(row.differenceCents) }}</span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr class="fw-semibold">
+                    <td>{{ 'cash.close.column.total' | translate }}</td>
+                    <td class="text-end font-monospace">{{ money(totals().expectedCents) }}</td>
+                    <td class="text-end font-monospace">{{ money(totals().countedCents) }}</td>
+                    <td class="text-end">
+                      <span class="badge font-monospace" [class]="badge(totals().differenceCents)">{{ money(totals().differenceCents) }}</span>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div class="mb-0">
+              <app-field-label targetId="close-notes">{{ 'cash.close.field.notes' | translate }}</app-field-label>
+              <textarea id="close-notes" class="form-control" rows="2" formControlName="notes" maxlength="500"
+                [class.is-invalid]="isInvalid(form.controls.notes)"></textarea>
+              <app-field-error [control]="form.controls.notes" />
+            </div>
+          </app-step>
+
+          <!-- 3. Confirmar: al guardar se cierra la caja y no se puede reabrir -->
+          <app-step labelKey="cash.close.step.confirm">
+            <p class="mb-0">{{ 'cash.close.confirm.text' | translate }}</p>
+          </app-step>
+        </app-stepper>
+      }
+    }
+  </div>
+</form>

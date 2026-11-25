@@ -28,3 +28,23 @@
     animation: none;
   }
 }
+
+// Impresión del cierre de caja: solo se imprime el área marcada con cash-print-area.
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .cash-print-area,
+  .cash-print-area * {
+    visibility: visible;
+  }
+
+  .cash-print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    border: 0;
+  }
+}

@@ -1,0 +1,54 @@
+<form [formGroup]="form" novalidate (submit)="$event.preventDefault(); submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">
+      {{ (type === 'DEPOSIT' ? 'cash.session.deposit.title' : 'cash.session.withdrawal.title') | translate }}
+    </h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <app-problem-alert [error]="error()" />
+
+    <div class="mb-3">
+      <app-field-label targetId="movement-amount" [required]="true">{{ 'cash.session.movement.amount' | translate }}</app-field-label>
+      <input id="movement-amount" type="text" inputmode="decimal" class="form-control font-monospace" formControlName="amount"
+        [class.is-invalid]="isInvalid(form.controls.amount)" />
+      <app-field-error [control]="form.controls.amount" invalidKey="validation.amount" />
+    </div>
+
+    <div class="mb-3">
+      <app-field-label targetId="movement-reason" [required]="true">{{ 'cash.session.movement.reason' | translate }}</app-field-label>
+      <input id="movement-reason" type="text" class="form-control" formControlName="reason" maxlength="200"
+        [class.is-invalid]="isInvalid(form.controls.reason)" />
+      <app-field-error [control]="form.controls.reason" />
+    </div>
+
+    @if (needsAuthorization()) {
+      <fieldset class="border rounded p-3">
+        <legend class="float-none w-auto px-2 h6">{{ 'cash.session.authorization.title' | translate }}</legend>
+        <p class="small text-body-secondary">{{ 'cash.session.authorization.intro' | translate }}</p>
+
+        <div class="mb-3">
+          <app-field-label targetId="authorization-username" [required]="true">{{ 'cash.session.authorization.username' | translate }}</app-field-label>
+          <input id="authorization-username" type="text" class="form-control" formControlName="username" maxlength="50" autocomplete="off"
+            [class.is-invalid]="isInvalid(form.controls.username)" />
+          <app-field-error [control]="form.controls.username" />
+        </div>
+
+        <div class="mb-0">
+          <app-field-label targetId="authorization-password" [required]="true">{{ 'cash.session.authorization.password' | translate }}</app-field-label>
+          <input id="authorization-password" type="password" class="form-control" formControlName="password" maxlength="200" autocomplete="off"
+            [class.is-invalid]="isInvalid(form.controls.password)" />
+          <app-field-error [control]="form.controls.password" />
+        </div>
+      </fieldset>
+    }
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">{{ 'common.cancel' | translate }}</button>
+    <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+      {{ (submitting() ? 'common.saving' : 'cash.session.movement.submit') | translate }}
+    </button>
+  </div>
+</form>
