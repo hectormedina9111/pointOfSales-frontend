@@ -228,6 +228,12 @@ export const routes: Routes = [
       import('./features/inventory/transfers/transfers-list').then((module) => module.TransfersListComponent),
   },
   {
+    path: 'inventory/transfers/new',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/transfers/new/transfer-page').then((module) => module.TransferPageComponent),
+  },
+  {
     path: 'inventory/serials',
     canActivate: [authGuard],
     loadComponent: () =>

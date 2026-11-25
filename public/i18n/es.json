@@ -1358,5 +1358,16 @@
   "inventory.transfers.column.destination": "Destino",
   "inventory.transfers.column.status": "Estado",
   "inventory.transfers.column.sentBy": "Envió",
-  "inventory.transfers.receive": "Recibir"
+  "inventory.transfers.receive": "Recibir",
+  "inventory.transfers.new.title": "Nueva transferencia",
+  "inventory.transfers.send": "Enviar transferencia",
+  "inventory.transfers.step.destination": "Destino",
+  "inventory.transfers.step.lines": "Productos",
+  "inventory.transfers.step.summary": "Resumen",
+  "inventory.transfers.field.origin": "Sucursal de origen",
+  "inventory.transfers.field.destination": "Sucursal de destino",
+  "inventory.transfers.noDestinations": "No hay otra sucursal a la que enviar. Las sucursales de destino deben estar activas y ser distintas del origen.",
+  "inventory.transfers.lines.stock": "Existencia en origen",
+  "inventory.transfers.lines.duplicate": "Este producto ya está en la transferencia.",
+  "inventory.transfers.column.serials": "Seriales"
 }

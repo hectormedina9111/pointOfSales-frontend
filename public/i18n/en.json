@@ -1358,5 +1358,16 @@
   "inventory.transfers.column.destination": "Destination",
   "inventory.transfers.column.status": "Status",
   "inventory.transfers.column.sentBy": "Sent by",
-  "inventory.transfers.receive": "Receive"
+  "inventory.transfers.receive": "Receive",
+  "inventory.transfers.new.title": "New transfer",
+  "inventory.transfers.send": "Send transfer",
+  "inventory.transfers.step.destination": "Destination",
+  "inventory.transfers.step.lines": "Products",
+  "inventory.transfers.step.summary": "Summary",
+  "inventory.transfers.field.origin": "Origin branch",
+  "inventory.transfers.field.destination": "Destination branch",
+  "inventory.transfers.noDestinations": "There is no other branch to send to. Destination branches must be active and different from the origin.",
+  "inventory.transfers.lines.stock": "Stock at origin",
+  "inventory.transfers.lines.duplicate": "This product is already in the transfer.",
+  "inventory.transfers.column.serials": "Serial numbers"
 }
