@@ -6,6 +6,7 @@ import { TranslationService } from '../../../../core/i18n/translation.service';
 import { ProblemAlertComponent } from '../../../../shared/components/problem-alert/problem-alert';
 import { ProductPickerComponent } from '../../../../shared/components/product-picker/product-picker';
 import { FieldLabelComponent } from '../../../../shared/components/field-label/field-label';
+import { SerialChipsComponent } from '../../../../shared/components/serial-chips/serial-chips';
 import { quantityToThousandths } from '../../../../shared/forms/amounts';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { countToThousandths } from '../../shared/inventory-math';
@@ -45,7 +46,7 @@ interface ResolvedRow {
  */
 @Component({
   selector: 'app-document-lines-step',
-  imports: [ProblemAlertComponent, FieldLabelComponent, ProductPickerComponent, TranslatePipe],
+  imports: [ProblemAlertComponent, FieldLabelComponent, ProductPickerComponent, SerialChipsComponent, TranslatePipe],
   templateUrl: './document-lines-step.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -78,10 +79,10 @@ export class DocumentLinesStepComponent {
     this.lineMessage.set(this.draft.addProduct(product) ? null : 'inventory.lines.duplicate');
   }
 
-  /** Cantidad escrita a mano. Si no es válida, se restaura el texto anterior y se avisa. */
+  /** Cantidad escrita a mano. Si no es válida, se restaura el texto anterior y se avisa. Un producto con seriales no se escribe. */
   protected onValueChange(line: DocumentLine, event: Event): void {
     const input = event.target;
-    if (!(input instanceof HTMLInputElement)) {
+    if (!(input instanceof HTMLInputElement) || line.tracksSerials) {
       return;
     }
     const text = input.value.trim();
@@ -135,6 +136,19 @@ export class DocumentLinesStepComponent {
     this.draft.removeLine(line.key);
   }
 
+  protected addSerial(line: DocumentLine, serial: string): void {
+    this.draft.addSerial(line.key, serial);
+  }
+
+  protected removeSerial(line: DocumentLine, serial: string): void {
+    this.draft.removeSerial(line.key, serial);
+  }
+
+  /** Producto de una línea para elegir seriales disponibles: solo en una salida. */
+  protected pickProductId(line: DocumentLine): number | null {
+    return this.draft.type() === 'EXIT' ? line.productId : null;
+  }
+
   private importRows(text: string): void {
     const parsed = parseInventoryCsv(text);
     if (parsed.headerError) {
@@ -156,6 +170,8 @@ export class DocumentLinesStepComponent {
           issues.push(this.issue(row.line, 'inventory.csv.error.lookup'));
         } else if (product === null) {
           issues.push(this.issue(row.line, 'inventory.csv.error.unknownSku', { sku: row.sku }));
+        } else if (product.tracksSerials) {
+          issues.push(this.issue(row.line, 'inventory.csv.error.serialProduct', { sku: row.sku }));
         } else if (seen.has(product.id) || this.draft.hasProduct(product.id)) {
           issues.push(this.issue(row.line, 'inventory.csv.error.duplicate', { sku: row.sku }));
         } else {
