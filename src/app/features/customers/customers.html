@@ -1,0 +1,99 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'customers.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'customers.intro' | translate }}</p>
+  </div>
+  <!-- Las tiendas también dan de alta clientes; editar y desactivar es solo de la central. -->
+  <button *appIfPrivilege="'POST_CUSTOMERS'" type="button" class="btn btn-primary" (click)="create()">
+    {{ 'customers.new' | translate }}
+  </button>
+</div>
+
+<form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" role="search" (submit)="$event.preventDefault()">
+  <div class="col-12 col-lg-6">
+    <label class="form-label small mb-1" for="customer-search">{{ 'customers.search.label' | translate }}</label>
+    <input id="customer-search" type="search" class="form-control" autocomplete="off" formControlName="search"
+      [placeholder]="'customers.search.placeholder' | translate" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-3">
+    <label class="form-label small mb-1" for="customer-filter-active">{{ 'customers.filter.status' | translate }}</label>
+    <select id="customer-filter-active" class="form-select" formControlName="active">
+      <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+      <option [ngValue]="true">{{ 'common.active' | translate }}</option>
+      <option [ngValue]="false">{{ 'common.inactive' | translate }}</option>
+    </select>
+  </div>
+</form>
+
+@if (notice(); as key) {
+  <div class="alert alert-success alert-dismissible" role="status">
+    {{ key | translate }}
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+  </div>
+}
+
+<app-problem-alert [error]="customers.error()" />
+<app-problem-alert [error]="actionError()" />
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'customers.column.name' | translate }}</th>
+        <th scope="col">{{ 'customers.column.document' | translate }}</th>
+        <th scope="col">{{ 'customers.column.externalCode' | translate }}</th>
+        <th scope="col">{{ 'customers.column.phone' | translate }}</th>
+        <th scope="col">{{ 'common.active' | translate }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (customer of customers.items(); track customer.id) {
+        <tr>
+          <td class="fw-semibold">{{ customer.displayName }}</td>
+          <td class="font-monospace">
+            {{ 'customers.documentType.' + customer.documentType | translate }}
+            @if (customer.documentNumber) {
+              <span class="ms-1">{{ customer.documentNumber }}</span>
+            }
+          </td>
+          <td class="font-monospace">{{ customer.externalCode }}</td>
+          <td>{{ customer.phone }}</td>
+          <td>
+            <span class="badge" [class.text-bg-success]="customer.active" [class.text-bg-secondary]="!customer.active">
+              {{ (customer.active ? 'common.active' : 'common.inactive') | translate }}
+            </span>
+          </td>
+          <td class="text-end text-nowrap">
+            @if (customer.finalConsumer) {
+              <span class="badge text-bg-info">{{ 'customers.finalConsumer' | translate }}</span>
+            } @else if (isCentral()) {
+              <button *appIfPrivilege="'PUT_CUSTOMERS_ID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="edit(customer)">
+                {{ 'common.edit' | translate }}
+              </button>
+              @if (customer.active) {
+                <button *appIfPrivilege="'DELETE_CUSTOMERS_ID'" type="button" class="btn btn-sm btn-outline-danger ms-1" (click)="deactivate(customer)">
+                  {{ 'common.deactivate' | translate }}
+                </button>
+              }
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="text-center text-body-secondary">
+            {{ (customers.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="customers.page()"
+  [size]="customers.size()"
+  [total]="customers.total()"
+  (pageChange)="customers.goToPage($event)"
+  (sizeChange)="customers.setSize($event)"
+/>
