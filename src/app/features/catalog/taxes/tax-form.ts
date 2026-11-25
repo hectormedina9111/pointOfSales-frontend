@@ -65,9 +65,9 @@ export class TaxFormComponent implements OnInit {
     });
   }
 
-  /** Países activos, más el del impuesto aunque esté inactivo. */
+  /** Países activos, más el seleccionado aunque esté inactivo. */
   protected countryOptions(): readonly CountryView[] {
-    const current = this.tax?.countryId ?? null;
+    const current = this.form.getRawValue().countryId;
     return this.countries().filter((country) => country.active || country.id === current);
   }
 
@@ -107,6 +107,7 @@ export class TaxFormComponent implements OnInit {
     const tax = this.tax;
     if (tax === null) {
       this.form.controls.countryId.setValue(this.defaultCountryId);
+      this.lockSingleCountry();
       return;
     }
     this.form.patchValue({
@@ -117,5 +118,22 @@ export class TaxFormComponent implements OnInit {
       rate: tax.rate.toFixed(2),
       active: tax.active,
     });
+    this.lockSingleCountry();
+  }
+
+  /**
+   * Con un solo país en el servidor no hay nada que elegir: se preselecciona (si aún no hay
+   * valor) y el selector queda deshabilitado. Con varios países, el selector sigue igual.
+   */
+  private lockSingleCountry(): void {
+    const countries = this.countries();
+    if (countries.length !== 1) {
+      return;
+    }
+    const control = this.form.controls.countryId;
+    if (control.value === null) {
+      control.setValue(countries[0].id);
+    }
+    control.disable();
   }
 }

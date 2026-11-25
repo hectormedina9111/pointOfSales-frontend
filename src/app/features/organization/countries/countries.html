@@ -3,12 +3,16 @@
     <h1 class="h3 mb-1">{{ 'organization.countries.title' | translate }}</h1>
     <p class="text-body-secondary mb-0">{{ 'organization.countries.intro' | translate }}</p>
   </div>
-  @if (isCentral()) {
+  @if (isCentral() && countries.total() === 0) {
     <button *appIfPrivilege="'POST_COUNTRIES'" type="button" class="btn btn-primary" (click)="create()">
       {{ 'organization.countries.new' | translate }}
     </button>
   }
 </div>
+
+@if (countries.total() > 0) {
+  <div class="alert alert-info" role="note">{{ 'organization.countries.singleCountryNotice' | translate }}</div>
+}
 
 @if (notice(); as key) {
   <div class="alert alert-success alert-dismissible" role="status">

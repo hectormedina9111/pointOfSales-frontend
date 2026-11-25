@@ -10,17 +10,19 @@
   }
 </div>
 
-<div class="row g-2 align-items-end mb-3">
-  <div class="col-12 col-md-4 col-lg-3">
-    <label class="form-label small mb-1" for="tax-country-filter">{{ 'catalog.taxes.filter.country' | translate }}</label>
-    <select id="tax-country-filter" class="form-select" [formControl]="countryFilter">
-      <option [ngValue]="null">{{ 'catalog.taxes.filter.allCountries' | translate }}</option>
-      @for (country of countries(); track country.id) {
-        <option [ngValue]="country.id">{{ country.isoCode }} - {{ country.name }}</option>
-      }
-    </select>
+@if (countries().length > 1) {
+  <div class="row g-2 align-items-end mb-3">
+    <div class="col-12 col-md-4 col-lg-3">
+      <label class="form-label small mb-1" for="tax-country-filter">{{ 'catalog.taxes.filter.country' | translate }}</label>
+      <select id="tax-country-filter" class="form-select" [formControl]="countryFilter">
+        <option [ngValue]="null">{{ 'catalog.taxes.filter.allCountries' | translate }}</option>
+        @for (country of countries(); track country.id) {
+          <option [ngValue]="country.id">{{ country.isoCode }} - {{ country.name }}</option>
+        }
+      </select>
+    </div>
   </div>
-</div>
+}
 
 @if (notice(); as key) {
   <div class="alert alert-success alert-dismissible" role="status">

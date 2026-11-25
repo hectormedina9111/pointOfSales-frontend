@@ -156,5 +156,22 @@ export class PriceListFormComponent implements OnInit {
         active: list.active,
       });
     }
+    this.lockSingleCountry();
+  }
+
+  /**
+   * Con un solo país en el servidor no hay nada que elegir: se preselecciona (si aún no hay
+   * valor) y el selector queda deshabilitado. Con varios países, el selector sigue igual.
+   */
+  private lockSingleCountry(): void {
+    const countries = this.countries();
+    if (countries.length !== 1) {
+      return;
+    }
+    const control = this.form.controls.countryId;
+    if (control.value === null) {
+      control.setValue(countries[0].id);
+    }
+    control.disable();
   }
 }
