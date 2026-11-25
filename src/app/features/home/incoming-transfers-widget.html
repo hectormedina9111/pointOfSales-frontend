@@ -1,0 +1,19 @@
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center gap-2">
+    <h2 class="h6 mb-0">{{ 'inventory.transfers.widget.title' | translate }}</h2>
+    <a routerLink="/inventory/transfers" [queryParams]="{ direction: 'INCOMING', status: 'IN_TRANSIT' }" class="small">
+      {{ 'inventory.transfers.widget.link' | translate }}
+    </a>
+  </div>
+  <div class="card-body">
+    <app-problem-alert [error]="error()" />
+    @if (count(); as total) {
+      <p class="mb-0">
+        <span class="h4 me-2" data-testid="incoming-transfers-count">{{ total }}</span>
+        <span class="text-body-secondary">{{ 'inventory.transfers.widget.text' | translate }}</span>
+      </p>
+    } @else if (error() === null) {
+      <p class="text-body-secondary mb-0">{{ 'common.loading' | translate }}</p>
+    }
+  </div>
+</div>

@@ -1396,5 +1396,8 @@
   "inventory.transfers.receive.summary": "Differences",
   "inventory.transfers.receive.summaryLine": "{sku}: received {received} of {sent}.",
   "inventory.transfers.receive.complete": "Everything arrived complete.",
-  "inventory.transfers.receive.confirm": "Confirm receipt"
+  "inventory.transfers.receive.confirm": "Confirm receipt",
+  "inventory.transfers.widget.title": "Incoming transfers in transit",
+  "inventory.transfers.widget.text": "transfers to receive",
+  "inventory.transfers.widget.link": "View transfers"
 }
