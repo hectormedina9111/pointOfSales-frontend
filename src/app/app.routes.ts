@@ -145,6 +145,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/sales/payment-methods/payment-methods').then((module) => module.PaymentMethodsComponent),
   },
+  {
+    path: 'customers',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/customers/customers').then((module) => module.CustomersComponent),
+  },
   // Cualquier otra dirección: página no encontrada, solo para usuarios con sesión.
   {
     path: '**',
