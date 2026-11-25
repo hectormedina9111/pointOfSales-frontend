@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map, catchError, of } from 'rxjs';
 
 import { CompanyApi } from '../../../core/api/company-api';
-import { FINAL_CONSUMER_ID, SalesApi, TicketView } from '../../../core/api/sales-api';
+import { FINAL_CONSUMER_ID, SaleView, SalesApi, TicketView } from '../../../core/api/sales-api';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { SystemInfoService } from '../../../core/system/system-info.service';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
@@ -13,7 +13,9 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 /**
  * Ticket de una venta cobrada, de 80 mm. Solo el área del ticket se imprime (estilos de impresión
  * en styles.scss). Se abre al cobrar, o desde el id de la venta en la dirección. La central también
- * lo sirve, para reimprimir ventas recibidas de las tiendas.
+ * lo sirve, para reimprimir ventas recibidas de las tiendas. Para una devolución, el ticket trae su
+ * título, la venta original, el motivo, los reembolsos y la nota de crédito si se emitió; esos datos
+ * vienen de la venta, no del ticket.
  */
 @Component({
   selector: 'app-sale-ticket',
@@ -34,6 +36,9 @@ export class SaleTicketComponent implements OnInit {
   protected readonly invalidId = signal(false);
   protected readonly loadError = signal<unknown>(null);
   protected readonly ticket = signal<TicketView | null>(null);
+  /** La venta o devolución completa: solo se usa para los datos de una devolución. */
+  protected readonly sale = signal<SaleView | null>(null);
+  protected readonly isReturn = computed(() => this.sale()?.type === 'RETURN');
   protected readonly currency = signal<string | null>(null);
 
   ngOnInit(): void {
@@ -61,6 +66,11 @@ export class SaleTicketComponent implements OnInit {
         this.loadError.set(error);
         this.loading.set(false);
       },
+    });
+
+    this.api.get(id).subscribe({
+      next: (sale) => this.sale.set(sale),
+      error: (error: unknown) => this.loadError.set(error),
     });
   }
 
