@@ -1279,5 +1279,8 @@
   "inventory.csv.error.unitCost": "El costo unitario debe ser un monto con hasta 2 decimales, o quedar vacío.",
   "inventory.csv.error.unknownSku": "No hay un producto activo con el SKU {sku}.",
   "inventory.csv.error.duplicate": "El producto {sku} ya está en el documento.",
-  "inventory.csv.error.lookup": "No se pudo verificar el producto. Inténtalo de nuevo."
+  "inventory.csv.error.lookup": "No se pudo verificar el producto. Inténtalo de nuevo.",
+  "inventory.belowMin.widget.title": "Existencias bajo el mínimo",
+  "inventory.belowMin.widget.text": "productos por debajo de su existencia mínima.",
+  "inventory.belowMin.widget.link": "Ver existencias"
 }

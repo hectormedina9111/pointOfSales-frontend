@@ -1279,5 +1279,8 @@
   "inventory.csv.error.unitCost": "The unit cost must be an amount with up to 2 decimals, or empty.",
   "inventory.csv.error.unknownSku": "There is no active product with SKU {sku}.",
   "inventory.csv.error.duplicate": "The product {sku} is already in the document.",
-  "inventory.csv.error.lookup": "The product could not be checked. Try again."
+  "inventory.csv.error.lookup": "The product could not be checked. Try again.",
+  "inventory.belowMin.widget.title": "Below minimum stock",
+  "inventory.belowMin.widget.text": "products below their minimum stock.",
+  "inventory.belowMin.widget.link": "View stock"
 }

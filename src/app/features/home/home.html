@@ -45,6 +45,8 @@
         </div>
       }
 
+      <app-below-min-stock-widget *appIfPrivilege="'GET_INVENTORY'" />
+
       @if (isCentral()) {
         <app-stores-widget *appIfPrivilege="'GET_STORE_NODES'" />
         <app-sales-today-by-branch-widget *appIfPrivilege="'GET_SALES'" />
