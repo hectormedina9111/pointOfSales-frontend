@@ -791,7 +791,7 @@
   "sales.pos.totals.title": "Totals",
   "sales.pos.totals.empty": "Add products to see the totals.",
   "sales.pos.totals.calculating": "Calculating totals…",
-  "sales.pos.totals.authorizationNote": "This discount needs a store manager's authorization when charging.",
+  "sales.pos.totals.authorizationNote": "This discount needs a store manager's authorization when the order is saved.",
   "sales.pos.totals.subtotal": "Subtotal",
   "sales.pos.totals.discounts": "Discounts",
   "sales.pos.totals.exempt": "Exempt",

@@ -791,7 +791,7 @@
   "sales.pos.totals.title": "Totales",
   "sales.pos.totals.empty": "Agregue productos para ver los totales.",
   "sales.pos.totals.calculating": "Calculando totales…",
-  "sales.pos.totals.authorizationNote": "Este descuento necesita la autorización de un jefe de tienda al cobrar.",
+  "sales.pos.totals.authorizationNote": "Este descuento necesita la autorización de un jefe de tienda al guardar la orden.",
   "sales.pos.totals.subtotal": "Subtotal",
   "sales.pos.totals.discounts": "Descuentos",
   "sales.pos.totals.exempt": "Exento",
