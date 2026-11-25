@@ -56,6 +56,9 @@
       @for (line of t.lines; track $index) {
         <div class="mb-1">
           <div>{{ line.description }}</div>
+          @if (line.serialNumbers && line.serialNumbers.length > 0) {
+            <div class="small text-body-secondary font-monospace">{{ line.serialNumbers.join(', ') }}</div>
+          }
           <div class="d-flex justify-content-between">
             <span>{{ line.quantity.toFixed(3) }} x {{ money(line.unitPrice) }}</span>
             <span>{{ money(line.total) }}</span>
