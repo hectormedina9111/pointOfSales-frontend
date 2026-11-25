@@ -94,3 +94,8 @@ export function numberToThousandths(value: number): number {
 export function centsToNumber(cents: number): number {
   return cents / 100;
 }
+
+/** Suma montos del backend sin coma flotante (en centavos) y devuelve el total con dos decimales. */
+export function sumAmounts(values: readonly number[]): number {
+  return centsToNumber(values.reduce((total, value) => total + numberToCents(value), 0));
+}

@@ -1,0 +1,30 @@
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center gap-2">
+    <h2 class="h6 mb-0">{{ 'home.salesToday.title' | translate }}</h2>
+    <a routerLink="/sales" class="small">{{ 'home.salesToday.viewAll' | translate }}</a>
+  </div>
+  <div class="card-body">
+    <app-problem-alert [error]="error()" />
+
+    @if (loading()) {
+      <p class="text-body-secondary mb-0">{{ 'common.loading' | translate }}</p>
+    } @else {
+      <div class="row g-3">
+        <div class="col-6">
+          <div class="small text-body-secondary">{{ 'home.salesToday.count' | translate }}</div>
+          <div class="h4 mb-0">{{ count() }}</div>
+        </div>
+        <div class="col-6">
+          <div class="small text-body-secondary">{{ 'home.salesToday.total' | translate }}</div>
+          <div class="h4 mb-0 font-monospace">{{ money(total()) }}</div>
+        </div>
+      </div>
+      @if (truncated()) {
+        <p class="small text-body-secondary mt-2 mb-0">{{ 'home.salesToday.truncated' | translate: { size: pageSize } }}</p>
+      }
+      @if (!canViewAll()) {
+        <p class="small text-body-secondary mt-2 mb-0">{{ 'home.salesToday.ownOnly' | translate }}</p>
+      }
+    }
+  </div>
+</div>

@@ -5,11 +5,20 @@ import { SystemInfoService } from '../../core/system/system-info.service';
 import { IfPrivilegeDirective } from '../../shared/directives/if-privilege.directive';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { StoresWidgetComponent } from './stores-widget';
+import { SalesTodayByBranchWidgetComponent } from './sales-today-by-branch-widget';
+import { SalesTodayWidgetComponent } from './sales-today-widget';
 import { SyncSummaryWidgetComponent } from './sync-summary-widget';
 
 @Component({
   selector: 'app-home',
-  imports: [TranslatePipe, IfPrivilegeDirective, StoresWidgetComponent, SyncSummaryWidgetComponent],
+  imports: [
+    TranslatePipe,
+    IfPrivilegeDirective,
+    StoresWidgetComponent,
+    SyncSummaryWidgetComponent,
+    SalesTodayWidgetComponent,
+    SalesTodayByBranchWidgetComponent,
+  ],
   templateUrl: './home.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

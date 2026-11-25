@@ -125,12 +125,16 @@ export interface SaleView {
   readonly payments: readonly PaymentView[];
 }
 
-/** Venta sin líneas ni pagos, como sale en el listado (record SaleSummaryView). */
+/**
+ * Venta sin líneas ni pagos, como sale en el listado (record SaleSummaryView). branchId es la
+ * sucursal de la venta. El listado no trae pagos ni fecha de recepción; eso está en SaleView.
+ */
 export interface SaleSummaryView {
   readonly id: number;
   readonly internalNumber: number | null;
   readonly receiptNumber: string | null;
   readonly status: SaleStatus;
+  readonly branchId: number;
   readonly cashRegisterId: number | null;
   readonly cashSessionId: number | null;
   readonly cashierId: number;
@@ -190,10 +194,16 @@ export interface TicketView {
   readonly changeDue: number | null;
 }
 
-/** Filtros del listado de ventas. Un valor null no filtra. Las fechas son instantes ISO-8601. */
+/**
+ * Filtros del listado de ventas. Un valor null no filtra. Las fechas son instantes ISO-8601.
+ * cashierId solo se usa con ACTION_SALES_VIEW_ALL; sin ese privilegio el servidor muestra solo las
+ * ventas del usuario. branchId solo tiene efecto en la central.
+ */
 export interface SaleFilters {
   readonly status: SaleStatus | null;
   readonly cashSessionId: number | null;
+  readonly cashierId: number | null;
+  readonly branchId: number | null;
   readonly from: string | null;
   readonly to: string | null;
 }
@@ -239,6 +249,12 @@ export class SalesApi {
     }
     if (filters.cashSessionId !== null) {
       params = params.set('cashSessionId', filters.cashSessionId);
+    }
+    if (filters.cashierId !== null) {
+      params = params.set('cashierId', filters.cashierId);
+    }
+    if (filters.branchId !== null) {
+      params = params.set('branchId', filters.branchId);
     }
     if (filters.from !== null) {
       params = params.set('from', filters.from);

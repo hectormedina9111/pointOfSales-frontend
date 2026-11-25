@@ -47,9 +47,11 @@
 
       @if (isCentral()) {
         <app-stores-widget *appIfPrivilege="'GET_STORE_NODES'" />
+        <app-sales-today-by-branch-widget *appIfPrivilege="'GET_SALES'" />
       }
       @if (isStore()) {
         <app-sync-summary-widget *appIfPrivilege="'GET_SYNC_STATUS'" />
+        <app-sales-today-widget *appIfPrivilege="'GET_SALES'" />
       }
     }
   </div>

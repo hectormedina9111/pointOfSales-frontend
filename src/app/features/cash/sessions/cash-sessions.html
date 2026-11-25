@@ -19,6 +19,17 @@
       }
     </select>
   </div>
+  @if (isCentral()) {
+    <div class="col-12 col-sm-6 col-lg-2">
+      <label class="form-label small mb-1" for="session-filter-branch">{{ 'cash.sessions.filter.branch' | translate }}</label>
+      <select id="session-filter-branch" class="form-select" formControlName="branchId">
+        <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+        @for (branch of branches(); track branch.id) {
+          <option [ngValue]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+        }
+      </select>
+    </div>
+  }
   <div class="col-12 col-sm-6 col-lg-2">
     <label class="form-label small mb-1" for="session-filter-from">{{ 'cash.sessions.filter.from' | translate }}</label>
     <input id="session-filter-from" type="date" class="form-control" formControlName="from" />
@@ -28,6 +39,10 @@
     <input id="session-filter-to" type="date" class="form-control" formControlName="to" />
   </div>
 </form>
+
+@if (!canViewAll()) {
+  <p class="small text-body-secondary mb-3">{{ 'cash.sessions.ownOnlyHint' | translate }}</p>
+}
 
 @if (rangeInvalid()) {
   <div class="alert alert-warning" role="alert">{{ 'cash.sessions.rangeInvalid' | translate }}</div>
@@ -40,6 +55,9 @@
   <table class="table table-hover align-middle">
     <thead>
       <tr>
+        @if (isCentral()) {
+          <th scope="col">{{ 'cash.sessions.column.branch' | translate }}</th>
+        }
         <th scope="col">{{ 'cash.sessions.column.register' | translate }}</th>
         <th scope="col">{{ 'cash.sessions.column.cashier' | translate }}</th>
         <th scope="col">{{ 'cash.sessions.column.opened' | translate }}</th>
@@ -54,6 +72,9 @@
     <tbody>
       @for (session of sessions.items(); track session.id) {
         <tr (click)="open(session)">
+          @if (isCentral()) {
+            <td>{{ branchName(session.branchId) }}</td>
+          }
           <td>{{ registerLabel(session.cashRegisterId) }}</td>
           <td>{{ cashierLabel(session.userId) }}</td>
           <td class="small">{{ session.openedAt | localDateTime }}</td>
@@ -72,7 +93,7 @@
         </tr>
       } @empty {
         <tr>
-          <td colspan="9" class="text-center text-body-secondary">
+          <td [attr.colspan]="columnCount()" class="text-center text-body-secondary">
             {{ (sessions.loading() ? 'common.loading' : 'common.empty') | translate }}
           </td>
         </tr>

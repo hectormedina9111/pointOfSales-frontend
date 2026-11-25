@@ -1,4 +1,4 @@
-import { Route, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 import { authGuard } from './core/auth/auth.guard';
 
@@ -105,7 +105,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/audit/audit-log').then((module) => module.AuditLogComponent),
   },
-  // Rutas del menú que aún no tienen pantalla. Cada una se reemplaza por su pantalla en su etapa.
+  {
+    path: 'sales',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/sales/list/sales-list').then((module) => module.SalesListComponent),
+  },
   {
     path: 'sales/pos',
     canActivate: [authGuard],
@@ -117,7 +121,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/sales/ticket/sale-ticket').then((module) => module.SaleTicketComponent),
   },
-  underConstructionRoute('sales'),
   {
     path: 'cash/session',
     canActivate: [authGuard],
@@ -151,13 +154,3 @@ export const routes: Routes = [
       import('./features/under-construction/under-construction').then((module) => module.UnderConstructionComponent),
   },
 ];
-
-/** Ruta de una pantalla que todavía no existe: muestra "En construcción". */
-function underConstructionRoute(path: string): Route {
-  return {
-    path,
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/under-construction/under-construction').then((module) => module.UnderConstructionComponent),
-  };
-}

@@ -5,13 +5,15 @@ import { map, catchError, of } from 'rxjs';
 import { CompanyApi } from '../../../core/api/company-api';
 import { SalesApi, TicketView } from '../../../core/api/sales-api';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { SystemInfoService } from '../../../core/system/system-info.service';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { formatMoney } from '../../../shared/forms/amounts';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 /**
  * Ticket de una venta cobrada, de 80 mm. Solo el área del ticket se imprime (estilos de impresión
- * en styles.scss). Se abre al cobrar, o desde el id de la venta en la dirección.
+ * en styles.scss). Se abre al cobrar, o desde el id de la venta en la dirección. La central también
+ * lo sirve, para reimprimir ventas recibidas de las tiendas.
  */
 @Component({
   selector: 'app-sale-ticket',
@@ -24,6 +26,8 @@ export class SaleTicketComponent implements OnInit {
   private readonly api = inject(SalesApi);
   private readonly companyApi = inject(CompanyApi);
   private readonly language = inject(LanguageService);
+  /** El punto de venta solo existe en las tiendas: la central no ofrece "Nueva venta". */
+  protected readonly isStore = inject(SystemInfoService).isStore;
 
   protected readonly loading = signal(true);
   protected readonly invalidId = signal(false);

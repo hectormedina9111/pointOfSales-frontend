@@ -11,28 +11,24 @@ import {
   CashSessionView,
   CashSessionsApi,
 } from '../../../core/api/cash-sessions-api';
+import { BranchView, BranchesApi } from '../../../core/api/branches-api';
 import { listAllPages } from '../../../core/api/page';
+import { PrivilegesService } from '../../../core/auth/privileges.service';
 import { PaymentMethodView, PaymentMethodsApi } from '../../../core/api/payment-methods-api';
 import { CompanyApi } from '../../../core/api/company-api';
 import { UserView, UsersApi } from '../../../core/api/users-api';
 import { LanguageService } from '../../../core/i18n/language.service';
+import { SystemInfoService } from '../../../core/system/system-info.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { formatMoney } from '../../../shared/forms/amounts';
 import { PagedList } from '../../../shared/paging/paged-list';
+import { endOfDay, startOfDay } from '../../../shared/time/day-range';
 import { LocalDateTimePipe } from '../../../shared/pipes/local-date-time.pipe';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { branchLabel } from '../../../shared/stores/branch-label';
 import { differenceBadgeClass } from '../cash-format';
 import { CashSessionDetailComponent } from './cash-session-detail';
-
-/** Inicio y fin de un día (YYYY-MM-DD) en la hora local, como instantes ISO-8601 en UTC. */
-function startOfDay(date: string): string {
-  return new Date(`${date}T00:00:00`).toISOString();
-}
-
-function endOfDay(date: string): string {
-  return new Date(`${date}T23:59:59.999`).toISOString();
-}
 
 /**
  * Sesiones de caja para el responsable: listado paginado con filtros de estado, caja y rango de
@@ -53,10 +49,21 @@ export class CashSessionsComponent implements OnInit {
   private readonly modal = inject(NgbModal);
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly language = inject(LanguageService);
+  private readonly branchesApi = inject(BranchesApi);
+  private readonly privileges = inject(PrivilegesService);
+  private readonly systemInfo = inject(SystemInfoService);
+
+  /** Solo la central ve todas las sucursales: el filtro y la columna Sucursal aparecen allí. */
+  protected readonly isCentral = this.systemInfo.isCentral;
+  /** Sin ACTION_SALES_VIEW_ALL el servidor muestra solo las sesiones del usuario. */
+  protected readonly canViewAll = computed(() => this.privileges.has('ACTION_SALES_VIEW_ALL'));
+  /** Columnas de la tabla: la de Sucursal solo en la central. */
+  protected readonly columnCount = computed(() => (this.isCentral() ? 10 : 9));
 
   protected readonly filterForm = this.fb.group({
     status: this.fb.control<CashSessionStatus | null>(null),
     cashRegisterId: this.fb.control<number | null>(null),
+    branchId: this.fb.control<number | null>(null),
     from: this.fb.control(''),
     to: this.fb.control(''),
   });
@@ -67,6 +74,10 @@ export class CashSessionsComponent implements OnInit {
   );
 
   protected readonly registers = signal<readonly CashRegisterView[]>([]);
+  protected readonly branches = signal<readonly BranchView[]>([]);
+  protected readonly branchMap = computed(
+    () => new Map(this.branches().map((branch) => [branch.id, branch] as const)),
+  );
   protected readonly users = signal<ReadonlyMap<number, UserView>>(new Map());
   protected readonly methods = signal<readonly PaymentMethodView[]>([]);
   protected readonly currency = signal<string | null>(null);
@@ -84,6 +95,7 @@ export class CashSessionsComponent implements OnInit {
     merge(
       this.filterForm.controls.status.valueChanges,
       this.filterForm.controls.cashRegisterId.valueChanges,
+      this.filterForm.controls.branchId.valueChanges,
       this.filterForm.controls.from.valueChanges,
       this.filterForm.controls.to.valueChanges,
     )
@@ -97,6 +109,13 @@ export class CashSessionsComponent implements OnInit {
       next: (registers) => this.registers.set(registers),
       error: (error: unknown) => this.lookupError.set(error),
     });
+    if (this.isCentral()) {
+      // Sin el privilegio de sucursales, el filtro queda solo en "Todas" y la columna muestra el id.
+      listAllPages((request) => this.branchesApi.list(request), 'code').subscribe({
+        next: (branches) => this.branches.set(branches),
+        error: () => undefined,
+      });
+    }
     listAllPages((request) => this.methodsApi.list(request, null), 'code').subscribe({
       next: (methods) => this.methods.set(methods),
       error: (error: unknown) => this.lookupError.set(error),
@@ -115,6 +134,10 @@ export class CashSessionsComponent implements OnInit {
   protected registerLabel(registerId: number): string {
     const register = this.registerMap().get(registerId);
     return register ? `${register.code} · ${register.name}` : String(registerId);
+  }
+
+  protected branchName(branchId: number): string {
+    return branchLabel(this.branchMap(), branchId) ?? String(branchId);
   }
 
   protected cashierLabel(userId: number): string {
@@ -152,6 +175,7 @@ export class CashSessionsComponent implements OnInit {
     return {
       status: value.status,
       cashRegisterId: value.cashRegisterId,
+      branchId: value.branchId,
       from: value.from === '' ? null : startOfDay(value.from),
       to: value.to === '' ? null : endOfDay(value.to),
     };
