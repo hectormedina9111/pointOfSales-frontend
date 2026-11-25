@@ -1168,5 +1168,7 @@
   "sales.return.foreign.banner": "This sale was made in {branch}, another branch. The return is recorded here and the central node reserves the returned quantities.",
   "error.FOREIGN_RETURNS_DISABLED": "This branch does not accept returns of sales made in other branches.",
   "organization.branches.field.acceptsForeignReturns": "Accepts returns of other branches",
-  "organization.branches.column.foreignReturns": "Returns of other branches"
+  "organization.branches.column.foreignReturns": "Returns of other branches",
+  "stores.nodes.field.returnConflicts": "Return conflicts",
+  "stores.nodes.field.returnConflictsHint": "Returns uploaded that exceeded the returnable quantity because of offline returns. Review them."
 }

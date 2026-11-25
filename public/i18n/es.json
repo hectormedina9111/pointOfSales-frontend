@@ -1168,5 +1168,7 @@
   "sales.return.foreign.banner": "Esta venta se hizo en {branch}, otra sucursal. La devolución se registra aquí y la central aparta las cantidades devueltas.",
   "error.FOREIGN_RETURNS_DISABLED": "Esta sucursal no acepta devoluciones de ventas de otras sucursales.",
   "organization.branches.field.acceptsForeignReturns": "Acepta devoluciones de otras sucursales",
-  "organization.branches.column.foreignReturns": "Devoluciones de otras sucursales"
+  "organization.branches.column.foreignReturns": "Devoluciones de otras sucursales",
+  "stores.nodes.field.returnConflicts": "Conflictos de devolución",
+  "stores.nodes.field.returnConflictsHint": "Devoluciones subidas que superaron lo devolvible por devoluciones sin conexión. Revísalas."
 }
