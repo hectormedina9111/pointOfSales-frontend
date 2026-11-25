@@ -1,0 +1,45 @@
+@if (store.quote(); as quote) {
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'sales.pos.lines.description' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'sales.pos.lines.quantity' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'sales.pos.lines.total' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.saleLineId) {
+          <tr>
+            <td>{{ row.productName }}</td>
+            <td class="text-end font-monospace">{{ row.quantity.toFixed(3) }}</td>
+            <td class="text-end font-monospace">{{ money(row.total) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <dl class="row mb-3">
+    <dt class="col-sm-4">{{ 'sales.return.summary.reason' | translate }}</dt>
+    <dd class="col-sm-8">{{ store.reasonControl.value.trim() }}</dd>
+    <dt class="col-sm-4">{{ 'sales.return.lines.taxTotal' | translate }}</dt>
+    <dd class="col-sm-8 font-monospace">{{ money(quote.taxTotal) }}</dd>
+    <dt class="col-sm-4">{{ 'sales.return.summary.total' | translate }}</dt>
+    <dd class="col-sm-8 h5 font-monospace" data-testid="summary-total">{{ money(quote.total) }}</dd>
+  </dl>
+
+  @if (store.sameDay()) {
+    <h3 class="h6">{{ 'sales.return.summary.refunds' | translate }}</h3>
+    <ul class="list-unstyled mb-0">
+      @for (refund of store.refunds(); track refund.key) {
+        <li class="d-flex justify-content-between">
+          <span>{{ refund.methodName }}</span>
+          <span class="font-monospace">{{ money(amountOf(refund.amount)) }}</span>
+        </li>
+      }
+    </ul>
+  } @else {
+    <div class="alert alert-info mb-0" role="status">{{ 'sales.return.summary.creditNote' | translate }}</div>
+  }
+}

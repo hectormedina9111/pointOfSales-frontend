@@ -117,6 +117,11 @@ export const routes: Routes = [
       import('./features/sales/list/order-detail-page').then((module) => module.OrderDetailPageComponent),
   },
   {
+    path: 'sales/orders/:id/return',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/sales/returns/return-page').then((module) => module.ReturnPageComponent),
+  },
+  {
     path: 'sales/pos',
     canActivate: [authGuard],
     loadComponent: () => import('./features/sales/order/order-page').then((module) => module.OrderPageComponent),

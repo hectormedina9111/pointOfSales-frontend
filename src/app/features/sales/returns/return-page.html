@@ -1,0 +1,41 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'sales.return.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'sales.return.intro' | translate }}</p>
+  </div>
+  <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ 'sales.return.back' | translate }}</button>
+</div>
+
+@if (invalidId()) {
+  <div class="alert alert-warning" role="alert">{{ 'sales.order.invalidId' | translate }}</div>
+} @else if (loading()) {
+  <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+} @else {
+  <app-problem-alert [error]="loadError()" />
+
+  @if (store.returnable(); as returnable) {
+    @if (store.hasReturnable()) {
+      <div class="card">
+        <div class="card-body">
+          <p class="small text-body-secondary mb-3">{{ 'sales.return.receipt' | translate: { receipt: returnable.receiptNumber ?? '—' } }}</p>
+
+          <app-stepper [saving]="store.saving()" saveLabelKey="sales.return.confirm" (finish)="confirm()" (cancel)="back()">
+            <app-step labelKey="sales.return.steps.lines" [controls]="lineControls">
+              <app-return-lines-step />
+            </app-step>
+            <app-step labelKey="sales.return.steps.refund" [controls]="refundControls">
+              <app-return-refund-step />
+            </app-step>
+            <app-step labelKey="sales.return.steps.summary" [controls]="summaryControls">
+              <app-return-summary-step />
+            </app-step>
+          </app-stepper>
+
+          <app-problem-alert [error]="store.actionError()" />
+        </div>
+      </div>
+    } @else {
+      <div class="alert alert-info" role="alert">{{ 'sales.return.nothingLeft' | translate }}</div>
+    }
+  }
+}

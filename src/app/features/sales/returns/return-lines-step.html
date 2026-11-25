@@ -1,0 +1,63 @@
+<p class="text-body-secondary">{{ 'sales.return.lines.intro' | translate }}</p>
+
+@if (store.returnable(); as returnable) {
+  <div class="d-flex justify-content-end mb-2">
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="store.returnAll()">
+      {{ 'sales.return.lines.returnAll' | translate }}
+    </button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'sales.pos.lines.description' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'sales.return.lines.sold' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'sales.return.lines.returned' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'sales.return.lines.returnable' | translate }}</th>
+          <th scope="col">{{ 'sales.return.lines.quantity' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'sales.pos.lines.total' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of returnable.lines; track line.saleLineId; let i = $index) {
+          <tr>
+            <td class="fw-semibold">{{ line.productName }}</td>
+            <td class="text-end font-monospace">{{ line.quantity.toFixed(3) }}</td>
+            <td class="text-end font-monospace">{{ line.returnedQuantity.toFixed(3) }}</td>
+            <td class="text-end font-monospace">{{ line.returnableQuantity.toFixed(3) }}</td>
+            <td>
+              <input type="text" inputmode="decimal" class="form-control form-control-sm text-end font-monospace"
+                style="width: 9rem;" [formControl]="store.lineControl(i)"
+                [attr.aria-label]="'sales.return.lines.quantity' | translate"
+                [class.is-invalid]="lineError(i, line.returnableQuantity) !== null" />
+              @if (lineError(i, line.returnableQuantity); as key) {
+                <div class="small text-danger mt-1">{{ key | translate: { max: line.returnableQuantity.toFixed(3) } }}</div>
+              }
+            </td>
+            <td class="text-end font-monospace">{{ lineTotal(line.saleLineId) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <app-problem-alert [error]="store.quoteError()" />
+
+  <div class="d-flex flex-wrap justify-content-end gap-4 mt-3">
+    @if (store.quote(); as quote) {
+      <div class="small">
+        {{ 'sales.return.lines.taxTotal' | translate }}:
+        <span class="font-monospace" data-testid="return-tax">{{ money(quote.taxTotal) }}</span>
+      </div>
+      <div>
+        {{ 'sales.return.lines.total' | translate }}:
+        <span class="h5 font-monospace mb-0" data-testid="return-total">{{ money(quote.total) }}</span>
+      </div>
+    } @else if (store.quotePending()) {
+      <div class="small text-body-secondary">{{ 'sales.return.lines.calculating' | translate }}</div>
+    }
+  </div>
+
+  <p class="small text-body-secondary mt-2 mb-0">{{ 'sales.return.lines.none' | translate }}</p>
+}

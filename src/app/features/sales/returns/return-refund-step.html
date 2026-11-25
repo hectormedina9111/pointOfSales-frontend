@@ -1,0 +1,124 @@
+<app-field-label targetId="return-reason" [required]="true">{{ 'sales.return.reason.label' | translate }}</app-field-label>
+<textarea id="return-reason" class="form-control" rows="3" maxlength="300" [formControl]="store.reasonControl"
+  [class.is-invalid]="isInvalid(store.reasonControl)"></textarea>
+<app-field-error [control]="store.reasonControl" />
+<div class="form-text mb-4">{{ 'sales.return.reason.hint' | translate: { max: reasonMax } }}</div>
+
+@if (store.sameDay()) {
+  <h3 class="h6">{{ 'sales.return.refund.title' | translate }}</h3>
+  <p class="small text-body-secondary">{{ 'sales.return.refund.sameDayIntro' | translate }}</p>
+
+  <app-problem-alert [error]="store.quoteError()" />
+  @if (store.quotePending()) {
+    <p class="small text-body-secondary">{{ 'sales.return.refund.quotePending' | translate }}</p>
+  }
+
+  <div class="row g-2 mb-3">
+    <div class="col-4">
+      <div class="border rounded p-2 h-100">
+        <div class="small text-body-secondary">{{ 'sales.return.refund.total' | translate }}</div>
+        <div class="font-monospace fw-semibold" data-testid="refund-total">{{ money(store.totalCents()) }}</div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="border rounded p-2 h-100">
+        <div class="small text-body-secondary">{{ 'sales.return.refund.refunded' | translate }}</div>
+        <div class="font-monospace fw-semibold" data-testid="refund-refunded">{{ money(store.refundedCents()) }}</div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="border rounded p-2 h-100">
+        <div class="small text-body-secondary">{{ 'sales.return.refund.pending' | translate }}</div>
+        <div class="font-monospace fw-semibold" data-testid="refund-pending"
+          [class.text-danger]="store.pendingCents() > 0" [class.text-warning]="store.pendingCents() < 0"
+          [class.text-success]="store.pendingCents() === 0">{{ money(store.pendingCents()) }}</div>
+      </div>
+    </div>
+  </div>
+
+  @if (store.refunds().length === 0) {
+    <p class="text-body-secondary small">{{ 'sales.return.refund.none' | translate }}</p>
+  } @else {
+    <div class="table-responsive mb-3">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'sales.list.detail.method' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.list.detail.amount' | translate }}</th>
+            <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (refund of store.refunds(); track refund.key) {
+            <tr>
+              <td>
+                {{ refund.methodName }}
+                @if (refund.reference) {
+                  <div class="small text-body-secondary">{{ refund.reference }}</div>
+                }
+              </td>
+              <td class="text-end font-monospace">{{ refund.amount }}</td>
+              <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="store.removeRefund(refund.key)">{{ 'common.delete' | translate }}</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (store.refunds().length > 0 && store.pendingCents() !== 0) {
+    <div class="alert alert-warning py-2" role="alert">{{ 'sales.return.refund.mismatch' | translate }}</div>
+  }
+
+  <form class="border rounded p-3" [formGroup]="form" novalidate (ngSubmit)="add()">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-6">
+        <app-field-label targetId="return-refund-method" [required]="true">{{ 'sales.return.refund.method' | translate }}</app-field-label>
+        <select id="return-refund-method" class="form-select" formControlName="paymentMethodCode"
+          [class.is-invalid]="isInvalid(form.controls.paymentMethodCode)">
+          <option value="" disabled>{{ 'common.select' | translate }}</option>
+          @for (option of store.refundOptions(); track option.code) {
+            <option [value]="option.code">{{ option.name }}</option>
+          }
+        </select>
+        <app-field-error [control]="form.controls.paymentMethodCode" />
+        @if (selectedOption(); as option) {
+          @if (option.refundable !== null) {
+            <div class="form-text">{{ 'sales.return.refund.available' | translate: { max: availableText(option) } }}</div>
+          }
+        }
+      </div>
+
+      <div class="col-6 col-md-3">
+        <app-field-label targetId="return-refund-amount" [required]="true">{{ 'sales.return.refund.amount' | translate }}</app-field-label>
+        <input id="return-refund-amount" type="text" inputmode="decimal" class="form-control font-monospace text-end"
+          formControlName="amount" [class.is-invalid]="isInvalid(form.controls.amount)" />
+        <app-field-error [control]="form.controls.amount" invalidKey="validation.amount" />
+      </div>
+
+      @if (selectedOption()?.requiresReference) {
+        <div class="col-12 col-md-6">
+          <app-field-label targetId="return-refund-reference" [required]="true">{{ 'sales.return.refund.reference' | translate }}</app-field-label>
+          <input id="return-refund-reference" type="text" class="form-control" [attr.maxlength]="referenceMax" formControlName="reference" />
+        </div>
+      }
+
+      <div class="col-12">
+        @if (ruleError(); as key) {
+          <div class="alert alert-warning py-2 mb-2" role="alert">{{ key | translate }}</div>
+        }
+        <button type="submit" class="btn btn-outline-primary" [disabled]="!store.quoteReady()">{{ 'sales.return.refund.add' | translate }}</button>
+      </div>
+    </div>
+  </form>
+} @else {
+  <div class="alert alert-info mb-0" role="status">
+    @if (store.quote() !== null) {
+      {{ 'sales.return.creditNote.info' | translate: { amount: money(store.totalCents()) } }}
+    } @else {
+      {{ 'sales.return.lines.calculating' | translate }}
+    }
+  </div>
+}
