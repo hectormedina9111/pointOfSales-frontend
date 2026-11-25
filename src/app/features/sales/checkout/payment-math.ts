@@ -69,13 +69,37 @@ export function suggestedAmount(pendingCents: number): string {
 }
 
 /**
+ * Ajusta lo escrito al monto pendiente. En un método que da vuelto (efectivo), si se escribe más de
+ * lo que falta, se aplica solo lo pendiente y lo escrito queda como monto recibido: la diferencia es
+ * el vuelto. Otros métodos no se ajustan; paymentError rechaza que superen lo pendiente.
+ */
+export function applyToPending(input: PaymentInput, method: PaymentMethodRules, pendingCents: number): PaymentInput {
+  const amount = amountToCents(input.amount);
+  if (!method.allowsChange || amount === null || pendingCents <= 0 || amount <= pendingCents) {
+    return input;
+  }
+  const received = amountToCents(input.amountReceived);
+  return {
+    ...input,
+    amount: centsToAmount(pendingCents),
+    amountReceived: centsToAmount(Math.max(amount, received ?? 0)),
+  };
+}
+
+/**
  * Clave de traducción del error de un pago que se quiere agregar, o null si es válido. Las reglas
  * de cada método (referencia, monto recibido) dependen de la configuración de ese método.
  */
-export function paymentError(input: PaymentInput, method: PaymentMethodRules): string | null {
+export function paymentError(input: PaymentInput, method: PaymentMethodRules, pendingCents: number): string | null {
   const amount = amountToCents(input.amount);
   if (amount === null || amount <= 0) {
     return 'error.INVALID_PAYMENT_AMOUNT';
+  }
+  if (pendingCents <= 0) {
+    return 'sales.checkout.nothingPending';
+  }
+  if (amount > pendingCents) {
+    return 'sales.checkout.amountExceedsPending';
   }
   if (method.requiresReference && input.reference.trim() === '') {
     return 'sales.checkout.referenceRequired';
