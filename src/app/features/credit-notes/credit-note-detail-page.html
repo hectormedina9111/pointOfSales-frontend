@@ -81,8 +81,8 @@
                   <tr>
                     <td class="small">{{ use.createdAt | localDateTime }}</td>
                     <td>
-                      @if (storeNumber(use.storeNodeId); as number) {
-                        {{ 'stores.nodes.storeName' | translate: { number } }}
+                      @if (storeNumber(use.storeNodeId); as storeNo) {
+                        {{ 'stores.nodes.storeName' | translate: { number: storeNo } }}
                       } @else {
                         {{ 'creditNotes.uses.unknownStore' | translate: { id: use.storeNodeId } }}
                       }
