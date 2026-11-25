@@ -222,6 +222,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'inventory/transfers',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/transfers/transfers-list').then((module) => module.TransfersListComponent),
+  },
+  {
     path: 'inventory/serials',
     canActivate: [authGuard],
     loadComponent: () =>
