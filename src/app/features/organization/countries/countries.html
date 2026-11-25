@@ -17,6 +17,9 @@
   </div>
 }
 
+@if (isStore()) {
+  <div class="alert alert-info" role="note">{{ 'organization.countries.storeOnly' | translate }}</div>
+} @else {
 <app-problem-alert [error]="countries.error()" />
 
 <div class="table-responsive">
@@ -71,3 +74,5 @@
   (pageChange)="countries.goToPage($event)"
   (sizeChange)="countries.setSize($event)"
 />
+}
+

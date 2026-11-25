@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { listAllPages } from '../../../core/api/page';
 import { BranchView, BranchesApi } from '../../../core/api/branches-api';
-import { CountriesApi, CountryView } from '../../../core/api/countries-api';
+import { CountryView } from '../../../core/api/countries-api';
 import { SystemInfoService } from '../../../core/system/system-info.service';
+import { CentralCountriesService } from '../../../core/system/central-countries.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { IfPrivilegeDirective } from '../../../shared/directives/if-privilege.directive';
@@ -24,7 +24,7 @@ import { BranchFormComponent } from './branch-form';
 })
 export class BranchesComponent implements OnInit {
   private readonly api = inject(BranchesApi);
-  private readonly countriesApi = inject(CountriesApi);
+  private readonly centralCountries = inject(CentralCountriesService);
   private readonly modal = inject(NgbModal);
 
   /** Solo la central escribe: en una tienda no aparece ningún botón de cambio. */
@@ -40,7 +40,7 @@ export class BranchesComponent implements OnInit {
 
   ngOnInit(): void {
     this.branches.load();
-    listAllPages((request) => this.countriesApi.list(request), 'isoCode').subscribe({
+    this.centralCountries.list().subscribe({
       next: (countries) => this.countries.set(countries),
     });
   }

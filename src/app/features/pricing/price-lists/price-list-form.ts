@@ -3,9 +3,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { CountriesApi, CountryView } from '../../../core/api/countries-api';
-import { listAllPages } from '../../../core/api/page';
+import { CountryView } from '../../../core/api/countries-api';
 import { PriceListRequest, PriceListView, PriceListsApi, PricingMethod } from '../../../core/api/price-lists-api';
+import { CentralCountriesService } from '../../../core/system/central-countries.service';
 import { FieldErrorComponent, isInvalidControl } from '../../../shared/components/field-error/field-error';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { RATE_PATTERN, formatAmount, percentValidator } from '../../../shared/forms/amounts';
@@ -31,7 +31,7 @@ const PRICING_METHODS: readonly PricingMethod[] = ['FIXED_PRICE', 'PERCENT_OFF_B
 })
 export class PriceListFormComponent implements OnInit {
   private readonly api = inject(PriceListsApi);
-  private readonly countriesApi = inject(CountriesApi);
+  private readonly centralCountries = inject(CentralCountriesService);
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly activeModal = inject(NgbActiveModal);
 
@@ -68,7 +68,7 @@ export class PriceListFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    listAllPages((request) => this.countriesApi.list(request), 'isoCode').subscribe({
+    this.centralCountries.list().subscribe({
       next: (countries) => {
         this.countries.set(countries);
         this.lookupsLoading.set(false);

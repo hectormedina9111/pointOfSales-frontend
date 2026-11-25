@@ -160,6 +160,7 @@
   "validation.uppercaseLetters": "Use solo letras mayúsculas, sin espacios.",
   "organization.countries.title": "Países",
   "organization.countries.intro": "Países donde opera la empresa. Los impuestos y las sucursales dependen de ellos.",
+  "organization.countries.storeOnly": "Los países solo se administran en la central.",
   "organization.countries.new": "Nuevo país",
   "organization.countries.saved": "País guardado.",
   "organization.countries.column.isoCode": "ISO",

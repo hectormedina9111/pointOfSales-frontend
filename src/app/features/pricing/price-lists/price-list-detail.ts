@@ -3,12 +3,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable, catchError, forkJoin, map, of, switchMap, tap } from 'rxjs';
 
-import { CountriesApi } from '../../../core/api/countries-api';
 import { PriceListItemView, PriceListItemsApi } from '../../../core/api/price-list-items-api';
 import { PriceListView, PriceListsApi } from '../../../core/api/price-lists-api';
-import { Page, PageRequest, listAllPages } from '../../../core/api/page';
+import { Page, PageRequest } from '../../../core/api/page';
 import { ProductView, ProductsApi } from '../../../core/api/products-api';
 import { SystemInfoService } from '../../../core/system/system-info.service';
+import { CentralCountriesService } from '../../../core/system/central-countries.service';
 import { openConfirmDialog } from '../../../shared/components/confirm-dialog/confirm-dialog';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination';
 import { ProductPickerComponent } from '../../../shared/components/product-picker/product-picker';
@@ -41,7 +41,7 @@ export class PriceListDetailComponent implements OnInit {
   private readonly listsApi = inject(PriceListsApi);
   private readonly itemsApi = inject(PriceListItemsApi);
   private readonly productsApi = inject(ProductsApi);
-  private readonly countriesApi = inject(CountriesApi);
+  private readonly centralCountries = inject(CentralCountriesService);
   private readonly route = inject(ActivatedRoute);
   private readonly modal = inject(NgbModal);
 
@@ -80,7 +80,7 @@ export class PriceListDetailComponent implements OnInit {
       next: (list) => this.priceList.set(list),
       error: (error: unknown) => this.loadError.set(error),
     });
-    listAllPages((request) => this.countriesApi.list(request), 'isoCode').subscribe({
+    this.centralCountries.list().subscribe({
       next: (countries) => this.countryCodes.set(new Map(countries.map((country) => [country.id, country.isoCode] as const))),
     });
     this.items.load();

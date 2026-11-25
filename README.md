@@ -28,7 +28,7 @@ Pantallas de administración. Cada botón solo aparece si el usuario tiene su pr
 
 Pantallas de datos maestros. La central escribe; en una tienda las pantallas solo muestran los datos y los botones de cambio no aparecen. Cada botón también exige su privilegio (`POST_PRODUCTS`, `PUT_PRODUCTS_ID`, etc.).
 
-- **Países** (`Organización > Países`): listado paginado con alta y edición. Incluye el proveedor de facturación fiscal (`HN_SAR` o `NONE`).
+- **Países** (`Organización > Países`): listado paginado con alta y edición. Incluye el proveedor de facturación fiscal (`HN_SAR` o `NONE`). Los países solo existen en la central: en una tienda el menú no los muestra y la pantalla solo indica que se administran en la central.
 - **Empresa** (`Organización > Empresa`): un solo formulario. Mientras la empresa no esté configurada, el formulario aparece vacío con un aviso; se guarda con `PUT /company`.
 - **Sucursales** (`Organización > Sucursales`): en la central, listado de todas las sucursales, con alta y edición. En una tienda, solo aparece la sucursal que le asignó la central. Permite elegir país y lista de precios por defecto (opcional).
 - **Unidades de medida** (`Catálogo > Unidades de medida`): listado paginado con alta y edición. Indica si la unidad admite decimales.

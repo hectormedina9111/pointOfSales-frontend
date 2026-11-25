@@ -5,11 +5,12 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
 
 import { CategoriesApi, CategoryView } from '../../../core/api/categories-api';
-import { CountriesApi, CountryView } from '../../../core/api/countries-api';
+import { CountryView } from '../../../core/api/countries-api';
 import { listAllPages } from '../../../core/api/page';
 import { ProductRequest, ProductType, ProductView, ProductsApi } from '../../../core/api/products-api';
 import { TaxView, TaxesApi } from '../../../core/api/taxes-api';
 import { UnitOfMeasureView, UnitsApi } from '../../../core/api/units-api';
+import { CentralCountriesService } from '../../../core/system/central-countries.service';
 import { FieldErrorComponent, isInvalidControl } from '../../../shared/components/field-error/field-error';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { AMOUNT_PATTERN, QUANTITY_PATTERN, formatAmount } from '../../../shared/forms/amounts';
@@ -33,7 +34,7 @@ export class ProductFormComponent implements OnInit {
   private readonly categoriesApi = inject(CategoriesApi);
   private readonly taxesApi = inject(TaxesApi);
   private readonly unitsApi = inject(UnitsApi);
-  private readonly countriesApi = inject(CountriesApi);
+  private readonly centralCountries = inject(CentralCountriesService);
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly activeModal = inject(NgbActiveModal);
 
@@ -87,7 +88,7 @@ export class ProductFormComponent implements OnInit {
       categories: listAllPages((request) => this.categoriesApi.list(request), 'name'),
       taxes: listAllPages((request) => this.taxesApi.list(request), 'code'),
       units: listAllPages((request) => this.unitsApi.list(request), 'code'),
-      countries: listAllPages((request) => this.countriesApi.list(request), 'isoCode'),
+      countries: this.centralCountries.list(),
     }).subscribe({
       next: ({ categories, taxes, units, countries }) => {
         this.categories.set(flattenTree(categories, (c) => c.id, (c) => c.parentId));

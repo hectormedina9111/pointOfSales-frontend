@@ -3,11 +3,12 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { forkJoin } from 'rxjs';
 
 import { BranchView, BranchesApi } from '../../../core/api/branches-api';
-import { CountriesApi, CountryView } from '../../../core/api/countries-api';
+import { CountryView } from '../../../core/api/countries-api';
 import { listAllPages } from '../../../core/api/page';
 import { PriceListView, PriceListsApi } from '../../../core/api/price-lists-api';
 import { ProductPriceView, ProductPricesApi } from '../../../core/api/product-prices-api';
 import { ProductView } from '../../../core/api/products-api';
+import { CentralCountriesService } from '../../../core/system/central-countries.service';
 import { FieldErrorComponent, isInvalidControl } from '../../../shared/components/field-error/field-error';
 import { ProductPickerComponent } from '../../../shared/components/product-picker/product-picker';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
@@ -30,7 +31,7 @@ export class PriceCheckComponent implements OnInit {
   private readonly api = inject(ProductPricesApi);
   private readonly priceListsApi = inject(PriceListsApi);
   private readonly branchesApi = inject(BranchesApi);
-  private readonly countriesApi = inject(CountriesApi);
+  private readonly centralCountries = inject(CentralCountriesService);
   private readonly fb = inject(NonNullableFormBuilder);
 
   protected readonly form = this.fb.group({
@@ -60,7 +61,7 @@ export class PriceCheckComponent implements OnInit {
     forkJoin({
       priceLists: listAllPages((request) => this.priceListsApi.list(request), 'code'),
       branches: listAllPages((request) => this.branchesApi.list(request), 'code'),
-      countries: listAllPages((request) => this.countriesApi.list(request), 'isoCode'),
+      countries: this.centralCountries.list(),
     }).subscribe({
       next: ({ priceLists, branches, countries }) => {
         this.priceLists.set(priceLists);

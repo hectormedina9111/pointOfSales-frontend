@@ -1,5 +1,5 @@
 <nav [attr.aria-label]="'nav.sidebar' | translate">
-  @for (item of items(); track item.code) {
+  @for (item of visibleItems(); track item.code) {
     @if (item.children.length > 0) {
       <h2 class="h6 text-uppercase text-body-secondary mt-3 mb-1 px-2">{{ label(item) }}</h2>
       <div class="nav flex-column">

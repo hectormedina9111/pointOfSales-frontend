@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
 
-import { CountriesApi, CountryView } from '../../../core/api/countries-api';
+import { CountryView } from '../../../core/api/countries-api';
 import { listAllPages } from '../../../core/api/page';
 import { ProductTaxView, ProductView, ProductsApi } from '../../../core/api/products-api';
 import { TaxView, TaxesApi } from '../../../core/api/taxes-api';
+import { CentralCountriesService } from '../../../core/system/central-countries.service';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { formatAmount } from '../../../shared/forms/amounts';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
@@ -29,7 +30,7 @@ interface CountryTaxRow {
 })
 export class ProductTaxesComponent implements OnInit {
   private readonly api = inject(ProductsApi);
-  private readonly countriesApi = inject(CountriesApi);
+  private readonly centralCountries = inject(CentralCountriesService);
   private readonly taxesApi = inject(TaxesApi);
   protected readonly activeModal = inject(NgbActiveModal);
 
@@ -45,7 +46,7 @@ export class ProductTaxesComponent implements OnInit {
 
   ngOnInit(): void {
     forkJoin({
-      countries: listAllPages((request) => this.countriesApi.list(request), 'isoCode'),
+      countries: this.centralCountries.list(),
       taxes: listAllPages((request) => this.taxesApi.list(request), 'code'),
       current: this.api.taxes(this.product.id),
     }).subscribe({

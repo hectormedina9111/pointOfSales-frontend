@@ -3,10 +3,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { CountriesApi, CountryView } from '../../../core/api/countries-api';
-import { listAllPages } from '../../../core/api/page';
+import { CountryView } from '../../../core/api/countries-api';
 import { TaxView, TaxesApi } from '../../../core/api/taxes-api';
 import { SystemInfoService } from '../../../core/system/system-info.service';
+import { CentralCountriesService } from '../../../core/system/central-countries.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { IfPrivilegeDirective } from '../../../shared/directives/if-privilege.directive';
@@ -24,12 +24,15 @@ import { TaxFormComponent } from './tax-form';
 })
 export class TaxesComponent implements OnInit {
   private readonly api = inject(TaxesApi);
-  private readonly countriesApi = inject(CountriesApi);
+  private readonly centralCountries = inject(CentralCountriesService);
   private readonly modal = inject(NgbModal);
   private readonly fb = inject(NonNullableFormBuilder);
 
   /** Solo la central escribe: en una tienda no aparece ningún botón de cambio. */
-  protected readonly isCentral = inject(SystemInfoService).isCentral;
+  protected readonly systemInfo = inject(SystemInfoService);
+  protected readonly isCentral = this.systemInfo.isCentral;
+  /** En una tienda no hay países que filtrar: el filtro no aparece. */
+  protected readonly isStore = this.systemInfo.isStore;
   /** Filtro por país. Null muestra los impuestos de todos los países. */
   protected readonly countryFilter = this.fb.control<number | null>(null);
   protected readonly taxes = new PagedList<TaxView>(
@@ -49,7 +52,7 @@ export class TaxesComponent implements OnInit {
 
   ngOnInit(): void {
     this.taxes.load();
-    listAllPages((request) => this.countriesApi.list(request), 'isoCode').subscribe({
+    this.centralCountries.list().subscribe({
       next: (countries) => this.countries.set(countries),
     });
   }

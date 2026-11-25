@@ -11,15 +11,17 @@
 </div>
 
 <form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" (submit)="$event.preventDefault()">
-  <div class="col-12 col-md-4 col-lg-3">
-    <label class="form-label small mb-1" for="price-list-filter-country">{{ 'pricing.priceLists.filter.country' | translate }}</label>
-    <select id="price-list-filter-country" class="form-select" formControlName="countryId">
-      <option [ngValue]="null">{{ 'pricing.priceLists.filter.allCountries' | translate }}</option>
-      @for (country of countries(); track country.id) {
-        <option [ngValue]="country.id">{{ country.isoCode }} - {{ country.name }}</option>
-      }
-    </select>
-  </div>
+  @if (!isStore()) {
+    <div class="col-12 col-md-4 col-lg-3">
+      <label class="form-label small mb-1" for="price-list-filter-country">{{ 'pricing.priceLists.filter.country' | translate }}</label>
+      <select id="price-list-filter-country" class="form-select" formControlName="countryId">
+        <option [ngValue]="null">{{ 'pricing.priceLists.filter.allCountries' | translate }}</option>
+        @for (country of countries(); track country.id) {
+          <option [ngValue]="country.id">{{ country.isoCode }} - {{ country.name }}</option>
+        }
+      </select>
+    </div>
+  }
   <div class="col-6 col-md-3 col-lg-2">
     <label class="form-label small mb-1" for="price-list-filter-active">{{ 'pricing.priceLists.filter.status' | translate }}</label>
     <select id="price-list-filter-active" class="form-select" formControlName="active">

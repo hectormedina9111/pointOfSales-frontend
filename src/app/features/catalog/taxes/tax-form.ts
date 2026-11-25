@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { CountriesApi, CountryView } from '../../../core/api/countries-api';
-import { listAllPages } from '../../../core/api/page';
+import { CountryView } from '../../../core/api/countries-api';
 import { TaxRequest, TaxView, TaxesApi } from '../../../core/api/taxes-api';
+import { CentralCountriesService } from '../../../core/system/central-countries.service';
 import { FieldErrorComponent, isInvalidControl } from '../../../shared/components/field-error/field-error';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { RATE_PATTERN, percentValidator } from '../../../shared/forms/amounts';
@@ -22,7 +22,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 })
 export class TaxFormComponent implements OnInit {
   private readonly api = inject(TaxesApi);
-  private readonly countriesApi = inject(CountriesApi);
+  private readonly centralCountries = inject(CentralCountriesService);
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly activeModal = inject(NgbActiveModal);
 
@@ -52,7 +52,7 @@ export class TaxFormComponent implements OnInit {
       // El país de un impuesto no cambia: se muestra, pero no se edita.
       this.form.controls.countryId.disable();
     }
-    listAllPages((request) => this.countriesApi.list(request), 'isoCode').subscribe({
+    this.centralCountries.list().subscribe({
       next: (countries) => {
         this.countries.set(countries);
         this.lookupsLoading.set(false);

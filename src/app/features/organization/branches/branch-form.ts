@@ -5,8 +5,9 @@ import { forkJoin } from 'rxjs';
 
 import { BranchRequest, BranchView, BranchesApi } from '../../../core/api/branches-api';
 import { listAllPages } from '../../../core/api/page';
-import { CountriesApi, CountryView } from '../../../core/api/countries-api';
+import { CountryView } from '../../../core/api/countries-api';
 import { PriceListView, PriceListsApi } from '../../../core/api/price-lists-api';
+import { CentralCountriesService } from '../../../core/system/central-countries.service';
 import { FieldErrorComponent, isInvalidControl } from '../../../shared/components/field-error/field-error';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { blankToNull } from '../../../shared/forms/form-values';
@@ -25,7 +26,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 })
 export class BranchFormComponent implements OnInit {
   private readonly api = inject(BranchesApi);
-  private readonly countriesApi = inject(CountriesApi);
+  private readonly centralCountries = inject(CentralCountriesService);
   private readonly priceListsApi = inject(PriceListsApi);
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly activeModal = inject(NgbActiveModal);
@@ -54,7 +55,7 @@ export class BranchFormComponent implements OnInit {
 
   ngOnInit(): void {
     forkJoin({
-      countries: listAllPages((request) => this.countriesApi.list(request), 'isoCode'),
+      countries: this.centralCountries.list(),
       priceLists: listAllPages((request) => this.priceListsApi.list(request), 'code'),
     }).subscribe({
       next: ({ countries, priceLists }) => {

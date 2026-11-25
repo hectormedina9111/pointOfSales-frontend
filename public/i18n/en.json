@@ -160,6 +160,7 @@
   "validation.uppercaseLetters": "Use uppercase letters only, without spaces.",
   "organization.countries.title": "Countries",
   "organization.countries.intro": "Countries where the company operates. Taxes and branches depend on them.",
+  "organization.countries.storeOnly": "Countries are only managed at the central node.",
   "organization.countries.new": "New country",
   "organization.countries.saved": "Country saved.",
   "organization.countries.column.isoCode": "ISO",

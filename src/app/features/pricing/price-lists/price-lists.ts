@@ -4,10 +4,10 @@ import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { CountriesApi, CountryView } from '../../../core/api/countries-api';
-import { listAllPages } from '../../../core/api/page';
+import { CountryView } from '../../../core/api/countries-api';
 import { PriceListFilters, PriceListView, PriceListsApi } from '../../../core/api/price-lists-api';
 import { SystemInfoService } from '../../../core/system/system-info.service';
+import { CentralCountriesService } from '../../../core/system/central-countries.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { IfPrivilegeDirective } from '../../../shared/directives/if-privilege.directive';
@@ -35,12 +35,15 @@ import { PriceListFormComponent } from './price-list-form';
 })
 export class PriceListsComponent implements OnInit {
   private readonly api = inject(PriceListsApi);
-  private readonly countriesApi = inject(CountriesApi);
+  private readonly centralCountries = inject(CentralCountriesService);
   private readonly modal = inject(NgbModal);
   private readonly fb = inject(NonNullableFormBuilder);
 
   /** Solo la central escribe: en una tienda no aparece ningún botón de cambio. */
-  protected readonly isCentral = inject(SystemInfoService).isCentral;
+  protected readonly systemInfo = inject(SystemInfoService);
+  protected readonly isCentral = this.systemInfo.isCentral;
+  /** En una tienda no hay países que filtrar: el filtro no aparece. */
+  protected readonly isStore = this.systemInfo.isStore;
 
   protected readonly filterForm = this.fb.group({
     countryId: this.fb.control<number | null>(null),
@@ -64,7 +67,7 @@ export class PriceListsComponent implements OnInit {
 
   ngOnInit(): void {
     this.priceLists.load();
-    listAllPages((request) => this.countriesApi.list(request), 'isoCode').subscribe({
+    this.centralCountries.list().subscribe({
       next: (countries) => this.countries.set(countries),
     });
   }
