@@ -636,6 +636,7 @@
   "menu.MENU_SALES_SETTINGS": "Configuración de ventas",
   "menu.MENU_CASH_REGISTERS": "Cajas",
   "menu.MENU_PAYMENT_METHODS": "Métodos de pago",
+  "menu.MENU_CUSTOMERS": "Clientes",
   "error.DUPLICATE_CASH_REGISTER_CODE": "El código de la caja ya está en uso en esta sucursal",
   "error.DUPLICATE_CUSTOMER_DOCUMENT": "Ya existe un cliente con este documento",
   "error.DUPLICATE_CUSTOMER_EXTERNAL_CODE": "El código en el ERP ya lo usa otro cliente",
@@ -935,5 +936,19 @@
   "customers.field.priceList": "Lista de precios",
   "customers.option.noPriceList": "Sin lista de precios",
   "customers.hint.externalCode": "Código de este cliente en el ERP. Es único cuando tiene valor.",
-  "customers.hint.priceList": "Lista de precios que se aplica a este cliente. Puede quedar sin lista."
+  "customers.hint.priceList": "Lista de precios que se aplica a este cliente. Puede quedar sin lista.",
+  "customers.title": "Clientes",
+  "customers.intro": "Clientes para ventas y facturas. La central los edita y desactiva; las tiendas pueden dar de alta nuevos.",
+  "customers.new": "Nuevo cliente",
+  "customers.search.label": "Buscar",
+  "customers.search.placeholder": "Nombre o número de documento",
+  "customers.filter.status": "Estado",
+  "customers.column.name": "Cliente",
+  "customers.column.document": "Documento",
+  "customers.column.externalCode": "Código ERP",
+  "customers.column.phone": "Teléfono",
+  "customers.finalConsumer": "Consumidor final",
+  "customers.deactivate.title": "Desactivar cliente",
+  "customers.deactivate.message": "¿Desactivar el cliente {name}?",
+  "customers.deactivated": "Cliente desactivado."
 }

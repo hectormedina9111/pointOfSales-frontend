@@ -636,6 +636,7 @@
   "menu.MENU_SALES_SETTINGS": "Sales settings",
   "menu.MENU_CASH_REGISTERS": "Cash registers",
   "menu.MENU_PAYMENT_METHODS": "Payment methods",
+  "menu.MENU_CUSTOMERS": "Customers",
   "error.DUPLICATE_CASH_REGISTER_CODE": "The cash register code is already in use in this branch",
   "error.DUPLICATE_CUSTOMER_DOCUMENT": "A customer with this document already exists",
   "error.DUPLICATE_CUSTOMER_EXTERNAL_CODE": "The external code is already used by another customer",
@@ -935,5 +936,19 @@
   "customers.field.priceList": "Price list",
   "customers.option.noPriceList": "No price list",
   "customers.hint.externalCode": "Code of this customer in the ERP. Unique when it has a value.",
-  "customers.hint.priceList": "Price list applied to this customer. It can be left empty."
+  "customers.hint.priceList": "Price list applied to this customer. It can be left empty.",
+  "customers.title": "Customers",
+  "customers.intro": "Customers for sales and invoices. The central node edits and deactivates them; stores can add new ones.",
+  "customers.new": "New customer",
+  "customers.search.label": "Search",
+  "customers.search.placeholder": "Name or document number",
+  "customers.filter.status": "Status",
+  "customers.column.name": "Customer",
+  "customers.column.document": "Document",
+  "customers.column.externalCode": "External code",
+  "customers.column.phone": "Phone",
+  "customers.finalConsumer": "Final consumer",
+  "customers.deactivate.title": "Deactivate customer",
+  "customers.deactivate.message": "Deactivate the customer {name}?",
+  "customers.deactivated": "Customer deactivated."
 }
