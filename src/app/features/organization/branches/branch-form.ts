@@ -116,18 +116,34 @@ export class BranchFormComponent implements OnInit {
 
   private fillForm(): void {
     const branch = this.branch;
-    if (branch === null) {
+    if (branch !== null) {
+      this.form.patchValue({
+        code: branch.code,
+        name: branch.name,
+        address: branch.address ?? '',
+        phone: branch.phone ?? '',
+        countryId: branch.countryId,
+        allowNegativeStock: branch.allowNegativeStock,
+        defaultPriceListId: branch.defaultPriceListId,
+        active: branch.active,
+      });
+    }
+    this.lockSingleCountry();
+  }
+
+  /**
+   * Con un solo país en el servidor no hay nada que elegir: se preselecciona (si aún no hay
+   * valor) y el selector queda deshabilitado. Con varios países, el selector sigue igual.
+   */
+  private lockSingleCountry(): void {
+    const countries = this.countries();
+    if (countries.length !== 1) {
       return;
     }
-    this.form.patchValue({
-      code: branch.code,
-      name: branch.name,
-      address: branch.address ?? '',
-      phone: branch.phone ?? '',
-      countryId: branch.countryId,
-      allowNegativeStock: branch.allowNegativeStock,
-      defaultPriceListId: branch.defaultPriceListId,
-      active: branch.active,
-    });
+    const control = this.form.controls.countryId;
+    if (control.value === null) {
+      control.setValue(countries[0].id);
+    }
+    control.disable();
   }
 }
