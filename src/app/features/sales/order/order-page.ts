@@ -16,7 +16,6 @@ import { IfPrivilegeDirective } from '../../../shared/directives/if-privilege.di
 import { SystemInfoService } from '../../../core/system/system-info.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { ManagerAuthorizationComponent } from '../shared/manager-authorization';
-import { HoldAction, HoldsModalComponent } from './holds-modal';
 import { OrderCustomerStepComponent } from './order-customer-step';
 import { OrderDraftStore } from './order-draft.store';
 import { OrderProductsStepComponent } from './order-products-step';
@@ -126,10 +125,22 @@ export class OrderPageComponent {
     }
   }
 
-  protected openHolds(): void {
-    const ref = this.modal.open(HoldsModalComponent, { size: 'lg' });
-    ref.componentInstance.currency = this.store.currency();
-    ref.result.then((result: HoldAction) => this.onHoldAction(result), () => undefined);
+  /**
+   * Va al listado de órdenes en espera. Si la orden tiene líneas, se salen sin guardar: se pide
+   * confirmación antes de dejarlas.
+   */
+  protected async openSaved(): Promise<void> {
+    if (this.store.hasLines()) {
+      const confirmed = await openConfirmDialog(this.modal, {
+        titleKey: 'sales.order.leave.title',
+        messageKey: 'sales.order.leave.message',
+        confirmKey: 'sales.order.leave.confirm',
+      });
+      if (!confirmed) {
+        return;
+      }
+    }
+    void this.router.navigate(['/sales'], { queryParams: { status: 'ON_HOLD' } });
   }
 
   /** Guarda la orden y lleva a la pantalla de cobro. Con authorization, es el reintento tras autorizar. */
@@ -161,28 +172,6 @@ export class OrderPageComponent {
     ref.componentInstance.introKey =
       code === 'PRICE_OVERRIDE_AUTHORIZATION_REQUIRED' ? 'sales.pos.authorization.priceIntro' : 'sales.pos.authorization.intro';
     ref.result.then((authorization: AuthorizationRequest) => this.save(authorization), () => undefined);
-  }
-
-  /** Tras el diálogo de ventas en espera: editar o cobrar navega; eliminar suelta la venta si era la que se editaba. */
-  private async onHoldAction(result: HoldAction): Promise<void> {
-    if (result.action === 'deleted') {
-      if (this.store.savedId() === result.id) {
-        this.store.detach();
-      }
-      return;
-    }
-    if (this.store.savedId() !== result.id && this.store.hasLines()) {
-      const confirmed = await openConfirmDialog(this.modal, {
-        titleKey: 'sales.order.replace.title',
-        messageKey: 'sales.order.replace.message',
-        confirmKey: 'sales.order.replace.confirm',
-      });
-      if (!confirmed) {
-        return;
-      }
-    }
-    const target = result.action === 'charge' ? ['/sales/checkout', result.id] : ['/sales/pos', result.id];
-    void this.router.navigate(target);
   }
 
   private load(): void {
