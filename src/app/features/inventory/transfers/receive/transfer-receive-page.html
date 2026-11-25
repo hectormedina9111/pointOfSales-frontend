@@ -1,0 +1,113 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'inventory.transfers.receive.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'inventory.transfers.receive.intro' | translate }}</p>
+  </div>
+  @if (transfer(); as current) {
+    <a class="btn btn-outline-secondary" [routerLink]="['/inventory/transfers', current.id]">
+      {{ 'inventory.transfers.detail.back' | translate }}
+    </a>
+  }
+</div>
+
+@if (invalidId()) {
+  <div class="alert alert-warning" role="alert">{{ 'inventory.transfers.invalidId' | translate }}</div>
+} @else {
+  <app-problem-alert [error]="loadError()" />
+  <app-problem-alert [error]="saveError()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (transfer(); as current) {
+    <p class="mb-3">
+      <span class="font-monospace me-2">{{ current.number }}</span>
+      {{ current.originBranchName }} → {{ current.destinationBranchName }}
+    </p>
+
+    @if (!receivable()) {
+      <div class="alert alert-warning" role="alert">{{ 'inventory.transfers.receive.notInTransit' | translate }}</div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'inventory.stock.column.product' | translate }}</th>
+              <th scope="col" class="text-end">{{ 'inventory.transfers.column.sent' | translate }}</th>
+              <th scope="col" class="text-end">{{ 'inventory.transfers.column.received' | translate }}</th>
+              <th scope="col" class="text-end">{{ 'inventory.transfers.column.difference' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.lineId) {
+              <tr [class.table-warning]="row.differs">
+                <td>
+                  <div class="fw-semibold">{{ row.name }}</div>
+                  <div class="small font-monospace text-body-secondary">{{ row.sku }}</div>
+                  @if (row.tracksSerials) {
+                    <fieldset class="mt-2">
+                      <legend class="small mb-1">{{ 'inventory.transfers.receive.serials' | translate }}</legend>
+                      @for (serial of row.sentSerials; track serial; let i = $index) {
+                        <div class="form-check">
+                          <input type="checkbox" class="form-check-input" [id]="'receive-serial-' + row.lineId + '-' + i"
+                            [checked]="row.chosen.includes(serial)"
+                            (change)="onSerialChange(row.lineId, serial, $event)" />
+                          <label class="form-check-label font-monospace" [attr.for]="'receive-serial-' + row.lineId + '-' + i">{{ serial }}</label>
+                        </div>
+                      }
+                    </fieldset>
+                  }
+                </td>
+                <td class="text-end font-monospace">{{ row.sent }}</td>
+                <td style="width: 9rem;">
+                  @if (row.tracksSerials) {
+                    <span class="d-block text-end font-monospace" data-testid="receive-serial-quantity">{{ row.receivedText }}</span>
+                  } @else {
+                    <input type="text" inputmode="decimal" class="form-control form-control-sm text-end font-monospace"
+                      [class.is-invalid]="row.errorKey !== null" [attr.aria-label]="'inventory.transfers.column.received' | translate"
+                      [value]="row.text" (input)="onQuantityInput(row.lineId, $event)" />
+                    @if (row.errorKey; as key) {
+                      <div class="small text-danger mt-1">{{ key | translate: { max: row.sent } }}</div>
+                    }
+                  }
+                </td>
+                <td class="text-end font-monospace" [class.fw-bold]="row.differs" [class.text-danger]="row.differs">{{ row.difference }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <h2 class="h6 mb-2">{{ 'inventory.transfers.receive.summary' | translate }}</h2>
+          @if (differences().length === 0) {
+            <p class="mb-0" data-testid="receive-complete">{{ 'inventory.transfers.receive.complete' | translate }}</p>
+          } @else {
+            <ul class="mb-0 ps-3" data-testid="receive-differences">
+              @for (row of differences(); track row.lineId) {
+                <li>
+                  {{ 'inventory.transfers.receive.summaryLine' | translate: { sku: row.sku, received: row.receivedText, sent: row.sent } }}
+                  @if (row.missingSerials.length > 0) {
+                    <span class="font-monospace small">
+                      ({{ 'inventory.transfers.detail.missing' | translate }}: {{ row.missingSerials.join(', ') }})
+                    </span>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+
+      <app-field-label targetId="receive-notes">{{ 'inventory.transfers.field.receiveNotes' | translate }}</app-field-label>
+      <textarea id="receive-notes" class="form-control mb-4" rows="2" [formControl]="notes"></textarea>
+
+      <div class="d-flex justify-content-end gap-2">
+        <a class="btn btn-outline-secondary" [routerLink]="['/inventory/transfers', current.id]">{{ 'common.cancel' | translate }}</a>
+        <button type="button" class="btn btn-primary" [disabled]="!canConfirm() || saving()" (click)="confirm()">
+          {{ 'inventory.transfers.receive.confirm' | translate }}
+        </button>
+      </div>
+    }
+  }
+}

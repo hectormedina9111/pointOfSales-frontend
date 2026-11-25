@@ -1292,6 +1292,10 @@
   "error.INVENTORY_REASON_REQUIRED": "Escribe el motivo de este documento.",
   "error.DUPLICATE_DOCUMENT_LINE": "Un producto aparece más de una vez en el documento.",
   "error.ADJUSTMENT_WITHOUT_CHANGE": "El conteo coincide con la existencia actual: no hay nada que ajustar.",
+  "error.TRANSFER_SAME_BRANCH": "La sucursal de destino no puede ser la de origen.",
+  "error.TRANSFER_NOT_IN_TRANSIT": "La transferencia ya no está en tránsito.",
+  "error.TRANSFER_WRONG_BRANCH": "Solo la sucursal destino puede recibir esta transferencia.",
+  "error.RECEIVED_EXCEEDS_SENT": "Lo recibido no puede ser mayor que lo enviado.",
   "inventory.documents.new.title": "Nuevo documento de inventario",
   "inventory.documents.post": "Aplicar documento",
   "inventory.documents.step.type": "Tipo y motivo",
@@ -1382,5 +1386,15 @@
   "inventory.transfers.field.receiveNotes": "Notas de recepción",
   "inventory.transfers.column.sent": "Enviado",
   "inventory.transfers.column.received": "Recibido",
-  "inventory.transfers.column.difference": "Diferencia"
+  "inventory.transfers.column.difference": "Diferencia",
+  "inventory.transfers.receive.title": "Recibir transferencia",
+  "inventory.transfers.receive.intro": "Indique lo que llegó de cada producto. Lo que no llegue queda como diferencia.",
+  "inventory.transfers.receive.notInTransit": "Esta transferencia ya no está en tránsito y no se puede recibir de nuevo.",
+  "inventory.transfers.receive.invalidQuantity": "Escriba una cantidad de 0 o más, con hasta 3 decimales.",
+  "inventory.transfers.receive.exceedsSent": "No puede ser mayor que lo enviado ({max}).",
+  "inventory.transfers.receive.serials": "Seriales recibidos: marque los que llegaron",
+  "inventory.transfers.receive.summary": "Diferencias",
+  "inventory.transfers.receive.summaryLine": "{sku}: recibido {received} de {sent}.",
+  "inventory.transfers.receive.complete": "Todo llegó completo.",
+  "inventory.transfers.receive.confirm": "Confirmar recepción"
 }

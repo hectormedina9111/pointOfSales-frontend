@@ -240,6 +240,14 @@ export const routes: Routes = [
       import('./features/inventory/transfers/transfer-detail-page').then((module) => module.TransferDetailPageComponent),
   },
   {
+    path: 'inventory/transfers/:id/receive',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/transfers/receive/transfer-receive-page').then(
+        (module) => module.TransferReceivePageComponent,
+      ),
+  },
+  {
     path: 'inventory/serials',
     canActivate: [authGuard],
     loadComponent: () =>

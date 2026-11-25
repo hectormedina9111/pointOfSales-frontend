@@ -1292,6 +1292,10 @@
   "error.INVENTORY_REASON_REQUIRED": "Enter the reason for this document.",
   "error.DUPLICATE_DOCUMENT_LINE": "A product appears more than once in the document.",
   "error.ADJUSTMENT_WITHOUT_CHANGE": "The count matches the current stock: there is nothing to adjust.",
+  "error.TRANSFER_SAME_BRANCH": "The destination branch cannot be the origin branch.",
+  "error.TRANSFER_NOT_IN_TRANSIT": "The transfer is no longer in transit.",
+  "error.TRANSFER_WRONG_BRANCH": "Only the destination branch can receive this transfer.",
+  "error.RECEIVED_EXCEEDS_SENT": "The received quantity cannot be more than the quantity sent.",
   "inventory.documents.new.title": "New inventory document",
   "inventory.documents.post": "Post document",
   "inventory.documents.step.type": "Type and reason",
@@ -1382,5 +1386,15 @@
   "inventory.transfers.field.receiveNotes": "Receipt notes",
   "inventory.transfers.column.sent": "Sent",
   "inventory.transfers.column.received": "Received",
-  "inventory.transfers.column.difference": "Difference"
+  "inventory.transfers.column.difference": "Difference",
+  "inventory.transfers.receive.title": "Receive transfer",
+  "inventory.transfers.receive.intro": "Enter what arrived for each product. What does not arrive is recorded as a difference.",
+  "inventory.transfers.receive.notInTransit": "This transfer is no longer in transit and cannot be received again.",
+  "inventory.transfers.receive.invalidQuantity": "Enter a quantity of 0 or more, with up to 3 decimals.",
+  "inventory.transfers.receive.exceedsSent": "It cannot be more than what was sent ({max}).",
+  "inventory.transfers.receive.serials": "Serial numbers received: check the ones that arrived",
+  "inventory.transfers.receive.summary": "Differences",
+  "inventory.transfers.receive.summaryLine": "{sku}: received {received} of {sent}.",
+  "inventory.transfers.receive.complete": "Everything arrived complete.",
+  "inventory.transfers.receive.confirm": "Confirm receipt"
 }
