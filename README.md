@@ -40,6 +40,18 @@ Los montos viajan como texto (`"12.50"`) y se muestran con dos decimales. La web
 
 Los errores de negocio (por ejemplo, SKU repetido o categoría en uso) se traducen con las claves `error.<CODIGO>` de `public/i18n/es.json` y `en.json`.
 
+## Precios (paso 5)
+
+Pantallas de precios. Los botones de cambio solo aparecen en la central y con su privilegio (`POST_PRICE_LISTS`, `PUT_PRICE_LISTS_ID`, `POST_PRICE_LISTS_ID_ITEMS`, etc.). La consulta de precio funciona igual en la central y en las tiendas, porque es solo lectura.
+
+- **Listas de precios** (`Precios > Listas de precios`): listado paginado filtrado por país y estado, con alta y edición. El método es precio fijo por producto (`FIXED_PRICE`) o descuento sobre el precio base (`PERCENT_OFF_BASE`); el descuento solo se pide con este último. Las fechas de vigencia están vacías cuando la lista no tiene límite.
+- **Precios por producto** (botón **Precios** de una lista de precio fijo, ruta `pricing/price-lists/:id`): tabla de precios con producto (nombre y SKU), cantidad mínima y precio. Se filtra por producto con el selector de búsqueda, y se agregan, editan y eliminan precios. Eliminar pide confirmación; un precio no es un catálogo, así que se borra de verdad.
+- **Consulta de precio** (`Precios > Consulta de precio`): elija un producto y, si quiere, una lista de precios, una sucursal, una cantidad y una fecha. La pantalla muestra el precio unitario, su origen (lista o precio base), la base gravable, el monto del impuesto y la tasa. Los montos tienen dos decimales y la moneda del país de la lista o de la sucursal.
+
+Ejemplo de cálculo: un producto cuesta L 115.00 con ISV del 15 %. Como el precio incluye el impuesto, la base gravable se calcula hacia atrás: base = 115.00 / 1.15 = **100.00**, y el ISV = 115.00 - 100.00 = **15.00**.
+
+El selector de productos espera 300 ms al escribir y solo muestra productos activos, porque un producto inactivo no tiene precio. La cantidad y los montos viajan como texto y la web no hace cálculos con ellos: el precio lo resuelve el backend.
+
 ## Iniciar sesión
 
 - **Local (máquina virtual):** entre con el usuario `admin` y la contraseña `Admin.Local.2026`. Es la contraseña de desarrollo de `.env.example` del backend. El sistema obliga a cambiarla en el primer ingreso, en la **central**.

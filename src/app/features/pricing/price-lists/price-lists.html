@@ -1,0 +1,105 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'pricing.priceLists.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'pricing.priceLists.intro' | translate }}</p>
+  </div>
+  @if (isCentral()) {
+    <button *appIfPrivilege="'POST_PRICE_LISTS'" type="button" class="btn btn-primary" (click)="create()">
+      {{ 'pricing.priceLists.new' | translate }}
+    </button>
+  }
+</div>
+
+<form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" (submit)="$event.preventDefault()">
+  <div class="col-12 col-md-4 col-lg-3">
+    <label class="form-label small mb-1" for="price-list-filter-country">{{ 'pricing.priceLists.filter.country' | translate }}</label>
+    <select id="price-list-filter-country" class="form-select" formControlName="countryId">
+      <option [ngValue]="null">{{ 'pricing.priceLists.filter.allCountries' | translate }}</option>
+      @for (country of countries(); track country.id) {
+        <option [ngValue]="country.id">{{ country.isoCode }} - {{ country.name }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-6 col-md-3 col-lg-2">
+    <label class="form-label small mb-1" for="price-list-filter-active">{{ 'pricing.priceLists.filter.status' | translate }}</label>
+    <select id="price-list-filter-active" class="form-select" formControlName="active">
+      <option [ngValue]="null">{{ 'common.all' | translate }}</option>
+      <option [ngValue]="true">{{ 'common.active' | translate }}</option>
+      <option [ngValue]="false">{{ 'common.inactive' | translate }}</option>
+    </select>
+  </div>
+</form>
+
+@if (notice(); as key) {
+  <div class="alert alert-success alert-dismissible" role="status">
+    {{ key | translate }}
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+  </div>
+}
+
+<app-problem-alert [error]="priceLists.error()" />
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'pricing.priceLists.column.code' | translate }}</th>
+        <th scope="col">{{ 'pricing.priceLists.column.name' | translate }}</th>
+        <th scope="col">{{ 'pricing.priceLists.column.country' | translate }}</th>
+        <th scope="col">{{ 'pricing.priceLists.column.method' | translate }}</th>
+        <th scope="col" class="text-end">{{ 'pricing.priceLists.column.percent' | translate }}</th>
+        <th scope="col">{{ 'pricing.priceLists.column.validFrom' | translate }}</th>
+        <th scope="col">{{ 'pricing.priceLists.column.validTo' | translate }}</th>
+        <th scope="col" class="text-end">{{ 'pricing.priceLists.column.priority' | translate }}</th>
+        <th scope="col">{{ 'common.active' | translate }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (list of priceLists.items(); track list.id) {
+        <tr>
+          <td class="fw-semibold font-monospace">{{ list.code }}</td>
+          <td>{{ list.name }}</td>
+          <td>{{ countryCode(list.countryId) }}</td>
+          <td>{{ 'pricing.method.' + list.pricingMethod | translate }}</td>
+          <td class="text-end font-monospace">{{ percentLabel(list) }}</td>
+          <td class="font-monospace">{{ list.validFrom }}</td>
+          <td class="font-monospace">{{ list.validTo }}</td>
+          <td class="text-end">{{ list.priority }}</td>
+          <td>
+            <span class="badge" [class.text-bg-success]="list.active" [class.text-bg-secondary]="!list.active">
+              {{ (list.active ? 'common.active' : 'common.inactive') | translate }}
+            </span>
+          </td>
+          <td class="text-end text-nowrap">
+            @if (hasItems(list)) {
+              <a *appIfPrivilege="'GET_PRICE_LISTS_ID_ITEMS'" class="btn btn-sm btn-outline-primary me-1"
+                [routerLink]="['/pricing/price-lists', list.id]">
+                {{ 'pricing.priceLists.action.items' | translate }}
+              </a>
+            }
+            @if (isCentral()) {
+              <button *appIfPrivilege="'PUT_PRICE_LISTS_ID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="edit(list)">
+                {{ 'common.edit' | translate }}
+              </button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="10" class="text-center text-body-secondary">
+            {{ (priceLists.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="priceLists.page()"
+  [size]="priceLists.size()"
+  [total]="priceLists.total()"
+  (pageChange)="priceLists.goToPage($event)"
+  (sizeChange)="priceLists.setSize($event)"
+/>

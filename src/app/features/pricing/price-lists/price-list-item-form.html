@@ -1,0 +1,47 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">
+      {{ (item === null ? 'pricing.priceList.itemForm.createTitle' : 'pricing.priceList.itemForm.editTitle') | translate }}
+    </h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <app-problem-alert [error]="error()" />
+
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label" for="price-item-product">{{ 'pricing.priceList.itemForm.field.product' | translate }}</label>
+        <app-product-picker inputId="price-item-product" [selected]="form.controls.product.value" (productPicked)="chooseProduct($event)" />
+        @if (isInvalid(form.controls.product)) {
+          <app-field-error [control]="form.controls.product" />
+        }
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="price-item-min-quantity">{{ 'pricing.priceList.itemForm.field.minQuantity' | translate }}</label>
+        <input id="price-item-min-quantity" type="text" inputmode="decimal" class="form-control font-monospace"
+          formControlName="minQuantity" [class.is-invalid]="isInvalid(form.controls.minQuantity)" />
+        <app-field-error [control]="form.controls.minQuantity" invalidKey="validation.quantity" />
+        <div class="form-text">{{ 'pricing.priceList.itemForm.hint.minQuantity' | translate }}</div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label" for="price-item-price">{{ 'pricing.priceList.itemForm.field.price' | translate }}</label>
+        <input id="price-item-price" type="text" inputmode="decimal" class="form-control font-monospace"
+          formControlName="price" [class.is-invalid]="isInvalid(form.controls.price)" />
+        <app-field-error [control]="form.controls.price" invalidKey="validation.amount" />
+        <div class="form-text">{{ 'pricing.priceList.itemForm.hint.price' | translate }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+      {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+    </button>
+  </div>
+</form>
