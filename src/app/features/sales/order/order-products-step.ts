@@ -1,16 +1,29 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostListener,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
+import { InventoryAvailabilityView } from '../../../core/api/inventory-api';
 import { ProductView, ProductsApi } from '../../../core/api/products-api';
 import { SaleLineView } from '../../../core/api/sales-api';
 import { PrivilegesService } from '../../../core/auth/privileges.service';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { FieldLabelComponent } from '../../../shared/components/field-label/field-label';
+import { SerialChipsComponent } from '../../../shared/components/serial-chips/serial-chips';
 import {
   formatMoney,
+  numberToThousandths,
   quantityToThousandths,
   thousandthsToQuantity,
 } from '../../../shared/forms/amounts';
@@ -18,6 +31,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { DiscountChoice, DiscountFormComponent } from '../shared/discount-form';
 import { PriceChangeFormComponent } from './price-change-form';
 import { CartLine, OrderDraftStore } from './order-draft.store';
+import { OrderAvailabilityStore } from './order-availability.store';
 
 /** Productos que muestra la lista de resultados de la búsqueda. */
 const SEARCH_SIZE = 10;
@@ -33,9 +47,10 @@ const ONE_UNIT = 1000;
  */
 @Component({
   selector: 'app-order-products-step',
-  imports: [ReactiveFormsModule, ProblemAlertComponent, FieldLabelComponent, TranslatePipe],
+  imports: [ReactiveFormsModule, ProblemAlertComponent, FieldLabelComponent, SerialChipsComponent, TranslatePipe],
   templateUrl: './order-products-step.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [OrderAvailabilityStore],
 })
 export class OrderProductsStepComponent {
   private readonly products = inject(ProductsApi);
@@ -43,6 +58,7 @@ export class OrderProductsStepComponent {
   private readonly language = inject(LanguageService);
   protected readonly store = inject(OrderDraftStore);
   protected readonly privileges = inject(PrivilegesService);
+  protected readonly availability = inject(OrderAvailabilityStore);
 
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
   protected readonly search = new FormControl('', { nonNullable: true });
@@ -52,6 +68,26 @@ export class OrderProductsStepComponent {
   protected readonly searchResults = signal<readonly ProductView[]>([]);
   protected readonly searchedText = signal('');
   protected readonly lineMessage = signal<string | null>(null);
+
+  /** Productos cuya existencia se muestra: los de la búsqueda y los de la orden, sin repetir. */
+  private readonly visibleProductIds = computed(
+    () => {
+      const ids = new Set<number>();
+      for (const line of this.store.lines()) {
+        ids.add(line.productId);
+      }
+      for (const product of this.searchResults()) {
+        ids.add(product.id);
+      }
+      return [...ids].sort((a, b) => a - b);
+    },
+    { equal: (a, b) => a.length === b.length && a.every((id, index) => id === b[index]) },
+  );
+
+  constructor() {
+    // Un cambio del conjunto de productos pide sus existencias (una vez, con pausa).
+    effect(() => this.availability.watch(this.visibleProductIds()));
+  }
 
   /** F2 enfoca la búsqueda. Solo si el paso está en pantalla y no hay un diálogo abierto. */
   @HostListener('document:keydown', ['$event'])
@@ -70,6 +106,26 @@ export class OrderProductsStepComponent {
 
   protected quantityText(line: CartLine): string {
     return thousandthsToQuantity(line.quantity);
+  }
+
+  /** Existencia del producto en la sucursal, o null si no controla inventario o aún no llega. */
+  protected stockOf(productId: number): InventoryAvailabilityView | null {
+    const stock = this.availability.byProduct().get(productId);
+    return stock?.tracksInventory ? stock : null;
+  }
+
+  protected stockText(productId: number): string | null {
+    const stock = this.stockOf(productId);
+    return stock === null ? null : stock.quantity.toFixed(3);
+  }
+
+  /**
+   * Verdadero si la cantidad de la línea pasa la existencia y la sucursal no vende sin existencia.
+   * El backend decide al cobrar; esto solo avisa.
+   */
+  protected isShort(line: CartLine): boolean {
+    const stock = this.stockOf(line.productId);
+    return stock !== null && !stock.allowNegativeStock && numberToThousandths(stock.quantity) < line.quantity;
   }
 
   /** Línea de la última cotización con el mismo número (la de la tabla está en el mismo orden). */
@@ -109,16 +165,20 @@ export class OrderProductsStepComponent {
     });
   }
 
-  /** Agrega el producto elegido, o suma uno si ya está en la orden. Un producto inactivo no se vende. */
+  /**
+   * Agrega el producto elegido, o suma uno si ya está en la orden. Un producto inactivo no se vende.
+   * Un producto con seriales ya en la orden no suma: sus seriales se escriben en su línea.
+   */
   protected addProduct(product: ProductView): void {
     this.search.setValue('');
     this.searchResults.set([]);
     this.searchedText.set('');
     if (!product.active) {
       this.lineMessage.set('sales.pos.productInactive');
+    } else if (!this.store.addProduct(product)) {
+      this.lineMessage.set('sales.pos.serials.lineExists');
     } else {
       this.lineMessage.set(null);
-      this.store.addProduct(product);
     }
     this.focusSearch();
   }
@@ -129,6 +189,14 @@ export class OrderProductsStepComponent {
 
   protected decrease(line: CartLine): void {
     this.store.setQuantity(line.key, line.quantity - ONE_UNIT);
+  }
+
+  protected addSerial(line: CartLine, serial: string): void {
+    this.store.addSerial(line.key, serial);
+  }
+
+  protected removeSerial(line: CartLine, serial: string): void {
+    this.store.removeSerial(line.key, serial);
   }
 
   /** Cantidad escrita a mano (hasta 3 decimales). Si no es válida, se restaura la anterior. */

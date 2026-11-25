@@ -66,6 +66,14 @@ export interface CartLine {
   readonly discountType: DiscountType | null;
   readonly discountValue: string | null;
   readonly unitPrice: number | null;
+  /** Producto que controla seriales: su cantidad es el número de seriales y no se escribe a mano. */
+  readonly tracksSerials: boolean;
+  readonly serialNumbers: readonly string[];
+}
+
+/** Línea con los seriales dados; en un producto con seriales la cantidad sale de su número. */
+function withSerials(line: CartLine, serialNumbers: readonly string[]): CartLine {
+  return { ...line, serialNumbers, quantity: serialNumbers.length * ONE_UNIT };
 }
 
 /**
@@ -96,9 +104,18 @@ export class OrderDraftStore {
   readonly actionError = signal<unknown>(null);
 
   readonly hasLines = computed(() => this.lines().length > 0);
-  /** Se puede guardar: hay líneas y los totales están al día. */
+  /** Hay un producto con seriales sin ninguno todavía: la orden no se puede cotizar ni guardar. */
+  readonly serialsIncomplete = computed(() =>
+    this.lines().some((line) => line.tracksSerials && line.serialNumbers.length === 0),
+  );
+  /** Se puede guardar: hay líneas, todos los seriales están y los totales están al día. */
   readonly readyToSave = computed(
-    () => this.hasLines() && this.quote() !== null && !this.pendingQuote() && this.quoteError() === null,
+    () =>
+      this.hasLines() &&
+      !this.serialsIncomplete() &&
+      this.quote() !== null &&
+      !this.pendingQuote() &&
+      this.quoteError() === null,
   );
 
   /** Validador del control de productos: declarado antes de usarlo en los campos de abajo. */
@@ -131,12 +148,18 @@ export class OrderDraftStore {
       .subscribe();
   }
 
-  /** Agrega el producto, o suma una unidad si ya está en la orden. */
-  addProduct(product: ProductView): void {
+  /**
+   * Agrega el producto, o suma una unidad si ya está en la orden. Un producto con seriales no suma:
+   * cada unidad es un serial, así que devuelve false y la pantalla pide escribir el serial en su línea.
+   */
+  addProduct(product: ProductView): boolean {
     const existing = this.lines().find((line) => line.productId === product.id);
     if (existing) {
+      if (existing.tracksSerials) {
+        return false;
+      }
       this.updateLine(existing.key, (line) => ({ ...line, quantity: line.quantity + ONE_UNIT }));
-      return;
+      return true;
     }
     this.setLines([
       ...this.lines(),
@@ -145,20 +168,33 @@ export class OrderDraftStore {
         productId: product.id,
         sku: product.sku,
         name: product.name,
-        quantity: ONE_UNIT,
+        // Un producto con seriales empieza sin unidades: la cantidad llega con cada serial.
+        quantity: product.tracksSerials ? 0 : ONE_UNIT,
         discountType: null,
         discountValue: null,
         unitPrice: null,
+        tracksSerials: product.tracksSerials,
+        serialNumbers: [],
       },
     ]);
+    return true;
   }
 
-  /** Cambia la cantidad en milésimas. Cero o menos se ignora: quitar la línea es otra acción. */
+  /** Cambia la cantidad en milésimas. Cero o menos se ignora: quitar la línea es otra acción. Un producto con seriales no cambia a mano. */
   setQuantity(key: number, thousandths: number): void {
     if (thousandths <= 0) {
       return;
     }
-    this.updateLine(key, (line) => ({ ...line, quantity: thousandths }));
+    this.updateLine(key, (line) => (line.tracksSerials ? line : { ...line, quantity: thousandths }));
+  }
+
+  /** Agrega un serial a la línea de un producto con seriales. La cantidad pasa a ser el número de seriales. */
+  addSerial(key: number, serial: string): void {
+    this.updateLine(key, (line) => withSerials(line, [...line.serialNumbers, serial]));
+  }
+
+  removeSerial(key: number, serial: string): void {
+    this.updateLine(key, (line) => withSerials(line, line.serialNumbers.filter((item) => item !== serial)));
   }
 
   removeLine(key: number): void {
@@ -219,6 +255,8 @@ export class OrderDraftStore {
         discountType: line.discountType,
         discountValue: line.discountValue === null ? null : line.discountValue.toFixed(2),
         unitPrice: line.priceOverridden ? line.unitPrice : null,
+        tracksSerials: line.serialNumbers.length > 0,
+        serialNumbers: [...line.serialNumbers],
       })),
     );
   }
@@ -257,6 +295,8 @@ export class OrderDraftStore {
         discountType: line.discountType,
         discountValue: line.discountValue,
         unitPrice: line.unitPrice,
+        // Un serial por unidad: solo los productos que controlan seriales lo envían.
+        ...(line.tracksSerials ? { serialNumbers: [...line.serialNumbers] } : {}),
       })),
       discountType: discount.type,
       discountValue: discount.value,
@@ -291,7 +331,8 @@ export class OrderDraftStore {
 
   private requestQuote(): Observable<unknown> {
     const revision = this.revision;
-    if (this.lines().length === 0) {
+    // Sin líneas, o con un producto de seriales sin ninguno, no hay nada que cotizar todavía.
+    if (this.lines().length === 0 || this.serialsIncomplete()) {
       this.quote.set(null);
       this.quoteError.set(null);
       this.pendingQuote.set(false);
