@@ -141,6 +141,89 @@ export interface InventoryDocumentFilters {
   readonly to: string | null;
 }
 
+/** Estado de una transferencia (enum TransferStatus del backend). */
+export type TransferStatus = 'IN_TRANSIT' | 'RECEIVED' | 'RECEIVED_WITH_DIFFERENCES';
+
+/** Dirección del listado de transferencias, respecto a la sucursal que se consulta. */
+export type TransferDirection = 'OUTGOING' | 'INCOMING';
+
+/**
+ * Línea de una transferencia enviada (record TransferLineView). receivedQuantity y las seriales
+ * recibidas son null o vacías mientras la transferencia está en tránsito.
+ */
+export interface TransferLineView {
+  readonly id: number;
+  readonly productId: number;
+  readonly productSku: string;
+  readonly productName: string;
+  readonly quantity: number;
+  readonly receivedQuantity: number | null;
+  readonly serialNumbers: readonly string[];
+  readonly receivedSerialNumbers: readonly string[];
+  readonly unitCost: number | null;
+}
+
+/** Transferencia entre sucursales (record TransferView). */
+export interface TransferView {
+  readonly id: number;
+  readonly number: string;
+  readonly originBranchId: number;
+  readonly originBranchName: string;
+  readonly destinationBranchId: number;
+  readonly destinationBranchName: string;
+  readonly status: TransferStatus;
+  readonly notes: string | null;
+  readonly sentAt: string;
+  readonly sentByName: string;
+  readonly receivedAt: string | null;
+  readonly receivedByName: string | null;
+  readonly receiveNotes: string | null;
+  readonly lines: readonly TransferLineView[];
+}
+
+/**
+ * Línea enviada al crear una transferencia. La cantidad va como texto ("2.500") para llegar exacta
+ * al BigDecimal del backend. Un producto con seriales lleva una serial por unidad.
+ */
+export interface TransferLineRequest {
+  readonly productId: number;
+  readonly quantity: string;
+  readonly serialNumbers?: readonly string[];
+}
+
+/** Body de POST /api/v1/inventory/transfers. originBranchId solo lo envía la central. */
+export interface TransferRequest {
+  readonly destinationBranchId: number;
+  readonly originBranchId: number | null;
+  readonly notes: string | null;
+  readonly lines: readonly TransferLineRequest[];
+  readonly idempotencyKey: string;
+}
+
+/** Línea de la recepción: lo que llegó de una línea enviada, con sus seriales si las tiene. */
+export interface TransferReceiptLineRequest {
+  readonly lineId: number;
+  readonly receivedQuantity: string;
+  readonly serialNumbers?: readonly string[];
+}
+
+/** Body de POST /api/v1/inventory/transfers/{id}/receipt. */
+export interface TransferReceiptRequest {
+  readonly notes: string | null;
+  readonly lines: readonly TransferReceiptLineRequest[];
+  readonly idempotencyKey: string;
+}
+
+/** Filtros del listado de transferencias. Un valor null no filtra. Las fechas van como instantes ISO-8601. */
+export interface TransferFilters {
+  readonly direction: TransferDirection | null;
+  readonly status: TransferStatus | null;
+  readonly branchId: number | null;
+  readonly search: string | null;
+  readonly from: string | null;
+  readonly to: string | null;
+}
+
 /**
  * Llamadas a /api/v1/inventory. Escrito a mano hasta que `npm run api:update` genere src/app/api
  * a partir del OpenAPI del backend.
@@ -226,5 +309,42 @@ export class InventoryApi {
 
   createDocument(body: InventoryDocumentRequest): Observable<InventoryDocumentView> {
     return this.http.post<InventoryDocumentView>('/api/v1/inventory/documents', body);
+  }
+
+  /** Transferencias paginadas. La dirección es relativa a la sucursal que consulta el nodo. */
+  transfers(request: PageRequest, filters: TransferFilters): Observable<Page<TransferView>> {
+    let params: HttpParams = pageParams(request);
+    if (filters.direction !== null) {
+      params = params.set('direction', filters.direction);
+    }
+    if (filters.status !== null) {
+      params = params.set('status', filters.status);
+    }
+    if (filters.branchId !== null) {
+      params = params.set('branchId', filters.branchId);
+    }
+    if (filters.search !== null && filters.search !== '') {
+      params = params.set('search', filters.search);
+    }
+    if (filters.from !== null) {
+      params = params.set('from', filters.from);
+    }
+    if (filters.to !== null) {
+      params = params.set('to', filters.to);
+    }
+    return this.http.get<Page<TransferView>>('/api/v1/inventory/transfers', { params });
+  }
+
+  transfer(id: number): Observable<TransferView> {
+    return this.http.get<TransferView>(`/api/v1/inventory/transfers/${id}`);
+  }
+
+  createTransfer(body: TransferRequest): Observable<TransferView> {
+    return this.http.post<TransferView>('/api/v1/inventory/transfers', body);
+  }
+
+  /** Confirma lo recibido en la tienda destino. Solo la sucursal destino puede recibir. */
+  receiveTransfer(id: number, body: TransferReceiptRequest): Observable<TransferView> {
+    return this.http.post<TransferView>(`/api/v1/inventory/transfers/${id}/receipt`, body);
   }
 }
