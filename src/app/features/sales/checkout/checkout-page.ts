@@ -5,6 +5,7 @@ import { catchError, map, of } from 'rxjs';
 
 import { CompanyApi } from '../../../core/api/company-api';
 import { SaleView, SalesApi } from '../../../core/api/sales-api';
+import { readProblem } from '../../../core/http/problem-details';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { numberToCents } from '../../../shared/forms/amounts';
 import { randomUuid } from '../../../shared/ids/random-uuid';
@@ -53,6 +54,15 @@ export class CheckoutPageComponent {
   protected readonly payments = signal<readonly AddedPayment[]>([]);
   protected readonly saving = signal(false);
   protected readonly actionError = signal<unknown>(null);
+
+  /**
+   * Error de existencia al cobrar: el texto traducido y el detalle del servidor, que nombra el
+   * producto. Null si el error es otro.
+   */
+  protected readonly shortage = computed<{ readonly detail: string } | null>(() => {
+    const problem = readProblem(this.actionError());
+    return problem?.code === 'INSUFFICIENT_STOCK' ? { detail: problem.detail ?? '' } : null;
+  });
 
   private readonly requests = computed(() => this.payments().map((payment) => payment.request));
   protected readonly totalCents = computed(() => {
