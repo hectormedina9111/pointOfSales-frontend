@@ -37,6 +37,9 @@ export interface DocumentLine {
   readonly value: number | null;
   readonly unitCost: string;
   readonly currentQuantity: number | null;
+  /** Producto que controla seriales: su cantidad es el número de seriales (value) y no se escribe a mano. */
+  readonly tracksSerials: boolean;
+  readonly serials: readonly string[];
 }
 
 /** Línea nueva: producto, cantidad (o contada) en milésimas o null si está vacía, y costo escrito. */
@@ -140,9 +143,12 @@ export class DocumentDraftStore {
       productId: row.product.id,
       sku: row.product.sku,
       name: row.product.name,
-      value: row.value,
+      // Un producto con seriales empieza sin seriales: su cantidad llega con cada uno.
+      value: row.product.tracksSerials ? 0 : row.value,
       unitCost: row.unitCost,
       currentQuantity: null,
+      tracksSerials: row.product.tracksSerials,
+      serials: [],
     }));
     this.lines.update((current) => [...current, ...added]);
     this.syncLinesControl();
@@ -154,6 +160,15 @@ export class DocumentDraftStore {
   /** Cantidad o cantidad contada de una línea, en milésimas (null si se borró el texto). */
   setValue(key: number, value: number | null): void {
     this.updateLine(key, { value });
+  }
+
+  /** Agrega un serial a una línea de producto con seriales. La cantidad pasa a ser el número de seriales. */
+  addSerial(key: number, serial: string): void {
+    this.updateSerials(key, (serials) => [...serials, serial]);
+  }
+
+  removeSerial(key: number, serial: string): void {
+    this.updateSerials(key, (serials) => serials.filter((item) => item !== serial));
   }
 
   /** Costo unitario escrito. Devuelve false si el texto no es un monto válido. */
@@ -195,6 +210,8 @@ export class DocumentDraftStore {
           quantity: adjustment ? null : quantity,
           countedQuantity: adjustment ? quantity : null,
           unitCost: raw.type === 'ENTRY' ? blankToNull(line.unitCost) : null,
+          // Un serial por unidad: solo los productos que controlan seriales lo envían.
+          ...(line.tracksSerials ? { serialNumbers: [...line.serials] } : {}),
         };
       }),
       idempotencyKey: this.idempotencyKey,
@@ -218,6 +235,20 @@ export class DocumentDraftStore {
 
   private updateLine(key: number, patch: Partial<Pick<DocumentLine, 'value' | 'unitCost'>>): void {
     this.lines.update((current) => current.map((line) => (line.key === key ? { ...line, ...patch } : line)));
+    this.syncLinesControl();
+  }
+
+  /** Cambia los seriales de una línea y deja su cantidad igual a su número. */
+  private updateSerials(key: number, change: (serials: readonly string[]) => readonly string[]): void {
+    this.lines.update((current) =>
+      current.map((line) => {
+        if (line.key !== key) {
+          return line;
+        }
+        const serials = change(line.serials);
+        return { ...line, serials, value: serials.length * ONE_UNIT };
+      }),
+    );
     this.syncLinesControl();
   }
 

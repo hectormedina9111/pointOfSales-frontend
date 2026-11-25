@@ -68,12 +68,28 @@
               <td>
                 <div class="fw-semibold">{{ line.name }}</div>
                 <div class="small font-monospace text-body-secondary">{{ line.sku }}</div>
+                @if (line.tracksSerials) {
+                  <div class="mt-2">
+                    <app-serial-chips
+                      [inputId]="'document-line-serial-' + line.key"
+                      labelKey="serials.input.lineLabel"
+                      [serials]="line.serials"
+                      [pickProductId]="pickProductId(line)"
+                      [pickBranchId]="draft.effectiveBranchId()"
+                      (added)="addSerial(line, $event)"
+                      (removed)="removeSerial(line, $event)" />
+                  </div>
+                }
               </td>
               <td style="width: 9rem;">
-                <input type="text" inputmode="decimal" class="form-control form-control-sm text-end font-monospace"
-                  [class.is-invalid]="!draft.isLineValid(line)"
-                  [attr.aria-label]="(isAdjustment() ? 'inventory.documents.column.counted' : 'inventory.documents.column.quantity') | translate"
-                  [value]="valueText(line)" (change)="onValueChange(line, $event)" />
+                @if (line.tracksSerials) {
+                  <span class="d-block text-end font-monospace" data-testid="serial-quantity">{{ valueText(line) }}</span>
+                } @else {
+                  <input type="text" inputmode="decimal" class="form-control form-control-sm text-end font-monospace"
+                    [class.is-invalid]="!draft.isLineValid(line)"
+                    [attr.aria-label]="(isAdjustment() ? 'inventory.documents.column.counted' : 'inventory.documents.column.quantity') | translate"
+                    [value]="valueText(line)" (change)="onValueChange(line, $event)" />
+                }
               </td>
               @if (isAdjustment()) {
                 <td class="text-end font-monospace">{{ currentText(line) }}</td>

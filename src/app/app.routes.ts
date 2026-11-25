@@ -221,6 +221,12 @@ export const routes: Routes = [
         (module) => module.DocumentDetailPageComponent,
       ),
   },
+  {
+    path: 'inventory/serials',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/serials/serial-search').then((module) => module.SerialSearchComponent),
+  },
   // Cualquier otra dirección: página no encontrada, solo para usuarios con sesión.
   {
     path: '**',

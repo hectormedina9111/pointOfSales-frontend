@@ -13,8 +13,15 @@
 @if (searchResults().length > 0) {
   <div class="list-group mt-2">
     @for (product of searchResults(); track product.id) {
-      <button type="button" class="list-group-item list-group-item-action" (click)="addProduct(product)">
-        <span class="font-monospace fw-semibold me-2">{{ product.sku }}</span>{{ product.name }}
+      <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2" (click)="addProduct(product)">
+        <span>
+          <span class="font-monospace fw-semibold me-2">{{ product.sku }}</span>{{ product.name }}
+        </span>
+        @if (stockText(product.id); as stock) {
+          <span class="badge text-bg-light border font-monospace" data-testid="search-stock">
+            {{ 'sales.pos.stock.available' | translate: { quantity: stock } }}
+          </span>
+        }
       </button>
     }
   </div>
@@ -52,15 +59,38 @@
               <td>
                 <div class="fw-semibold">{{ line.name }}</div>
                 <div class="small font-monospace text-body-secondary">{{ line.sku }}</div>
+                @if (stockText(line.productId); as stock) {
+                  <div class="small text-body-secondary" data-testid="line-stock">
+                    {{ 'sales.pos.stock.available' | translate: { quantity: stock } }}
+                  </div>
+                }
+                @if (isShort(line)) {
+                  <span class="badge text-bg-warning mt-1" data-testid="line-short-stock">{{ 'sales.pos.stock.short' | translate }}</span>
+                }
+                @if (line.tracksSerials) {
+                  <div class="mt-2">
+                    <app-serial-chips
+                      [inputId]="'order-line-serial-' + line.key"
+                      labelKey="serials.input.lineLabel"
+                      [serials]="line.serialNumbers"
+                      [pickProductId]="line.productId"
+                      (added)="addSerial(line, $event)"
+                      (removed)="removeSerial(line, $event)" />
+                  </div>
+                }
               </td>
               <td>
-                <div class="input-group input-group-sm flex-nowrap" style="width: 10rem;">
-                  <button type="button" class="btn btn-outline-secondary" [attr.aria-label]="'sales.pos.lines.decrease' | translate" (click)="decrease(line)">-</button>
-                  <input type="text" inputmode="decimal" class="form-control text-end font-monospace"
-                    [attr.aria-label]="'sales.pos.lines.quantity' | translate" [value]="quantityText(line)"
-                    (change)="onQuantityChange(line, $event)" />
-                  <button type="button" class="btn btn-outline-secondary" [attr.aria-label]="'sales.pos.lines.increase' | translate" (click)="increase(line)">+</button>
-                </div>
+                @if (line.tracksSerials) {
+                  <span class="font-monospace" data-testid="serial-quantity">{{ quantityText(line) }}</span>
+                } @else {
+                  <div class="input-group input-group-sm flex-nowrap" style="width: 10rem;">
+                    <button type="button" class="btn btn-outline-secondary" [attr.aria-label]="'sales.pos.lines.decrease' | translate" (click)="decrease(line)">-</button>
+                    <input type="text" inputmode="decimal" class="form-control text-end font-monospace"
+                      [attr.aria-label]="'sales.pos.lines.quantity' | translate" [value]="quantityText(line)"
+                      (change)="onQuantityChange(line, $event)" />
+                    <button type="button" class="btn btn-outline-secondary" [attr.aria-label]="'sales.pos.lines.increase' | translate" (click)="increase(line)">+</button>
+                  </div>
+                }
               </td>
               <td class="text-end">
                 <div class="font-monospace">{{ quoted ? money(quoted.unitPrice) : '' }}</div>

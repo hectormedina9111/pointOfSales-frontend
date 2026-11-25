@@ -27,12 +27,31 @@
             <td class="text-end font-monospace">{{ line.returnedQuantity.toFixed(3) }}</td>
             <td class="text-end font-monospace">{{ line.returnableQuantity.toFixed(3) }}</td>
             <td>
-              <input type="text" inputmode="decimal" class="form-control form-control-sm text-end font-monospace"
-                style="width: 9rem;" [formControl]="store.lineControl(i)"
-                [attr.aria-label]="'sales.return.lines.quantity' | translate"
-                [class.is-invalid]="lineError(i, line.returnableQuantity) !== null" />
-              @if (lineError(i, line.returnableQuantity); as key) {
-                <div class="small text-danger mt-1">{{ key | translate: { max: line.returnableQuantity.toFixed(3) } }}</div>
+              @if (line.tracksSerials) {
+                <input type="text" inputmode="decimal" class="form-control form-control-sm text-end font-monospace"
+                  style="width: 9rem;" readonly [formControl]="store.lineControl(i)"
+                  [attr.aria-label]="'sales.return.lines.quantity' | translate" />
+                <fieldset class="mt-2">
+                  <legend class="small mb-1">{{ 'sales.return.serials.choose' | translate }}</legend>
+                  @if (line.returnableSerialNumbers.length === 0) {
+                    <div class="small text-body-secondary">{{ 'sales.return.serials.none' | translate }}</div>
+                  }
+                  @for (serial of line.returnableSerialNumbers; track serial) {
+                    <div class="form-check">
+                      <input type="checkbox" class="form-check-input" [id]="'return-serial-' + line.saleLineId + '-' + $index"
+                        [checked]="store.isSerialChosen(i, serial)" (change)="store.toggleSerial(i, serial)" />
+                      <label class="form-check-label font-monospace" [attr.for]="'return-serial-' + line.saleLineId + '-' + $index">{{ serial }}</label>
+                    </div>
+                  }
+                </fieldset>
+              } @else {
+                <input type="text" inputmode="decimal" class="form-control form-control-sm text-end font-monospace"
+                  style="width: 9rem;" [formControl]="store.lineControl(i)"
+                  [attr.aria-label]="'sales.return.lines.quantity' | translate"
+                  [class.is-invalid]="lineError(i, line.returnableQuantity) !== null" />
+                @if (lineError(i, line.returnableQuantity); as key) {
+                  <div class="small text-danger mt-1">{{ key | translate: { max: line.returnableQuantity.toFixed(3) } }}</div>
+                }
               }
             </td>
             <td class="text-end font-monospace">{{ lineTotal(line.saleLineId) }}</td>

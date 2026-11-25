@@ -1,0 +1,55 @@
+<app-field-label [targetId]="inputId()" [required]="true">{{ labelKey() | translate }}</app-field-label>
+<div class="d-flex flex-wrap gap-2 align-items-start">
+  <input type="text" class="form-control font-monospace" style="max-width: 20rem;" autocomplete="off"
+    [id]="inputId()" [formControl]="text" [disabled]="disabled()"
+    [placeholder]="'serials.input.placeholder' | translate" (keydown.enter)="onEnter($event)" />
+  @if (pickProductId() !== null && !disabled()) {
+    <button type="button" class="btn btn-outline-secondary" [attr.aria-expanded]="picking()" (click)="togglePicking()">
+      {{ 'serials.input.pick' | translate }}
+    </button>
+  }
+</div>
+<div class="form-text">{{ 'serials.input.hint' | translate }}</div>
+
+@if (message(); as key) {
+  <div class="small text-danger mt-1" role="alert">{{ key | translate }}</div>
+}
+
+@if (serials().length > 0) {
+  <div class="d-flex flex-wrap gap-2 mt-2" data-testid="serial-chips">
+    @for (serial of serials(); track serial) {
+      <span class="badge text-bg-light border font-monospace fs-6 d-inline-flex align-items-center gap-2">
+        {{ serial }}
+        @if (!disabled()) {
+          <button type="button" class="btn-close" style="font-size: 0.6rem;"
+            [attr.aria-label]="'serials.input.removeOne' | translate: { serial: serial }" (click)="remove(serial)"></button>
+        }
+      </span>
+    }
+  </div>
+}
+
+@if (picking()) {
+  <div class="card mt-2">
+    <div class="card-body py-2">
+      <label class="form-label small mb-1" [attr.for]="inputId() + '-pick-search'">{{ 'serials.input.pickSearch' | translate }}</label>
+      <input type="search" class="form-control form-control-sm mb-2" autocomplete="off" [id]="inputId() + '-pick-search'"
+        [formControl]="pickSearch" />
+      <app-problem-alert [error]="pickError()" />
+      @if (pickLoading()) {
+        <div class="small text-body-secondary">{{ 'common.loading' | translate }}</div>
+      } @else if (pickItems().length === 0) {
+        <div class="small text-body-secondary">{{ 'serials.input.pickEmpty' | translate }}</div>
+      } @else {
+        <div class="list-group list-group-flush">
+          @for (item of pickItems(); track item.id) {
+            <button type="button" class="list-group-item list-group-item-action font-monospace py-1"
+              [disabled]="serials().includes(item.serialNumber)" (click)="pick(item.serialNumber)">
+              {{ item.serialNumber }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}

@@ -121,6 +121,16 @@
                   <td>
                     {{ line.description }}
                     <span class="small text-body-secondary font-monospace ms-1">{{ line.sku }}</span>
+                    @if (line.serialNumbers.length > 0) {
+                      <div class="small font-monospace text-body-secondary" data-testid="line-serials">
+                        {{ 'sales.list.detail.serials' | translate }}: {{ line.serialNumbers.join(', ') }}
+                      </div>
+                    }
+                    @if (line.returnedSerialNumbers.length > 0) {
+                      <div class="small font-monospace text-body-secondary">
+                        {{ 'sales.list.detail.returnedSerials' | translate }}: {{ line.returnedSerialNumbers.join(', ') }}
+                      </div>
+                    }
                   </td>
                   <td class="text-end font-monospace">{{ line.quantity.toFixed(3) }}</td>
                   @if (item.type === 'SALE') {
