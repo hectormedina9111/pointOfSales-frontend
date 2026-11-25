@@ -1022,5 +1022,9 @@
   "sales.checkout.mismatch": "The payments must add up exactly to the total before the sale can be charged.",
   "sales.checkout.confirm": "Confirm charge",
   "sales.checkout.review.title": "Order",
-  "sales.checkout.review.readOnly": "Read only. To change the order, go back to it."
+  "sales.checkout.review.readOnly": "Read only. To change the order, go back to it.",
+  "sales.ticket.customer": "Customer",
+  "sales.ticket.orderType": "Order type",
+  "sales.list.detail.customer": "Customer",
+  "sales.list.detail.orderType": "Order type"
 }

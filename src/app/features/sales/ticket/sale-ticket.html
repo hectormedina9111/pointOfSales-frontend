@@ -35,6 +35,15 @@
       <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.register' | translate }}</span><span>{{ t.cashRegisterName }}</span></div>
       <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.date' | translate }}</span><span>{{ t.date }} {{ t.time.slice(0, 5) }}</span></div>
       <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.cashier' | translate }}</span><span>{{ t.cashierName }}</span></div>
+      <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.orderType' | translate }}</span><span>{{ 'sales.order.type.' + t.orderType | translate }}</span></div>
+      @if (t.customerId !== finalConsumerId) {
+        <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.customer' | translate }}</span><span>{{ t.customerName }}</span></div>
+        @if (t.customerDocumentNumber) {
+          <div class="d-flex justify-content-between">
+            <span>{{ 'customers.documentType.' + t.customerDocumentType | translate }}</span><span>{{ t.customerDocumentNumber }}</span>
+          </div>
+        }
+      }
 
       <hr />
 

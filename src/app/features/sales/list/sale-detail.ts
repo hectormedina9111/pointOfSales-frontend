@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { RouterLink } from '@angular/router';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { SaleView, SalesApi } from '../../../core/api/sales-api';
+import { FINAL_CONSUMER_ID, SaleView, SalesApi } from '../../../core/api/sales-api';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { formatMoney } from '../../../shared/forms/amounts';
@@ -24,6 +24,7 @@ export class SaleDetailComponent implements OnInit {
   private readonly api = inject(SalesApi);
   private readonly language = inject(LanguageService);
   protected readonly activeModal = inject(NgbActiveModal);
+  protected readonly finalConsumerId = FINAL_CONSUMER_ID;
 
   /** Venta a mostrar y datos de contexto. Los asigna quien abre el diálogo. */
   saleId = 0;

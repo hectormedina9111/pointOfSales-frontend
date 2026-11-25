@@ -1022,5 +1022,9 @@
   "sales.checkout.mismatch": "Los pagos deben sumar exactamente el total para poder cobrar la venta.",
   "sales.checkout.confirm": "Confirmar cobro",
   "sales.checkout.review.title": "Orden",
-  "sales.checkout.review.readOnly": "Solo lectura. Para cambiar la orden, vuelve a ella."
+  "sales.checkout.review.readOnly": "Solo lectura. Para cambiar la orden, vuelve a ella.",
+  "sales.ticket.customer": "Cliente",
+  "sales.ticket.orderType": "Tipo de venta",
+  "sales.list.detail.customer": "Cliente",
+  "sales.list.detail.orderType": "Tipo de venta"
 }
