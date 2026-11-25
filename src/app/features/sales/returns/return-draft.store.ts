@@ -63,6 +63,8 @@ export class ReturnDraftStore {
   readonly quotePending = signal(false);
   readonly quoteError = signal<unknown>(null);
   readonly refunds = signal<readonly RefundDraft[]>([]);
+  /** Seriales elegidos para devolver, por id de línea de la venta (solo productos que controlan seriales). */
+  readonly serialSelection = signal<Readonly<Record<number, readonly string[]>>>({});
   readonly saving = signal(false);
   readonly actionError = signal<unknown>(null);
 
@@ -139,6 +141,7 @@ export class ReturnDraftStore {
   start(saleId: number, returnable: ReturnableView): void {
     this.saleId = saleId;
     this.returnable.set(returnable);
+    this.serialSelection.set({});
     this.linesControl.clear();
     for (const line of returnable.lines) {
       const maxThousandths = numberToThousandths(line.returnableQuantity);
@@ -162,11 +165,36 @@ export class ReturnDraftStore {
     return this.linesControl.at(index);
   }
 
-  /** Pone en cada línea lo que todavía se puede devolver. */
+  /** Pone en cada línea lo que todavía se puede devolver. Un producto con seriales devuelve todos sus seriales disponibles. */
   returnAll(): void {
     this.returnable()?.lines.forEach((line, index) => {
+      if (line.tracksSerials) {
+        this.setSerialSelection(index, line.returnableSerialNumbers);
+        return;
+      }
       this.lineControl(index).setValue(thousandthsToQuantity(numberToThousandths(line.returnableQuantity)));
     });
+  }
+
+  /** Verdadero si el serial está elegido para devolver en la línea (por su posición). */
+  isSerialChosen(index: number, serial: string): boolean {
+    return this.chosenSerials(index).includes(serial);
+  }
+
+  /** Marca o desmarca un serial de la línea. La cantidad de la línea pasa a ser el número de seriales elegidos. */
+  toggleSerial(index: number, serial: string): void {
+    const chosen = this.chosenSerials(index);
+    const next = chosen.includes(serial) ? chosen.filter((item) => item !== serial) : [...chosen, serial];
+    this.setSerialSelection(index, next);
+  }
+
+  /** Seriales elegidos de una línea, en el orden de los devolvibles. */
+  chosenSerials(index: number): readonly string[] {
+    const line = this.returnable()?.lines[index];
+    if (line === undefined) {
+      return [];
+    }
+    return this.serialSelection()[line.saleLineId] ?? [];
   }
 
   addRefund(input: Omit<RefundDraft, 'key'>): void {
@@ -239,17 +267,39 @@ export class ReturnDraftStore {
   }
 
   /**
+   * Guarda los seriales elegidos de una línea y pone su cantidad igual al número de seriales. Así la
+   * cantidad y los seriales no pueden separarse.
+   */
+  private setSerialSelection(index: number, serials: readonly string[]): void {
+    const line = this.returnable()?.lines[index];
+    if (line === undefined) {
+      return;
+    }
+    const ordered = line.returnableSerialNumbers.filter((serial) => serials.includes(serial));
+    this.serialSelection.update((current) => ({ ...current, [line.saleLineId]: ordered }));
+    this.lineControl(index).setValue(String(ordered.length));
+  }
+
+  /**
    * Líneas con cantidad mayor que cero, en la forma del backend (tres decimales). Recorre los controles
-   * que existen: al armar las filas, cada alta avisa del cambio antes de que estén todas.
+   * que existen: al armar las filas, cada alta avisa del cambio antes de que estén todas. Un producto
+   * con seriales envía los seriales elegidos.
    */
   private selectedLines(): ReturnLineRequest[] {
     const lines = this.returnable()?.lines ?? [];
     return this.linesControl.controls.flatMap((control, index) => {
       const line = lines[index];
       const thousandths = quantityThousandths(control.value) ?? 0;
-      return line !== undefined && thousandths > 0
-        ? [{ saleLineId: line.saleLineId, quantity: thousandthsToQuantity(thousandths) }]
-        : [];
+      if (line === undefined || thousandths <= 0) {
+        return [];
+      }
+      return [
+        {
+          saleLineId: line.saleLineId,
+          quantity: thousandthsToQuantity(thousandths),
+          ...(line.tracksSerials ? { serialNumbers: [...this.chosenSerials(index)] } : {}),
+        },
+      ];
     });
   }
 
