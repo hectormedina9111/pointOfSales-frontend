@@ -1,0 +1,120 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ 'inventory.stock.detail.title' | translate }}</h1>
+  <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ 'inventory.stock.detail.back' | translate }}</button>
+</div>
+
+@if (invalidId()) {
+  <div class="alert alert-warning" role="alert">{{ 'inventory.stock.invalidId' | translate }}</div>
+} @else {
+  <app-problem-alert [error]="loadError()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (item(); as current) {
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+          <span class="h5 font-monospace mb-0">{{ current.productSku }}</span>
+          <span class="h5 mb-0">{{ current.productName }}</span>
+          @if (current.belowMin) {
+            <span class="badge text-bg-warning" data-testid="detail-below-min">{{ 'inventory.stock.belowMin' | translate }}</span>
+          }
+        </div>
+        <dl class="row mb-0">
+          <dt class="col-sm-3">{{ 'inventory.stock.column.branch' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.branchName }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.stock.column.quantity' | translate }}</dt>
+          <dd class="col-sm-9 font-monospace" [class.text-danger]="current.quantity < 0">{{ quantity(current.quantity) }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.stock.column.minStock' | translate }}</dt>
+          <dd class="col-sm-9 font-monospace">{{ quantity(current.minStock) }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.stock.column.averageCost' | translate }}</dt>
+          <dd class="col-sm-9 font-monospace">{{ money(current.averageCost) }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.stock.column.lastMovement' | translate }}</dt>
+          <dd class="col-sm-9 mb-0">{{ current.lastMovementAt | localDateTime }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    <h2 class="h5 mb-2">{{ 'inventory.stock.detail.movements' | translate }}</h2>
+
+    <form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" role="search" (submit)="$event.preventDefault()">
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label class="form-label small mb-1" for="movement-filter-type">{{ 'inventory.movements.filter.type' | translate }}</label>
+        <select id="movement-filter-type" class="form-select" formControlName="type">
+          <option value="">{{ 'common.all' | translate }}</option>
+          @for (type of movementTypes; track type) {
+            <option [value]="type">{{ 'inventory.movementType.' + type | translate }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label class="form-label small mb-1" for="movement-filter-from">{{ 'inventory.movements.filter.from' | translate }}</label>
+        <input id="movement-filter-from" type="date" class="form-control" formControlName="from" />
+      </div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label class="form-label small mb-1" for="movement-filter-to">{{ 'inventory.movements.filter.to' | translate }}</label>
+        <input id="movement-filter-to" type="date" class="form-control" formControlName="to" />
+      </div>
+    </form>
+
+    @if (rangeInvalid()) {
+      <div class="alert alert-warning" role="alert">{{ 'inventory.movements.rangeInvalid' | translate }}</div>
+    }
+    <app-problem-alert [error]="movements.error()" />
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'inventory.movements.column.movedAt' | translate }}</th>
+            <th scope="col">{{ 'inventory.movements.column.type' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.movements.column.quantity' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.movements.column.balance' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.movements.column.unitCost' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.movements.column.averageCost' | translate }}</th>
+            <th scope="col">{{ 'inventory.movements.column.reference' | translate }}</th>
+            <th scope="col">{{ 'inventory.movements.column.user' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (movement of movements.items(); track movement.id) {
+            <tr>
+              <td class="small">{{ movement.movedAt | localDateTime }}</td>
+              <td>{{ 'inventory.movementType.' + movement.type | translate }}</td>
+              <td class="text-end font-monospace" [class.text-danger]="movement.quantity < 0">{{ quantity(movement.quantity) }}</td>
+              <td class="text-end font-monospace">{{ quantity(movement.resultingBalance) }}</td>
+              <td class="text-end font-monospace">{{ movement.unitCost === null ? '—' : money(movement.unitCost) }}</td>
+              <td class="text-end font-monospace">{{ money(movement.resultingAverageCost) }}</td>
+              <td>
+                @if (referenceLink(movement); as link) {
+                  <a [routerLink]="link">{{ movement.referenceNumber ?? '#' + movement.referenceId }}</a>
+                } @else {
+                  <span class="text-body-secondary">{{ movement.referenceNumber ?? '—' }}</span>
+                }
+              </td>
+              <td>{{ movement.userName }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="text-center text-body-secondary">
+                {{ (movements.loading() ? 'common.loading' : 'common.empty') | translate }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination
+      [page]="movements.page()"
+      [size]="movements.size()"
+      [total]="movements.total()"
+      (pageChange)="movements.goToPage($event)"
+      (sizeChange)="movements.setSize($event)"
+    />
+  }
+}

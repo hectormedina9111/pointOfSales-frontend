@@ -190,6 +190,17 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/credit-notes/credit-note-detail-page').then((module) => module.CreditNoteDetailPageComponent),
   },
+  {
+    path: 'inventory/stock',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/inventory/stock/stock-list').then((module) => module.StockListComponent),
+  },
+  {
+    path: 'inventory/stock/:productId/:branchId',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/stock/stock-detail-page').then((module) => module.StockDetailPageComponent),
+  },
   // Cualquier otra dirección: página no encontrada, solo para usuarios con sesión.
   {
     path: '**',
