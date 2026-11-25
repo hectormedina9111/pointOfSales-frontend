@@ -1,0 +1,106 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'inventory.documents.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'inventory.documents.intro' | translate }}</p>
+  </div>
+  <a *appIfPrivilege="'POST_INVENTORY_DOCUMENTS'" class="btn btn-primary" routerLink="/inventory/documents/new">
+    {{ 'inventory.documents.new' | translate }}
+  </a>
+</div>
+
+<form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" role="search" (submit)="$event.preventDefault()">
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="document-filter-search">{{ 'inventory.documents.filter.number' | translate }}</label>
+    <input id="document-filter-search" type="search" class="form-control" autocomplete="off" formControlName="search" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="document-filter-type">{{ 'inventory.documents.filter.type' | translate }}</label>
+    <select id="document-filter-type" class="form-select" formControlName="type">
+      <option value="">{{ 'common.all' | translate }}</option>
+      @for (type of types; track type) {
+        <option [value]="type">{{ 'inventory.documentType.' + type | translate }}</option>
+      }
+    </select>
+  </div>
+  @if (isCentral()) {
+    <div class="col-12 col-sm-6 col-lg-2">
+      <label class="form-label small mb-1" for="document-filter-branch">{{ 'inventory.documents.filter.branch' | translate }}</label>
+      <select id="document-filter-branch" class="form-select" formControlName="branchId">
+        <option value="">{{ 'common.all' | translate }}</option>
+        @for (branch of branches(); track branch.id) {
+          <option [value]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+        }
+      </select>
+    </div>
+  }
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="document-filter-from">{{ 'inventory.documents.filter.from' | translate }}</label>
+    <input id="document-filter-from" type="date" class="form-control" formControlName="from" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="document-filter-to">{{ 'inventory.documents.filter.to' | translate }}</label>
+    <input id="document-filter-to" type="date" class="form-control" formControlName="to" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+      {{ 'inventory.documents.filter.clear' | translate }}
+    </button>
+  </div>
+</form>
+
+@if (rangeInvalid()) {
+  <div class="alert alert-warning" role="alert">{{ 'inventory.documents.rangeInvalid' | translate }}</div>
+}
+<app-problem-alert [error]="documents.error()" />
+<app-problem-alert [error]="lookupError()" />
+
+<p class="small text-body-secondary mb-2" data-testid="documents-total">
+  {{ 'inventory.documents.count' | translate: { count: documents.total() } }}
+</p>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'inventory.documents.column.number' | translate }}</th>
+        <th scope="col">{{ 'inventory.documents.column.postedAt' | translate }}</th>
+        <th scope="col">{{ 'inventory.documents.column.type' | translate }}</th>
+        @if (isCentral()) {
+          <th scope="col">{{ 'inventory.documents.column.branch' | translate }}</th>
+        }
+        <th scope="col">{{ 'inventory.documents.column.reason' | translate }}</th>
+        <th scope="col">{{ 'inventory.documents.column.user' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of documents.items(); track item.id) {
+        <tr>
+          <td class="font-monospace">
+            <a [routerLink]="['/inventory/documents', item.id]" [state]="{ returnUrl: currentUrl() }">{{ item.number }}</a>
+          </td>
+          <td class="small">{{ item.postedAt | localDateTime }}</td>
+          <td>{{ 'inventory.documentType.' + item.type | translate }}</td>
+          @if (isCentral()) {
+            <td>{{ item.branchName }}</td>
+          }
+          <td>{{ item.reason ?? '—' }}</td>
+          <td>{{ item.userName }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td [attr.colspan]="isCentral() ? 6 : 5" class="text-center text-body-secondary">
+            {{ (documents.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="documents.page()"
+  [size]="documents.size()"
+  [total]="documents.total()"
+  (pageChange)="documents.goToPage($event)"
+  (sizeChange)="documents.setSize($event)"
+/>

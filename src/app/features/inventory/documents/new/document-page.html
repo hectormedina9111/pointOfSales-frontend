@@ -1,0 +1,17 @@
+<div class="mb-3">
+  <h1 class="h3 mb-0">{{ 'inventory.documents.new.title' | translate }}</h1>
+</div>
+
+<app-problem-alert [error]="saveError()" />
+
+<app-stepper [saving]="saving()" saveLabelKey="inventory.documents.post" (finish)="save()" (cancel)="cancel()">
+  <app-step labelKey="inventory.documents.step.type" [controls]="typeControls">
+    <app-document-type-step />
+  </app-step>
+  <app-step labelKey="inventory.documents.step.lines" [controls]="lineControls">
+    <app-document-lines-step />
+  </app-step>
+  <app-step labelKey="inventory.documents.step.summary" [controls]="noControls">
+    <app-document-summary-step />
+  </app-step>
+</app-stepper>

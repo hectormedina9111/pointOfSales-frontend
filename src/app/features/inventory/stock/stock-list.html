@@ -1,0 +1,121 @@
+<div class="mb-3">
+  <h1 class="h3 mb-1">{{ 'inventory.stock.title' | translate }}</h1>
+  <p class="text-body-secondary mb-0">{{ 'inventory.stock.intro' | translate }}</p>
+</div>
+
+<form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" role="search" (submit)="$event.preventDefault()">
+  <div class="col-12 col-sm-6 col-lg-3">
+    <label class="form-label small mb-1" for="stock-filter-search">{{ 'inventory.stock.filter.search' | translate }}</label>
+    <input id="stock-filter-search" type="search" class="form-control" autocomplete="off" formControlName="search" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-3">
+    <label class="form-label small mb-1" for="stock-filter-category">{{ 'inventory.stock.filter.category' | translate }}</label>
+    <select id="stock-filter-category" class="form-select" formControlName="categoryId">
+      <option value="">{{ 'common.all' | translate }}</option>
+      @for (category of categories(); track category.id) {
+        <option [value]="category.id">{{ category.name }}</option>
+      }
+    </select>
+  </div>
+  @if (isCentral()) {
+    <div class="col-12 col-sm-6 col-lg-2">
+      <label class="form-label small mb-1" for="stock-filter-branch">{{ 'inventory.stock.filter.branch' | translate }}</label>
+      <select id="stock-filter-branch" class="form-select" formControlName="branchId">
+        <option value="">{{ 'common.all' | translate }}</option>
+        @for (branch of branches(); track branch.id) {
+          <option [value]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+        }
+      </select>
+    </div>
+  }
+  <div class="col-12 col-sm-6 col-lg-2">
+    <div class="form-check mb-2">
+      <input id="stock-filter-below-min" type="checkbox" class="form-check-input" formControlName="belowMin" />
+      <label class="form-check-label" for="stock-filter-below-min">{{ 'inventory.stock.filter.belowMin' | translate }}</label>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+      {{ 'inventory.stock.filter.clear' | translate }}
+    </button>
+  </div>
+</form>
+
+<app-problem-alert [error]="stock.error()" />
+<app-problem-alert [error]="lookupError()" />
+
+<p class="small text-body-secondary mb-2" data-testid="stock-total">
+  {{ 'inventory.stock.count' | translate: { count: stock.total() } }}
+</p>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col" [attr.aria-sort]="sortAria('productSku')">
+          <button type="button" class="btn btn-link p-0 text-reset text-decoration-none fw-semibold" (click)="sortBy('productSku')">
+            {{ 'inventory.stock.column.sku' | translate }} <span aria-hidden="true">{{ sortMark('productSku') }}</span>
+          </button>
+        </th>
+        <th scope="col" [attr.aria-sort]="sortAria('productName')">
+          <button type="button" class="btn btn-link p-0 text-reset text-decoration-none fw-semibold" (click)="sortBy('productName')">
+            {{ 'inventory.stock.column.product' | translate }} <span aria-hidden="true">{{ sortMark('productName') }}</span>
+          </button>
+        </th>
+        @if (isCentral()) {
+          <th scope="col">{{ 'inventory.stock.column.branch' | translate }}</th>
+        }
+        <th scope="col" class="text-end" [attr.aria-sort]="sortAria('quantity')">
+          <button type="button" class="btn btn-link p-0 text-reset text-decoration-none fw-semibold" (click)="sortBy('quantity')">
+            {{ 'inventory.stock.column.quantity' | translate }} <span aria-hidden="true">{{ sortMark('quantity') }}</span>
+          </button>
+        </th>
+        <th scope="col" class="text-end">{{ 'inventory.stock.column.minStock' | translate }}</th>
+        <th scope="col" class="text-end">{{ 'inventory.stock.column.averageCost' | translate }}</th>
+        <th scope="col" [attr.aria-sort]="sortAria('lastMovementAt')">
+          <button type="button" class="btn btn-link p-0 text-reset text-decoration-none fw-semibold" (click)="sortBy('lastMovementAt')">
+            {{ 'inventory.stock.column.lastMovement' | translate }} <span aria-hidden="true">{{ sortMark('lastMovementAt') }}</span>
+          </button>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of stock.items(); track item.id) {
+        <tr>
+          <td class="font-monospace">{{ item.productSku }}</td>
+          <td>
+            <a [routerLink]="['/inventory/stock', item.productId, item.branchId]" [state]="{ returnUrl: currentUrl() }">
+              {{ item.productName }}
+            </a>
+          </td>
+          @if (isCentral()) {
+            <td>{{ branchName(item.branchId) }}</td>
+          }
+          <td class="text-end font-monospace" [class.text-danger]="item.quantity < 0">
+            {{ quantity(item.quantity) }}
+            @if (item.belowMin) {
+              <span class="badge text-bg-warning ms-2" data-testid="below-min">{{ 'inventory.stock.belowMin' | translate }}</span>
+            }
+          </td>
+          <td class="text-end font-monospace">{{ quantity(item.minStock) }}</td>
+          <td class="text-end font-monospace">{{ money(item.averageCost) }}</td>
+          <td class="small">{{ item.lastMovementAt | localDateTime }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td [attr.colspan]="columnCount()" class="text-center text-body-secondary">
+            {{ (stock.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="stock.page()"
+  [size]="stock.size()"
+  [total]="stock.total()"
+  (pageChange)="stock.goToPage($event)"
+  (sizeChange)="stock.setSize($event)"
+/>

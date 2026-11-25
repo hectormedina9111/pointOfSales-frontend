@@ -1,0 +1,50 @@
+<dl class="row mb-4">
+  <dt class="col-sm-3">{{ 'inventory.documents.field.type' | translate }}</dt>
+  <dd class="col-sm-9">{{ 'inventory.documentType.' + draft.type() | translate }}</dd>
+
+  <dt class="col-sm-3">{{ 'inventory.documents.field.branch' | translate }}</dt>
+  <dd class="col-sm-9">{{ draft.branchName() ?? '—' }}</dd>
+
+  <dt class="col-sm-3">{{ 'inventory.documents.field.reason' | translate }}</dt>
+  <dd class="col-sm-9">{{ draft.form.controls.reason.value.trim() || '—' }}</dd>
+
+  <dt class="col-sm-3">{{ 'inventory.documents.field.notes' | translate }}</dt>
+  <dd class="col-sm-9 mb-0">{{ draft.form.controls.notes.value.trim() || '—' }}</dd>
+</dl>
+
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'inventory.stock.column.product' | translate }}</th>
+        <th scope="col" class="text-end">
+          {{ (isAdjustment() ? 'inventory.documents.column.counted' : 'inventory.documents.column.quantity') | translate }}
+        </th>
+        @if (isAdjustment()) {
+          <th scope="col" class="text-end">{{ 'inventory.lines.current' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'inventory.documents.column.difference' | translate }}</th>
+        }
+        @if (isEntry()) {
+          <th scope="col" class="text-end">{{ 'inventory.documents.column.unitCost' | translate }}</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (line of draft.lines(); track line.key) {
+        <tr>
+          <td>
+            <span class="font-monospace me-2">{{ line.sku }}</span>{{ line.name }}
+          </td>
+          <td class="text-end font-monospace">{{ valueText(line) }}</td>
+          @if (isAdjustment()) {
+            <td class="text-end font-monospace">{{ currentText(line) }}</td>
+            <td class="text-end font-monospace">{{ differenceText(line) }}</td>
+          }
+          @if (isEntry()) {
+            <td class="text-end font-monospace">{{ line.unitCost || '—' }}</td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,42 @@
+<div class="row g-3" [formGroup]="form">
+  <div class="col-12">
+    <app-field-label targetId="document-type-entry" [required]="true">{{ 'inventory.documents.field.type' | translate }}</app-field-label>
+    <div class="d-flex flex-wrap gap-4">
+      @for (type of types; track type) {
+        <div class="form-check">
+          <input [id]="'document-type-' + type.toLowerCase()" type="radio" class="form-check-input"
+            formControlName="type" [value]="type" />
+          <label class="form-check-label" [attr.for]="'document-type-' + type.toLowerCase()">
+            {{ 'inventory.documentType.' + type | translate }}
+          </label>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (isCentral()) {
+    <div class="col-12 col-md-6">
+      <app-field-label targetId="document-branch" [required]="true">{{ 'inventory.documents.field.branch' | translate }}</app-field-label>
+      <select id="document-branch" class="form-select" formControlName="branchId"
+        [class.is-invalid]="isInvalid(form.controls.branchId)">
+        <option [ngValue]="null">{{ 'common.select' | translate }}</option>
+        @for (branch of branchOptions(); track branch.id) {
+          <option [ngValue]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+        }
+      </select>
+      <app-field-error [control]="form.controls.branchId" />
+    </div>
+  }
+
+  <div class="col-12">
+    <app-field-label targetId="document-reason" [required]="reasonRequired()">{{ 'inventory.documents.field.reason' | translate }}</app-field-label>
+    <input id="document-reason" type="text" class="form-control" autocomplete="off" formControlName="reason"
+      [class.is-invalid]="isInvalid(form.controls.reason)" />
+    <app-field-error [control]="form.controls.reason" />
+  </div>
+
+  <div class="col-12">
+    <app-field-label targetId="document-notes">{{ 'inventory.documents.field.notes' | translate }}</app-field-label>
+    <textarea id="document-notes" class="form-control" rows="2" formControlName="notes"></textarea>
+  </div>
+</div>

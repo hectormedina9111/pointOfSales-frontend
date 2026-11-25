@@ -4,6 +4,7 @@ import { AppConfigService } from '../../core/config/app-config.service';
 import { SystemInfoService } from '../../core/system/system-info.service';
 import { IfPrivilegeDirective } from '../../shared/directives/if-privilege.directive';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { BelowMinStockWidgetComponent } from './below-min-stock-widget';
 import { StoresWidgetComponent } from './stores-widget';
 import { SalesTodayByBranchWidgetComponent } from './sales-today-by-branch-widget';
 import { SalesTodayWidgetComponent } from './sales-today-widget';
@@ -18,6 +19,7 @@ import { SyncSummaryWidgetComponent } from './sync-summary-widget';
     SyncSummaryWidgetComponent,
     SalesTodayWidgetComponent,
     SalesTodayByBranchWidgetComponent,
+    BelowMinStockWidgetComponent,
   ],
   templateUrl: './home.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
