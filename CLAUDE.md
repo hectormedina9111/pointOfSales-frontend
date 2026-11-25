@@ -25,7 +25,7 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
 - `src/app/shared`: pipes y componentes reutilizables sin lógica de negocio.
 - `src/app/features/<nombre>`: una carpeta por pantalla o área funcional (`home`, luego `session`, `users`, `catalog`, etc.).
 - `src/app/api`: cliente HTTP generado desde el OpenAPI del backend (a partir del paso 2). **Nunca se edita a mano.** Se regenera con `npm run api:update`.
-- Hasta que se ejecute `npm run api:update` por primera vez, los servicios tipados se escriben a mano en `src/app/core/api` (por ahora `auth-api.ts` y `me-api.ts`), con interfaces que coinciden con los records Java del backend. Cuando se genere `src/app/api`, esos servicios se sustituyen por el cliente generado y se borran.
+- Hasta que se ejecute `npm run api:update` por primera vez, los servicios tipados se escriben a mano en `src/app/core/api` (hoy lo son todos los servicios de la aplicación), con interfaces que coinciden con los records Java del backend. Cuando se genere `src/app/api`, esos servicios se sustituyen por el cliente generado y se borran.
 - Las llamadas a la API usan **rutas relativas** que empiezan por `/api/`. El interceptor `api-base-url` les antepone `apiBaseUrl`, que se lee de `config.json` al arrancar (`AppConfigService`). Nunca se escribe una URL absoluta ni un puerto en el código.
 - **Una web por nodo:** cada nodo (central, tienda 1, tienda 2) sirve su propia web y esa web solo llama a su propio backend, con llamadas directas (CORS). No hay proxy ni selector de servidor.
 - `public/config.json` es la configuración de `npm start` (apunta a la central en la máquina virtual). En Docker, `API_BASE_URL` genera el `config.json` de cada nodo al arrancar el contenedor.
@@ -47,7 +47,7 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
 
 ## Forma de trabajo
 
-- Alcance actual: **MVP del frontend** (pasos 1 a 7 del plan). Se trabaja paso por paso; no implementar pantallas fuera del MVP.
+- Alcance actual: MVP del frontend terminado (24 de noviembre de 2026). Siguiente: lo que decida el responsable (pruebas, despliegue o ventas).
 - Cambios pequeños y enfocados; un commit por paso lógico.
 - Si una decisión no está en el plan o lo contradice, preguntar antes de implementarla y, una vez decidida, actualizar `docs/plan.md` del backend.
 
