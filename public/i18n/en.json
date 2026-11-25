@@ -950,5 +950,11 @@
   "customers.finalConsumer": "Final consumer",
   "customers.deactivate.title": "Deactivate customer",
   "customers.deactivate.message": "Deactivate the customer {name}?",
-  "customers.deactivated": "Customer deactivated."
+  "customers.deactivated": "Customer deactivated.",
+  "error.CREDIT_NOT_AVAILABLE": "Credit sales are available with the credit module.",
+  "error.CUSTOMER_NOT_FOUND": "The customer does not exist.",
+  "error.CUSTOMER_INACTIVE": "The customer is inactive and cannot be used in a sale.",
+  "error.PRICE_OVERRIDE_AUTHORIZATION_REQUIRED": "A store manager must authorize this price change.",
+  "error.ID_OUT_OF_RANGE": "The id is outside the range of this node.",
+  "sales.pos.authorization.priceIntro": "This price change needs a store manager to authorize it. The credentials are used only for this save and are not stored."
 }

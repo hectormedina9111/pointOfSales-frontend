@@ -950,5 +950,11 @@
   "customers.finalConsumer": "Consumidor final",
   "customers.deactivate.title": "Desactivar cliente",
   "customers.deactivate.message": "¿Desactivar el cliente {name}?",
-  "customers.deactivated": "Cliente desactivado."
+  "customers.deactivated": "Cliente desactivado.",
+  "error.CREDIT_NOT_AVAILABLE": "Las ventas a crédito estarán disponibles con el módulo de crédito.",
+  "error.CUSTOMER_NOT_FOUND": "El cliente no existe.",
+  "error.CUSTOMER_INACTIVE": "El cliente está inactivo y no se puede usar en una venta.",
+  "error.PRICE_OVERRIDE_AUTHORIZATION_REQUIRED": "Un jefe de tienda debe autorizar este cambio de precio.",
+  "error.ID_OUT_OF_RANGE": "El id está fuera del rango de este nodo.",
+  "sales.pos.authorization.priceIntro": "Este cambio de precio necesita que un jefe de tienda lo autorice. Las credenciales se usan solo para este guardado y no se guardan."
 }
