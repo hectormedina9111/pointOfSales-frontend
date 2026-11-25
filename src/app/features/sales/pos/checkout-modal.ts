@@ -13,6 +13,7 @@ import {
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { listAllPages } from '../../../core/api/page';
+import { randomUuid } from '../../../shared/ids/random-uuid';
 import { PaymentMethodView, PaymentMethodsApi } from '../../../core/api/payment-methods-api';
 import {
   AuthorizationRequest,
@@ -83,7 +84,7 @@ export class CheckoutModalComponent implements OnInit {
   currency: string | null = null;
 
   /** Clave de idempotencia: se crea una vez por asistente y se reusa en los reintentos. */
-  private readonly idempotencyKey = crypto.randomUUID();
+  private readonly idempotencyKey = randomUuid();
 
   protected readonly saving = signal(false);
   protected readonly error = signal<unknown>(null);
