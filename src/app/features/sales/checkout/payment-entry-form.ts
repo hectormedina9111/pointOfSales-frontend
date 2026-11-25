@@ -8,7 +8,14 @@ import { FieldLabelComponent } from '../../../shared/components/field-label/fiel
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { AMOUNT_PATTERN, amountToCents } from '../../../shared/forms/amounts';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
-import { NewPayment, PaymentInput, paymentError, suggestedAmount, toPaymentRequest } from './payment-math';
+import {
+  NewPayment,
+  PaymentInput,
+  applyToPending,
+  paymentError,
+  suggestedAmount,
+  toPaymentRequest,
+} from './payment-math';
 
 /** Solo el número de los cuatro últimos dígitos de la tarjeta. */
 const LAST4_PATTERN = /^\d{4}$/;
@@ -68,19 +75,19 @@ export class PaymentEntryFormComponent implements OnInit {
       return;
     }
     const value = this.form.getRawValue();
-    const input: PaymentInput = {
+    const input: PaymentInput = applyToPending({
       amount: value.amount,
       amountReceived: value.amountReceived,
       reference: value.reference,
       cardLast4: value.cardLast4,
-    };
-    const error = paymentError(input, method);
+    }, method, this.pendingCents());
+    const error = paymentError(input, method, this.pendingCents());
     if (error !== null) {
       this.ruleError.set(error);
       return;
     }
     this.added.emit({ methodName: method.name, request: toPaymentRequest(input, method) });
-    const remaining = this.pendingCents() - (amountToCents(value.amount) ?? 0);
+    const remaining = this.pendingCents() - (amountToCents(input.amount) ?? 0);
     this.form.reset({
       paymentMethodCode: '',
       amount: suggestedAmount(remaining),

@@ -1015,6 +1015,8 @@
   "sales.checkout.reference": "Reference",
   "sales.checkout.cardLast4": "Last 4 digits (optional)",
   "sales.checkout.referenceRequired": "This payment method needs a reference.",
+  "sales.checkout.nothingPending": "There is no amount pending to charge.",
+  "sales.checkout.amountExceedsPending": "This method cannot exceed the pending amount. Only cash gives change.",
   "sales.checkout.total": "Total",
   "sales.checkout.paid": "Paid",
   "sales.checkout.pending": "Pending",

@@ -1015,6 +1015,8 @@
   "sales.checkout.reference": "Referencia",
   "sales.checkout.cardLast4": "Últimos 4 dígitos (opcional)",
   "sales.checkout.referenceRequired": "Este método de pago necesita una referencia.",
+  "sales.checkout.nothingPending": "No hay monto pendiente por cobrar.",
+  "sales.checkout.amountExceedsPending": "Este método no puede superar el monto pendiente. Solo el efectivo da vuelto.",
   "sales.checkout.total": "Total",
   "sales.checkout.paid": "Pagado",
   "sales.checkout.pending": "Pendiente",
