@@ -31,6 +31,7 @@
         <th scope="col">{{ 'organization.branches.column.name' | translate }}</th>
         <th scope="col">{{ 'organization.branches.column.country' | translate }}</th>
         <th scope="col">{{ 'organization.branches.column.negativeStock' | translate }}</th>
+        <th scope="col">{{ 'organization.branches.column.foreignReturns' | translate }}</th>
         <th scope="col">{{ 'common.active' | translate }}</th>
         <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
       </tr>
@@ -42,6 +43,11 @@
           <td>{{ branch.name }}</td>
           <td>{{ countryName(branch.countryId) }}</td>
           <td>{{ (branch.allowNegativeStock ? 'common.yes' : 'common.no') | translate }}</td>
+          <td>
+            <span class="badge" [class.text-bg-info]="branch.acceptsForeignReturns" [class.text-bg-secondary]="!branch.acceptsForeignReturns">
+              {{ (branch.acceptsForeignReturns ? 'common.yes' : 'common.no') | translate }}
+            </span>
+          </td>
           <td>
             <span class="badge" [class.text-bg-success]="branch.active" [class.text-bg-secondary]="!branch.active">
               {{ (branch.active ? 'common.active' : 'common.inactive') | translate }}
@@ -57,7 +63,7 @@
         </tr>
       } @empty {
         <tr>
-          <td colspan="6" class="text-center text-body-secondary">
+          <td colspan="7" class="text-center text-body-secondary">
             {{ (branches.loading() ? 'common.loading' : 'common.empty') | translate }}
           </td>
         </tr>
