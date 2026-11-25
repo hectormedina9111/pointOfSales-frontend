@@ -4,23 +4,23 @@ import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap, Params, Router, RouterLink } from '@angular/router';
 import { debounceTime } from 'rxjs';
 
-import { BranchView, BranchesApi } from '../../../../core/api/branches-api';
+import { BranchView, BranchesApi } from '../../../core/api/branches-api';
 import {
   InventoryApi,
   TransferDirection,
   TransferFilters,
   TransferStatus,
   TransferView,
-} from '../../../../core/api/inventory-api';
-import { listAllPages } from '../../../../core/api/page';
-import { SystemInfoService } from '../../../../core/system/system-info.service';
-import { IfPrivilegeDirective } from '../../../../shared/directives/if-privilege.directive';
-import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
-import { ProblemAlertComponent } from '../../../../shared/components/problem-alert/problem-alert';
-import { PagedList } from '../../../../shared/paging/paged-list';
-import { LocalDateTimePipe } from '../../../../shared/pipes/local-date-time.pipe';
-import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { endOfDay, startOfDay } from '../../../../shared/time/day-range';
+} from '../../../core/api/inventory-api';
+import { listAllPages } from '../../../core/api/page';
+import { SystemInfoService } from '../../../core/system/system-info.service';
+import { IfPrivilegeDirective } from '../../../shared/directives/if-privilege.directive';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination';
+import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
+import { PagedList } from '../../../shared/paging/paged-list';
+import { LocalDateTimePipe } from '../../../shared/pipes/local-date-time.pipe';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { endOfDay, startOfDay } from '../../../shared/time/day-range';
 import { DAY_PATTERN, RawValue, idOf, matching, pick } from '../shared/inventory-query';
 import { NodeBranchService } from '../shared/node-branch.service';
 import { TRANSFER_STATUSES, transferStatusClass } from './transfer-labels';
