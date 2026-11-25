@@ -1,6 +1,6 @@
 <div class="position-relative">
   <input [id]="inputId()" type="search" class="form-control" autocomplete="off" [formControl]="query"
-    [placeholder]="'pricing.picker.placeholder' | translate" />
+    [placeholder]="'pricing.picker.placeholder' | translate" (keydown.enter)="$event.preventDefault()" />
 
   @if (searching()) {
     <div class="dropdown-menu show w-100">

@@ -208,6 +208,12 @@ export const routes: Routes = [
       import('./features/inventory/documents/documents-list').then((module) => module.DocumentsListComponent),
   },
   {
+    path: 'inventory/documents/new',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/documents/new/document-page').then((module) => module.DocumentPageComponent),
+  },
+  {
     path: 'inventory/documents/:id',
     canActivate: [authGuard],
     loadComponent: () =>

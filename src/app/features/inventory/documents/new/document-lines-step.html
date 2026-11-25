@@ -1,0 +1,100 @@
+<!-- Búsqueda: código de barras, SKU o nombre. Elegir un producto lo agrega al documento. -->
+<app-field-label targetId="document-product-search" [required]="true">{{ 'inventory.lines.search' | translate }}</app-field-label>
+<app-product-picker inputId="document-product-search" (productPicked)="addProduct($event)" />
+
+@if (lineMessage(); as key) {
+  <div class="alert alert-warning py-2 mt-2 mb-0" role="alert">{{ key | translate }}</div>
+}
+<app-problem-alert [error]="draft.lookupError()" />
+
+@if (isEntry()) {
+  <div class="card mt-4">
+    <div class="card-body">
+      <app-field-label targetId="document-csv-file">{{ 'inventory.csv.label' | translate }}</app-field-label>
+      <input id="document-csv-file" type="file" class="form-control" accept=".csv,text/csv" [disabled]="csvBusy()"
+        (change)="onCsvSelected($event)" />
+      <div class="form-text">{{ 'inventory.csv.hint' | translate }}</div>
+
+      @if (csvBusy()) {
+        <div class="small text-body-secondary mt-2" role="status">{{ 'inventory.csv.importing' | translate }}</div>
+      }
+      @if (csvResult(); as result) {
+        @if (result.headerError) {
+          <div class="alert alert-danger py-2 mt-2 mb-0" role="alert">{{ 'inventory.csv.header' | translate }}</div>
+        } @else if (result.empty) {
+          <div class="alert alert-warning py-2 mt-2 mb-0" role="alert">{{ 'inventory.csv.empty' | translate }}</div>
+        } @else {
+          <div class="small mt-2" role="status" data-testid="csv-added">
+            {{ 'inventory.csv.imported' | translate: { count: result.added } }}
+          </div>
+          @if (result.issues.length > 0) {
+            <ul class="small text-danger mt-2 mb-0 ps-3" data-testid="csv-issues">
+              @for (issue of result.issues; track $index) {
+                <li>{{ issue.text }}</li>
+              }
+            </ul>
+          }
+        }
+      }
+    </div>
+  </div>
+}
+
+<div class="mt-4">
+  @if (draft.lines().length === 0) {
+    <p class="text-body-secondary mb-0">{{ 'inventory.lines.empty' | translate }}</p>
+  } @else {
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'inventory.stock.column.product' | translate }}</th>
+            <th scope="col" class="text-end">
+              {{ (isAdjustment() ? 'inventory.documents.column.counted' : 'inventory.documents.column.quantity') | translate }}
+            </th>
+            @if (isAdjustment()) {
+              <th scope="col" class="text-end">{{ 'inventory.lines.current' | translate }}</th>
+              <th scope="col" class="text-end">{{ 'inventory.documents.column.difference' | translate }}</th>
+            }
+            @if (isEntry()) {
+              <th scope="col">{{ 'inventory.documents.column.unitCost' | translate }}</th>
+            }
+            <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of draft.lines(); track line.key) {
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ line.name }}</div>
+                <div class="small font-monospace text-body-secondary">{{ line.sku }}</div>
+              </td>
+              <td style="width: 9rem;">
+                <input type="text" inputmode="decimal" class="form-control form-control-sm text-end font-monospace"
+                  [class.is-invalid]="!draft.isLineValid(line)"
+                  [attr.aria-label]="(isAdjustment() ? 'inventory.documents.column.counted' : 'inventory.documents.column.quantity') | translate"
+                  [value]="valueText(line)" (change)="onValueChange(line, $event)" />
+              </td>
+              @if (isAdjustment()) {
+                <td class="text-end font-monospace">{{ currentText(line) }}</td>
+                <td class="text-end font-monospace">{{ differenceText(line) }}</td>
+              }
+              @if (isEntry()) {
+                <td style="width: 9rem;">
+                  <input type="text" inputmode="decimal" class="form-control form-control-sm font-monospace"
+                    [attr.aria-label]="'inventory.documents.column.unitCost' | translate" [value]="line.unitCost"
+                    (change)="onUnitCostChange(line, $event)" />
+                </td>
+              }
+              <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeLine(line)">
+                  {{ 'inventory.lines.remove' | translate }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
