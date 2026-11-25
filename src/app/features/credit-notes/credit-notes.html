@@ -1,0 +1,136 @@
+<h1 class="h3 mb-1">{{ 'creditNotes.list.title' | translate }}</h1>
+<p class="text-body-secondary mb-3">{{ 'creditNotes.list.intro' | translate }}</p>
+
+<form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" role="search" (submit)="$event.preventDefault()">
+  <div class="col-12 col-sm-6 col-lg-3">
+    <label class="form-label small mb-1" for="credit-filter-search">{{ 'creditNotes.filter.search' | translate }}</label>
+    <input id="credit-filter-search" type="search" class="form-control" autocomplete="off" formControlName="search" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-3">
+    <label class="form-label small mb-1" for="credit-filter-customer">{{ 'sales.list.filter.customer' | translate }}</label>
+    @if (customer(); as chosen) {
+      <div class="form-control d-flex align-items-center justify-content-between gap-2" data-testid="credit-filter-customer">
+        <span class="text-truncate">{{ chosen.name }}</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearCustomer()">
+          {{ 'sales.list.filter.clearCustomer' | translate }}
+        </button>
+      </div>
+    } @else {
+      <div class="position-relative">
+        <input id="credit-filter-customer" type="search" class="form-control" autocomplete="off" [formControl]="customerSearch"
+          [placeholder]="'customers.search.placeholder' | translate" />
+        @if (customerResults().length > 0) {
+          <div class="dropdown-menu show w-100 top-100 start-0 mt-1 p-1">
+            @for (item of customerResults(); track item.id) {
+              <button type="button" class="dropdown-item" (click)="chooseCustomer(item)">{{ item.displayName }}</button>
+            }
+          </div>
+        } @else if (customerQuery() !== '' && !customerSearching()) {
+          <div class="dropdown-menu show w-100 top-100 start-0 mt-1 p-2 small text-body-secondary">
+            {{ 'sales.list.filter.noCustomers' | translate }}
+          </div>
+        }
+      </div>
+    }
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="credit-filter-status">{{ 'creditNotes.filter.status' | translate }}</label>
+    <select id="credit-filter-status" class="form-select" formControlName="status">
+      <option value="">{{ 'common.all' | translate }}</option>
+      @for (status of statuses; track status) {
+        <option [value]="status">{{ 'creditNotes.status.' + status | translate }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="credit-filter-from">{{ 'sales.list.filter.from' | translate }}</label>
+    <input id="credit-filter-from" type="date" class="form-control" formControlName="from" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="credit-filter-to">{{ 'sales.list.filter.to' | translate }}</label>
+    <input id="credit-filter-to" type="date" class="form-control" formControlName="to" />
+  </div>
+  @if (isCentral()) {
+    <div class="col-12 col-sm-6 col-lg-2">
+      <label class="form-label small mb-1" for="credit-filter-branch">{{ 'sales.list.filter.branch' | translate }}</label>
+      <select id="credit-filter-branch" class="form-select" formControlName="branchId">
+        <option value="">{{ 'common.all' | translate }}</option>
+        @for (branch of branches(); track branch.id) {
+          <option [value]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+        }
+      </select>
+    </div>
+  }
+  <div class="col-12 col-sm-6 col-lg-2">
+    <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+      {{ 'sales.list.filter.clear' | translate }}
+    </button>
+  </div>
+</form>
+
+@if (rangeInvalid()) {
+  <div class="alert alert-warning" role="alert">{{ 'sales.list.rangeInvalid' | translate }}</div>
+}
+
+<app-problem-alert [error]="notes.error()" />
+<app-problem-alert [error]="lookupError()" />
+<app-problem-alert [error]="customerError()" />
+
+<p class="small text-body-secondary mb-2" data-testid="credit-notes-total">
+  {{ 'creditNotes.list.count' | translate: { count: notes.total() } }}
+</p>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'creditNotes.column.number' | translate }}</th>
+        <th scope="col">{{ 'creditNotes.column.issuedAt' | translate }}</th>
+        @if (isCentral()) {
+          <th scope="col">{{ 'sales.list.column.branch' | translate }}</th>
+        }
+        <th scope="col">{{ 'sales.list.column.customer' | translate }}</th>
+        <th scope="col">{{ 'creditNotes.column.return' | translate }}</th>
+        <th scope="col" class="text-end">{{ 'creditNotes.column.amount' | translate }}</th>
+        <th scope="col" class="text-end">{{ 'creditNotes.column.balance' | translate }}</th>
+        <th scope="col">{{ 'sales.list.column.status' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (note of notes.items(); track note.id) {
+        <tr>
+          <td class="font-monospace">
+            <a [routerLink]="['/credit-notes', note.id]" [state]="{ returnUrl: currentUrl() }">{{ note.number }}</a>
+          </td>
+          <td>{{ note.issuedAt | localDateTime }}</td>
+          @if (isCentral()) {
+            <td>{{ branchName(note.branchId) }}</td>
+          }
+          <td>{{ note.customerName }}</td>
+          <td class="font-monospace">
+            <a [routerLink]="['/sales/orders', note.returnSaleId]">{{ note.returnReceiptNumber ?? '—' }}</a>
+          </td>
+          <td class="text-end font-monospace">{{ money(note.amount) }}</td>
+          <td class="text-end font-monospace">{{ money(note.balance) }}</td>
+          <td>
+            <span [class]="statusClass(note.status)">{{ 'creditNotes.status.' + note.status | translate }}</span>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td [attr.colspan]="columnCount()" class="text-center text-body-secondary">
+            {{ (notes.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="notes.page()"
+  [size]="notes.size()"
+  [total]="notes.total()"
+  (pageChange)="notes.goToPage($event)"
+  (sizeChange)="notes.setSize($event)"
+/>

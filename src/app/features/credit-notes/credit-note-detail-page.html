@@ -1,0 +1,46 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ 'creditNotes.detail.title' | translate }}</h1>
+  <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ 'creditNotes.detail.back' | translate }}</button>
+</div>
+
+@if (invalidId()) {
+  <div class="alert alert-warning" role="alert">{{ 'creditNotes.detail.invalidId' | translate }}</div>
+} @else {
+  <app-problem-alert [error]="loadError()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (note(); as item) {
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+          <span class="h5 font-monospace mb-0" data-testid="credit-note-number">{{ item.number }}</span>
+          <span [class]="statusClass(item.status)">{{ 'creditNotes.status.' + item.status | translate }}</span>
+        </div>
+
+        <dl class="row mb-0">
+          <dt class="col-sm-4 col-lg-3">{{ 'creditNotes.detail.customer' | translate }}</dt>
+          <dd class="col-sm-8 col-lg-9">
+            {{ item.customerId === finalConsumerId ? ('customers.finalConsumer' | translate) : item.customerName }}
+          </dd>
+          <dt class="col-sm-4 col-lg-3">{{ 'creditNotes.column.amount' | translate }}</dt>
+          <dd class="col-sm-8 col-lg-9 font-monospace">{{ money(item.amount) }}</dd>
+          <dt class="col-sm-4 col-lg-3">{{ 'creditNotes.column.balance' | translate }}</dt>
+          <dd class="col-sm-8 col-lg-9 font-monospace">{{ money(item.balance) }}</dd>
+          <dt class="col-sm-4 col-lg-3">{{ 'creditNotes.column.issuedAt' | translate }}</dt>
+          <dd class="col-sm-8 col-lg-9">{{ item.issuedAt | localDateTime }}</dd>
+          <dt class="col-sm-4 col-lg-3">{{ 'creditNotes.detail.return' | translate }}</dt>
+          <dd class="col-sm-8 col-lg-9">
+            <a [routerLink]="['/sales/orders', item.returnSaleId]">
+              {{ item.returnReceiptNumber ?? '—' }}
+            </a>
+          </dd>
+          @if (isCentral()) {
+            <dt class="col-sm-4 col-lg-3">{{ 'sales.list.column.branch' | translate }}</dt>
+            <dd class="col-sm-8 col-lg-9">{{ branchName(item.branchId) }}</dd>
+          }
+        </dl>
+      </div>
+    </div>
+  }
+}

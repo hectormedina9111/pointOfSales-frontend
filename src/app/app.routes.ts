@@ -172,6 +172,18 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/customers/customers').then((module) => module.CustomersComponent),
   },
+  {
+    path: 'credit-notes',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/credit-notes/credit-notes').then((module) => module.CreditNotesComponent),
+  },
+  {
+    path: 'credit-notes/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/credit-notes/credit-note-detail-page').then((module) => module.CreditNoteDetailPageComponent),
+  },
   // Cualquier otra dirección: página no encontrada, solo para usuarios con sesión.
   {
     path: '**',
