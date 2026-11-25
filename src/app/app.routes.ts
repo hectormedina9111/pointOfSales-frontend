@@ -106,7 +106,17 @@ export const routes: Routes = [
     loadComponent: () => import('./features/audit/audit-log').then((module) => module.AuditLogComponent),
   },
   // Rutas del menú que aún no tienen pantalla. Cada una se reemplaza por su pantalla en su etapa.
-  underConstructionRoute('sales/pos'),
+  {
+    path: 'sales/pos',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/sales/pos/pos').then((module) => module.PosComponent),
+  },
+  {
+    path: 'sales/tickets/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/sales/ticket/sale-ticket').then((module) => module.SaleTicketComponent),
+  },
   underConstructionRoute('sales'),
   {
     path: 'cash/session',

@@ -1,0 +1,50 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{{ 'sales.pos.holds.title' | translate }}</h2>
+  <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <app-problem-alert [error]="actionError()" />
+  <app-problem-alert [error]="holds.error()" />
+
+  @if (holds.loading()) {
+    <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (holds.items().length === 0) {
+    <p class="text-body-secondary mb-0">{{ 'sales.pos.holds.empty' | translate }}</p>
+  } @else {
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'sales.pos.holds.column.createdAt' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.pos.holds.column.total' | translate }}</th>
+            <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (hold of holds.items(); track hold.id) {
+            <tr>
+              <td>{{ hold.createdAt | localDateTime }}</td>
+              <td class="text-end font-monospace">{{ money(hold.total) }}</td>
+              <td class="text-end text-nowrap">
+                <button type="button" class="btn btn-sm btn-primary me-1" [disabled]="busyId() !== null" (click)="resume(hold)">
+                  {{ 'sales.pos.holds.resume' | translate }}
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="busyId() !== null" (click)="remove(hold)">
+                  {{ (busyId() === hold.id ? 'common.saving' : 'common.delete') | translate }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-pagination
+      [page]="holds.page()"
+      [size]="holds.size()"
+      [total]="holds.total()"
+      (pageChange)="holds.goToPage($event)"
+      (sizeChange)="holds.setSize($event)"
+    />
+  }
+</div>

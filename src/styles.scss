@@ -48,3 +48,43 @@
     border: 0;
   }
 }
+
+// Ticket de venta de 80 mm. Solo se imprime el área marcada con sale-ticket-print. La página usa un
+// nombre propio (sale-ticket) para no cambiar el tamaño de la impresión del cierre de caja.
+.sale-ticket-print {
+  width: 100%;
+  max-width: 80mm;
+  margin: 0 auto;
+  padding: 2mm;
+  font-family: var(--bs-font-monospace);
+  font-size: 12px;
+  color: #000;
+  background: #fff;
+  page: sale-ticket;
+}
+
+@page sale-ticket {
+  size: 80mm auto;
+  margin: 0;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .sale-ticket-print,
+  .sale-ticket-print * {
+    visibility: visible;
+  }
+
+  .sale-ticket-print {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: none;
+    width: 80mm;
+    margin: 0;
+    padding: 0;
+  }
+}

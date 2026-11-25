@@ -59,7 +59,7 @@ El menú lateral sale de los menús que el backend entrega a cada usuario. Cada 
 - **Catálogo:** unidades de medida, impuestos por país, categorías en forma de árbol, y productos con búsqueda y asignación de impuestos por país.
 - **Precios:** listas de precios con sus precios por producto, y consulta de precio (precio unitario, base gravable, impuesto y tasa).
 - **Tiendas:** nodos (solo en la central: estado, latidos, cambios pendientes, código de activación, asignación de sucursal y revocación) y estado de sincronización (solo en una tienda).
-- **Ventas:** las pantallas de punto de venta y de ventas realizadas están en construcción (se muestran como "En construcción" hasta su etapa). Mi caja y sesiones de caja están en la sección Caja. Las rutas que no existen muestran "Página no encontrada".
+- **Ventas:** el punto de venta de la tienda está en la sección Punto de venta. Las ventas realizadas siguen en construcción (se muestran como "En construcción" hasta su etapa). Mi caja y sesiones de caja están en la sección Caja. Las rutas que no existen muestran "Página no encontrada".
 - **Configuración de ventas:** cajas por sucursal (filtros por sucursal y estado; alta y edición solo en la central) y métodos de pago (solo edición en la central; los códigos los define el sistema).
 - **Auditoría:** bitácora paginada con filtros, y comparación de valores antes y después de cada cambio.
 - **Cambio de contraseña:** disponible en la central y en las tiendas, desde el menú del usuario.
@@ -74,6 +74,22 @@ Las pantallas de caja se operan en las tiendas. En la central, las rutas de caja
 - **Sesiones de caja (`/cash/sessions`):** listado paginado con filtros de estado, caja y rango de fechas. Cada fila abre el detalle con el conteo al cierre y los movimientos. Es de solo lectura.
 
 Los botones aparecen solo si el usuario tiene el privilegio de la acción (`POST_CASH_SESSIONS`, `POST_CASH_SESSIONS_ID_MOVEMENTS`, `POST_CASH_SESSIONS_ID_CLOSE`) y el nodo es una tienda. Los montos se muestran con la moneda de la empresa; si la empresa no está configurada, solo con dos decimales.
+
+## Punto de venta
+
+La pantalla **Ventas > Punto de venta** (`/sales/pos`) funciona en la tienda y requiere una sesión de caja abierta. Sin sesión, muestra un aviso con el botón **Mi caja**. En la central solo muestra un aviso, porque las ventas se hacen en las tiendas.
+
+- **Buscar:** escriba el código de barras o parte del nombre y pulse Enter. Primero busca el código de barras exacto; si no existe, muestra una lista para elegir el producto. Al elegir un producto se agrega una línea, o se suma una unidad si ya está en la venta.
+- **Líneas:** la cantidad se cambia con - y + o escribiendo el número (hasta 3 decimales). El descuento de cada línea (monto o porcentaje) se edita desde su botón en la columna Descuento.
+- **Totales:** el servidor calcula los totales 300 ms después del último cambio. **Cobrar** solo se habilita cuando los totales están al día. El descuento de la venta está debajo del total.
+- **Cobrar:** asistente de tres pasos. *Revisar* muestra las líneas y los totales. *Pagos* acepta uno o varios métodos: la suma debe ser exactamente el total, el botón **Exacto** pone el pendiente en efectivo y el vuelto se calcula al momento. *Confirmar* cobra. Si un descuento necesita autorización, pide el usuario y la contraseña de un jefe de tienda, que solo viajan en ese cobro y no se guardan.
+- **Poner en espera** guarda la venta sin cobrarla. **Ventas en espera** la reanuda (carga sus líneas) o la elimina, previa confirmación.
+- **Cancelar venta** quita las líneas y los descuentos, previa confirmación. Si la venta venía de una espera, también la elimina.
+- **Ticket:** al cobrar se abre `/sales/tickets/{id}`, un ticket de 80 mm con Imprimir (imprime solo el ticket) y Nueva venta.
+
+Atajos: **F2** enfoca la búsqueda y **F9** cobra. No actúan mientras hay un diálogo abierto.
+
+Los botones aparecen según los privilegios de la venta: `POST_SALES` (cobrar), `POST_SALES_HOLDS` (poner en espera) y `GET_SALES_HOLDS` (ventas en espera).
 
 ## Reglas de negocio visibles en la web
 
