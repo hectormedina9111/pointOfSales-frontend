@@ -52,6 +52,15 @@
     </select>
   </div>
   <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="order-filter-doctype">{{ 'sales.list.filter.type' | translate }}</label>
+    <select id="order-filter-doctype" class="form-select" formControlName="type">
+      <option value="">{{ 'common.all' | translate }}</option>
+      @for (type of types; track type) {
+        <option [value]="type">{{ 'sales.list.type.' + type | translate }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
     <label class="form-label small mb-1" for="order-filter-from">{{ 'sales.list.filter.from' | translate }}</label>
     <input id="order-filter-from" type="date" class="form-control" formControlName="from" />
   </div>
@@ -148,6 +157,9 @@
             <a [routerLink]="['/sales/orders', sale.id]" [state]="{ returnUrl: currentUrl() }">
               {{ sale.receiptNumber ?? sale.internalNumber ?? '—' }}
             </a>
+            @if (sale.type === 'RETURN') {
+              <span class="badge text-bg-light border ms-1">{{ 'sales.list.type.RETURN' | translate }}</span>
+            }
           </td>
           <td class="small">{{ (sale.paidAt ?? sale.createdAt) | localDateTime }}</td>
           @if (isCentral()) {
@@ -162,7 +174,7 @@
           </td>
           <td>{{ 'sales.order.type.' + sale.orderType | translate }}</td>
           <td>
-            <span class="badge" [class.text-bg-success]="sale.status === 'PAID'" [class.text-bg-warning]="sale.status === 'ON_HOLD'">
+            <span [class]="statusClass(sale.status)">
               {{ 'sales.list.status.' + sale.status | translate }}
             </span>
           </td>

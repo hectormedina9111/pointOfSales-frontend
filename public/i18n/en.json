@@ -875,6 +875,7 @@
   "sales.list.filter.minTotal": "Minimum total",
   "sales.list.filter.maxTotal": "Maximum total",
   "sales.list.filter.clear": "Clear filters",
+  "sales.list.filter.type": "Document type",
   "sales.list.status.PAID": "Paid",
   "sales.list.status.ON_HOLD": "On hold",
   "sales.list.status.PARTIALLY_RETURNED": "Partially returned",
