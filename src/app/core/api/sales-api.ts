@@ -5,8 +5,17 @@ import { Observable } from 'rxjs';
 import { CustomerDocumentType } from './customers-api';
 import { Page, PageRequest, pageParams } from './page';
 
-/** Estado de una venta (enum SaleStatus del backend). ON_HOLD está en espera; PAID está cobrada. */
-export type SaleStatus = 'ON_HOLD' | 'PAID';
+/**
+ * Estado de una venta (enum SaleStatus del backend). ON_HOLD está en espera; PAID está cobrada;
+ * PARTIALLY_RETURNED y RETURNED son ventas cobradas con devoluciones (parcial o total).
+ */
+export type SaleStatus = 'ON_HOLD' | 'PAID' | 'PARTIALLY_RETURNED' | 'RETURNED';
+
+/** Tipo de documento (enum SaleType del backend): venta, o devolución que apunta a la venta original. */
+export type SaleType = 'SALE' | 'RETURN';
+
+/** Forma de reembolso de una devolución (enum RefundMethod del backend). */
+export type RefundMethod = 'CASH' | 'ORIGINAL_METHOD' | 'CREDIT_NOTE';
 
 /** Forma de un descuento (enum DiscountType del backend): monto fijo o porcentaje. */
 export type DiscountType = 'AMOUNT' | 'PERCENTAGE';
@@ -91,6 +100,10 @@ export interface SaleLineView {
   readonly subtotal: number;
   readonly taxAmount: number;
   readonly total: number;
+  /** Cantidad ya devuelta de esta línea (en una venta); cero en una devolución. */
+  readonly returnedQuantity: number;
+  /** En una devolución, la línea de la venta original que se devuelve; null en una venta. */
+  readonly originalLineId: number | null;
 }
 
 /** Totales de una venta (record SaleTotalsView). exento + gravado 15 % + gravado 18 % + otros gravados + ISV = total. */
@@ -132,7 +145,7 @@ export interface SaleView extends SaleCustomerFields {
   readonly id: number;
   readonly internalNumber: number | null;
   readonly receiptNumber: string | null;
-  readonly type: string;
+  readonly type: SaleType;
   readonly documentType: string;
   readonly status: SaleStatus;
   readonly branchId: number;
@@ -153,6 +166,31 @@ export interface SaleView extends SaleCustomerFields {
   readonly createdAt: string;
   readonly lines: readonly SaleLineView[];
   readonly payments: readonly PaymentView[];
+  /** Si es una devolución: la venta original, su número, el motivo y la forma de reembolso. */
+  readonly originalSaleId: number | null;
+  readonly originalReceiptNumber: string | null;
+  readonly reason: string | null;
+  readonly refundMethod: RefundMethod | null;
+  /** Devoluciones hechas a esta venta (vacío en una devolución). */
+  readonly returns: readonly SaleReturnSummary[];
+  /** Nota de crédito emitida por esta devolución; null si no se emitió. */
+  readonly creditNote: SaleCreditNoteSummary | null;
+}
+
+/** Devolución de una venta, en la lista de devoluciones del detalle (record ReturnSummary). */
+export interface SaleReturnSummary {
+  readonly id: number;
+  readonly receiptNumber: string | null;
+  readonly total: number;
+  readonly createdAt: string;
+}
+
+/** Nota de crédito que emitió una devolución. balance es lo que queda por usar. */
+export interface SaleCreditNoteSummary {
+  readonly id: number;
+  readonly number: string;
+  readonly amount: number;
+  readonly balance: number;
 }
 
 /**
@@ -163,6 +201,7 @@ export interface SaleSummaryView extends SaleCustomerFields {
   readonly id: number;
   readonly internalNumber: number | null;
   readonly receiptNumber: string | null;
+  readonly type: SaleType;
   readonly status: SaleStatus;
   readonly branchId: number;
   readonly cashRegisterId: number | null;
@@ -245,6 +284,90 @@ export interface SaleFilters {
   readonly orderType?: OrderType | null;
   readonly minTotal?: string | null;
   readonly maxTotal?: string | null;
+  /** Solo ventas o solo devoluciones; null trae los dos tipos. */
+  readonly type?: SaleType | null;
+}
+
+/** Línea de una devolución: la línea de la venta original y la cantidad a devolver (texto, tres decimales). */
+export interface ReturnLineRequest {
+  readonly saleLineId: number;
+  readonly quantity: string;
+}
+
+/** Lo que una venta cobrada puede devolver (record ReturnableView). Las cantidades y montos vienen como número. */
+export interface ReturnablePaymentView {
+  readonly paymentMethodCode: string;
+  readonly paymentMethodName: string;
+  readonly paid: number;
+  readonly refunded: number;
+  readonly refundable: number;
+}
+
+export interface ReturnableLineView {
+  readonly saleLineId: number;
+  readonly productId: number;
+  readonly productName: string;
+  readonly quantity: number;
+  readonly returnedQuantity: number;
+  readonly returnableQuantity: number;
+  readonly netTotal: number;
+  readonly refundedAmount: number;
+}
+
+/**
+ * Estado de devolución de una venta. sameDay indica si la devolución es el mismo día de la venta
+ * (reembolso ahora); si no, solo se emite nota de crédito. allowedRefundMethods son las formas
+ * permitidas en esta devolución.
+ */
+export interface ReturnableView {
+  readonly saleId: number;
+  readonly receiptNumber: string | null;
+  readonly customerId: number;
+  readonly customerName: string;
+  readonly paidAt: string | null;
+  readonly sameDay: boolean;
+  readonly allowedRefundMethods: readonly RefundMethod[];
+  readonly payments: readonly ReturnablePaymentView[];
+  readonly lines: readonly ReturnableLineView[];
+}
+
+/** Cuerpo de POST /sales/{id}/return-quote (record ReturnQuoteRequest). */
+export interface ReturnQuoteRequest {
+  readonly lines: readonly ReturnLineRequest[];
+}
+
+/** Total de una devolución sin guardarla (record ReturnQuoteView). */
+export interface ReturnQuoteView {
+  readonly total: number;
+  readonly taxTotal: number;
+  readonly lines: readonly ReturnQuoteLineView[];
+}
+
+export interface ReturnQuoteLineView {
+  readonly saleLineId: number;
+  readonly quantity: number;
+  readonly total: number;
+  readonly taxAmount: number;
+}
+
+/** Un reembolso de una devolución del mismo día (record RefundRequest). amount es texto con dos decimales. */
+export interface RefundRequest {
+  readonly paymentMethodCode: string;
+  readonly amount: string;
+  readonly reference: string | null;
+}
+
+/**
+ * Cuerpo de POST /sales/{id}/returns (record ReturnRequest). refunds va vacío si la devolución no es
+ * del mismo día (se emite nota de crédito). authorization solo va en el reintento tras pedir la
+ * autorización de un jefe de tienda. La clave de idempotencia hace que un reintento devuelva la misma devolución.
+ */
+export interface ReturnRequest {
+  readonly lines: readonly ReturnLineRequest[];
+  readonly reason: string;
+  readonly refunds: readonly RefundRequest[];
+  readonly authorization?: AuthorizationRequest | null;
+  readonly idempotencyKey: string;
 }
 
 /**
@@ -300,6 +423,7 @@ export class SalesApi {
       search: filters.search,
       customerId: filters.customerId,
       orderType: filters.orderType,
+      type: filters.type,
       minTotal: filters.minTotal,
       maxTotal: filters.maxTotal,
     };
@@ -313,6 +437,21 @@ export class SalesApi {
 
   get(id: number): Observable<SaleView> {
     return this.http.get<SaleView>(`/api/v1/sales/${id}`);
+  }
+
+  /** Lo que queda por devolver de una venta cobrada, con sus pagos y si es del mismo día. */
+  returnable(id: number): Observable<ReturnableView> {
+    return this.http.get<ReturnableView>(`/api/v1/sales/${id}/returnable`);
+  }
+
+  /** Total de la devolución con esas cantidades, sin guardarla. Se llama al cambiar las cantidades (con pausa). */
+  returnQuote(id: number, body: ReturnQuoteRequest): Observable<ReturnQuoteView> {
+    return this.http.post<ReturnQuoteView>(`/api/v1/sales/${id}/return-quote`, body);
+  }
+
+  /** Guarda la devolución y responde 201 con el documento RETURN. Con la misma clave de idempotencia, la misma devolución. */
+  createReturn(id: number, body: ReturnRequest): Observable<SaleView> {
+    return this.http.post<SaleView>(`/api/v1/sales/${id}/returns`, body);
   }
 
   ticket(id: number): Observable<TicketView> {

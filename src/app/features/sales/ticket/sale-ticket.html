@@ -1,5 +1,5 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h3 mb-0">{{ 'sales.ticket.title' | translate }}</h1>
+  <h1 class="h3 mb-0">{{ (isReturn() ? 'sales.ticket.returnTitle' : 'sales.ticket.title') | translate }}</h1>
   <div class="d-flex flex-wrap gap-2">
     <button type="button" class="btn btn-outline-primary" [disabled]="!ticket()" (click)="print()">{{ 'sales.ticket.print' | translate }}</button>
     @if (isStore()) {
@@ -16,7 +16,7 @@
   <app-problem-alert [error]="loadError()" />
 
   @if (ticket(); as t) {
-    <article class="sale-ticket-print" aria-label="{{ 'sales.ticket.title' | translate }}">
+    <article class="sale-ticket-print" aria-label="{{ (isReturn() ? 'sales.ticket.returnTitle' : 'sales.ticket.title') | translate }}">
       <header class="text-center mb-2">
         <div class="fw-bold">{{ t.company.legalName }}</div>
         @if (t.company.tradeName) {
@@ -36,6 +36,12 @@
       <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.date' | translate }}</span><span>{{ t.date }} {{ t.time.slice(0, 5) }}</span></div>
       <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.cashier' | translate }}</span><span>{{ t.cashierName }}</span></div>
       <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.orderType' | translate }}</span><span>{{ 'sales.order.type.' + t.orderType | translate }}</span></div>
+      @if (isReturn() && sale(); as returned) {
+        <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.originalReceipt' | translate }}</span><span>{{ returned.originalReceiptNumber }}</span></div>
+        @if (returned.reason) {
+          <div class="mt-1">{{ 'sales.ticket.reason' | translate }}: {{ returned.reason }}</div>
+        }
+      }
       @if (t.customerId !== finalConsumerId) {
         <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.customer' | translate }}</span><span>{{ t.customerName }}</span></div>
         @if (t.customerDocumentNumber) {
@@ -78,6 +84,9 @@
 
       <hr />
 
+      @if (isReturn()) {
+        <div class="fw-bold">{{ 'sales.ticket.refunds' | translate }}</div>
+      }
       @for (payment of t.payments; track $index) {
         <div class="d-flex justify-content-between">
           <span>
@@ -91,6 +100,11 @@
       }
       @if (t.changeDue !== null && t.changeDue > 0) {
         <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.change' | translate }}</span><span>{{ money(t.changeDue) }}</span></div>
+      }
+      @if (sale()?.creditNote; as note) {
+        <hr />
+        <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.creditNote' | translate }}</span><span>{{ note.number }}</span></div>
+        <div class="d-flex justify-content-between"><span>{{ 'sales.ticket.creditNoteAmount' | translate }}</span><span>{{ money(note.amount) }}</span></div>
       }
     </article>
   }

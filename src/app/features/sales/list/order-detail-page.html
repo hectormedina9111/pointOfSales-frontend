@@ -19,9 +19,12 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
           <div class="d-flex flex-wrap align-items-center gap-2">
             <span class="h5 font-monospace mb-0">{{ item.receiptNumber ?? item.internalNumber ?? '—' }}</span>
-            <span class="badge" [class.text-bg-success]="item.status === 'PAID'" [class.text-bg-warning]="item.status === 'ON_HOLD'">
+            <span [class]="statusClass(item)">
               {{ 'sales.list.status.' + item.status | translate }}
             </span>
+            @if (item.type === 'RETURN') {
+              <span class="badge text-bg-light border">{{ 'sales.list.type.RETURN' | translate }}</span>
+            }
           </div>
           <div class="d-flex flex-wrap gap-2">
             @if (item.status === 'ON_HOLD' && !isCentral()) {
@@ -36,7 +39,12 @@
                 {{ (busy() ? 'common.saving' : 'common.delete') | translate }}
               </button>
             }
-            @if (item.status === 'PAID') {
+            @if (canReturn(item)) {
+              <a *appIfPrivilege="'POST_SALES_ID_RETURNS'" class="btn btn-outline-danger" [routerLink]="['/sales/orders', item.id, 'return']">
+                {{ 'sales.return.action' | translate }}
+              </a>
+            }
+            @if (canReprint(item)) {
               <a class="btn btn-outline-primary" [routerLink]="['/sales/tickets', item.id]">
                 {{ 'sales.list.detail.reprint' | translate }}
               </a>
@@ -98,6 +106,9 @@
               <tr>
                 <th scope="col">{{ 'sales.pos.lines.description' | translate }}</th>
                 <th scope="col" class="text-end">{{ 'sales.pos.lines.quantity' | translate }}</th>
+                @if (item.type === 'SALE') {
+                  <th scope="col" class="text-end">{{ 'sales.list.detail.returnedQuantity' | translate }}</th>
+                }
                 <th scope="col" class="text-end">{{ 'sales.order.products.listPrice' | translate }}</th>
                 <th scope="col" class="text-end">{{ 'sales.pos.lines.unitPrice' | translate }}</th>
                 <th scope="col" class="text-end">{{ 'sales.pos.lines.discount' | translate }}</th>
@@ -112,6 +123,9 @@
                     <span class="small text-body-secondary font-monospace ms-1">{{ line.sku }}</span>
                   </td>
                   <td class="text-end font-monospace">{{ line.quantity.toFixed(3) }}</td>
+                  @if (item.type === 'SALE') {
+                    <td class="text-end font-monospace">{{ line.returnedQuantity.toFixed(3) }}</td>
+                  }
                   <td class="text-end font-monospace">
                     {{ money(line.listPrice) }}
                     @if (line.priceOverridden) {
@@ -128,6 +142,67 @@
         </div>
       </div>
     </div>
+
+    @if (item.type === 'RETURN') {
+      <div class="card mb-4">
+        <div class="card-body">
+          <h2 class="h6">{{ 'sales.list.detail.returnInfo' | translate }}</h2>
+          <dl class="row mb-0">
+            <dt class="col-sm-4 col-lg-3">{{ 'sales.list.detail.originalSale' | translate }}</dt>
+            <dd class="col-sm-8 col-lg-9">
+              @if (item.originalSaleId !== null) {
+                <a [routerLink]="['/sales/orders', item.originalSaleId]" [state]="{ returnUrl: backUrl }">{{ item.originalReceiptNumber ?? '—' }}</a>
+              } @else {
+                {{ 'common.none' | translate }}
+              }
+            </dd>
+            <dt class="col-sm-4 col-lg-3">{{ 'sales.list.detail.reason' | translate }}</dt>
+            <dd class="col-sm-8 col-lg-9">{{ item.reason ?? ('common.none' | translate) }}</dd>
+            <dt class="col-sm-4 col-lg-3">{{ 'sales.list.detail.refundMethod' | translate }}</dt>
+            <dd class="col-sm-8 col-lg-9">
+              {{ item.refundMethod ? ('sales.return.method.' + item.refundMethod | translate) : ('common.none' | translate) }}
+            </dd>
+            @if (item.creditNote; as note) {
+              <dt class="col-sm-4 col-lg-3">{{ 'sales.list.detail.creditNote' | translate }}</dt>
+              <dd class="col-sm-8 col-lg-9">
+                <a [routerLink]="['/credit-notes', note.id]">{{ note.number }}</a>
+                <span class="font-monospace ms-1">{{ money(note.amount) }}</span>
+              </dd>
+            }
+          </dl>
+        </div>
+      </div>
+    }
+
+    @if (item.type === 'SALE' && item.returns.length > 0) {
+      <div class="card mb-4">
+        <div class="card-body">
+          <h2 class="h6">{{ 'sales.list.detail.returns' | translate }}</h2>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th scope="col">{{ 'sales.list.column.number' | translate }}</th>
+                  <th scope="col">{{ 'sales.list.column.date' | translate }}</th>
+                  <th scope="col" class="text-end">{{ 'sales.list.column.total' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ret of item.returns; track ret.id) {
+                  <tr>
+                    <td class="font-monospace">
+                      <a [routerLink]="['/sales/orders', ret.id]" [state]="{ returnUrl: backUrl }">{{ ret.receiptNumber ?? '—' }}</a>
+                    </td>
+                    <td>{{ ret.createdAt | localDateTime }}</td>
+                    <td class="text-end font-monospace">{{ money(ret.total) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
 
     <div class="row g-4">
       <div class="col-12 col-md-6">

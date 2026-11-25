@@ -14,6 +14,7 @@ import {
   SaleFilters,
   SaleStatus,
   SaleSummaryView,
+  SaleType,
   SalesApi,
 } from '../../../core/api/sales-api';
 import { UserView, UsersApi } from '../../../core/api/users-api';
@@ -28,14 +29,16 @@ import { LocalDateTimePipe } from '../../../shared/pipes/local-date-time.pipe';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { endOfDay, startOfDay } from '../../../shared/time/day-range';
 import { branchLabel } from '../../../shared/stores/branch-label';
+import { saleStatusClass } from '../shared/sale-status';
 
 /** Pausa tras teclear o cambiar un filtro antes de consultar, en milisegundos. */
 const FILTER_DEBOUNCE_MS = 300;
 /** Clientes que muestra la lista del filtro de cliente. */
 const CUSTOMER_RESULTS_SIZE = 10;
 
-const STATUSES: readonly SaleStatus[] = ['ON_HOLD', 'PAID'];
+const STATUSES: readonly SaleStatus[] = ['ON_HOLD', 'PAID', 'PARTIALLY_RETURNED', 'RETURNED'];
 const ORDER_TYPES: readonly OrderType[] = ['CASH', 'CREDIT'];
+const TYPES: readonly SaleType[] = ['SALE', 'RETURN'];
 const SORTS: readonly string[] = ['createdAt,desc', 'createdAt,asc', 'total,desc', 'total,asc'];
 const DEFAULT_SORT = 'createdAt,desc';
 
@@ -51,6 +54,7 @@ interface OrderQuery {
   readonly search: string;
   readonly status: SaleStatus | '';
   readonly orderType: OrderType | '';
+  readonly type: SaleType | '';
   readonly customerId: string;
   readonly cashierId: string;
   readonly branchId: string;
@@ -68,6 +72,7 @@ const QUERY_KEYS: readonly (keyof OrderQuery)[] = [
   'search',
   'status',
   'orderType',
+  'type',
   'customerId',
   'cashierId',
   'branchId',
@@ -82,6 +87,7 @@ const EMPTY_QUERY: OrderQuery = {
   search: '',
   status: '',
   orderType: '',
+  type: '',
   customerId: '',
   cashierId: '',
   branchId: '',
@@ -115,6 +121,7 @@ function normalizeQuery(raw: RawQuery): OrderQuery {
     search: String(raw.search ?? '').trim(),
     status: pick(raw.status, STATUSES),
     orderType: pick(raw.orderType, ORDER_TYPES),
+    type: pick(raw.type, TYPES),
     customerId: idOf(raw.customerId),
     cashierId: idOf(raw.cashierId),
     branchId: idOf(raw.branchId),
@@ -132,6 +139,7 @@ function toParams(query: OrderQuery): Params {
     search: query.search || null,
     status: query.status || null,
     orderType: query.orderType || null,
+    type: query.type || null,
     customerId: query.customerId || null,
     cashierId: query.cashierId || null,
     branchId: query.branchId || null,
@@ -185,12 +193,15 @@ export class SalesListComponent implements OnInit {
   protected readonly finalConsumerId = FINAL_CONSUMER_ID;
   protected readonly statuses = STATUSES;
   protected readonly orderTypes = ORDER_TYPES;
+  protected readonly types = TYPES;
+  protected readonly statusClass = saleStatusClass;
 
   /** Controles de los filtros de texto y de lista. El cliente va aparte, en customerSearch y customer. */
   protected readonly filterForm = this.fb.group({
     search: '',
     status: this.fb.control<SaleStatus | ''>(''),
     orderType: this.fb.control<OrderType | ''>(''),
+    type: this.fb.control<SaleType | ''>(''),
     cashierId: '',
     branchId: '',
     from: '',
@@ -373,6 +384,7 @@ export class SalesListComponent implements OnInit {
         search: query.search,
         status: query.status,
         orderType: query.orderType,
+        type: query.type,
         cashierId: query.cashierId,
         branchId: query.branchId,
         from: query.from,
@@ -438,6 +450,7 @@ export class SalesListComponent implements OnInit {
       branchId: this.isCentral() && q.branchId !== '' ? Number(q.branchId) : null,
       customerId: q.customerId !== '' ? Number(q.customerId) : null,
       orderType: q.orderType || null,
+      type: q.type || null,
       search: q.search || null,
       from: q.from === '' ? null : startOfDay(q.from),
       to: q.to === '' ? null : endOfDay(q.to),

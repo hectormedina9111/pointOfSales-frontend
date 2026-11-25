@@ -117,6 +117,11 @@ export const routes: Routes = [
       import('./features/sales/list/order-detail-page').then((module) => module.OrderDetailPageComponent),
   },
   {
+    path: 'sales/orders/:id/return',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/sales/returns/return-page').then((module) => module.ReturnPageComponent),
+  },
+  {
     path: 'sales/pos',
     canActivate: [authGuard],
     loadComponent: () => import('./features/sales/order/order-page').then((module) => module.OrderPageComponent),
@@ -166,6 +171,18 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/customers/customers').then((module) => module.CustomersComponent),
+  },
+  {
+    path: 'credit-notes',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/credit-notes/credit-notes').then((module) => module.CreditNotesComponent),
+  },
+  {
+    path: 'credit-notes/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/credit-notes/credit-note-detail-page').then((module) => module.CreditNoteDetailPageComponent),
   },
   // Cualquier otra dirección: página no encontrada, solo para usuarios con sesión.
   {
