@@ -4,15 +4,22 @@ Frontend web del sistema punto de venta, hecho con Angular 22, TypeScript, Boots
 
 El plan completo está en `docs/plan.md` del backend, sección "MVP del frontend (Angular)".
 
-## Qué incluye este paso (base)
+## Qué incluye este paso (sesión y menú)
 
 - Proyecto Angular 22 standalone, zoneless y en modo estricto.
 - Configuración por nodo en `public/config.json` (o en `API_BASE_URL` dentro de Docker): la web llama directamente a la API de su propio backend.
 - Cambio de idioma entre español (por defecto) e inglés.
 - Pantalla de inicio que muestra la aplicación, la versión, el rol, el número del nodo y la dirección del backend al que está conectada.
+- Inicio de sesión con usuario y contraseña, cambio de contraseña y cierre de sesión.
+- Menú lateral generado a partir de los menús que el backend entrega al usuario. Las rutas que aún no tienen pantalla muestran un aviso provisional.
 - Contenedor Docker con nginx que solo sirve la web.
 
-El inicio de sesión llega en el siguiente paso.
+## Iniciar sesión
+
+- **Local (máquina virtual):** entre con el usuario `admin` y la contraseña `Admin.Local.2026`. Es la contraseña de desarrollo de `.env.example` del backend. El sistema obliga a cambiarla en el primer ingreso, en la **central**.
+- **Tiendas:** los usuarios llegan por sincronización desde la central, así que entran con las mismas contraseñas. En una tienda no se puede cambiar la contraseña: si el usuario debe cambiarla, la tienda lo indica y el cambio se hace en la central.
+- Si la cuenta se bloquea por demasiados intentos fallidos, la pantalla de inicio de sesión lo indica y hay que esperar.
+- La sesión se guarda en la pestaña (`sessionStorage`): sobrevive a recargar la página, pero se cierra al cerrar la pestaña.
 
 ## Arquitectura: una web por nodo
 

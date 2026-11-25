@@ -1,0 +1,50 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-5 col-xl-4">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-1">{{ 'session.login.title' | translate }}</h1>
+        <p class="text-body-secondary mb-4">{{ 'session.login.intro' | translate }}</p>
+
+        @if (passwordChanged) {
+          <div class="alert alert-success" role="status">{{ 'session.passwordChanged' | translate }}</div>
+        }
+
+        <app-problem-alert [error]="error()" [code]="errorCode()" />
+
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <div class="mb-3">
+            <label class="form-label" for="login-username">{{ 'session.login.username' | translate }}</label>
+            <input
+              id="login-username"
+              type="text"
+              class="form-control"
+              formControlName="username"
+              autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
+              [class.is-invalid]="isInvalid(form.controls.username)"
+            />
+            <div class="invalid-feedback">{{ 'form.required' | translate }}</div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label" for="login-password">{{ 'session.login.password' | translate }}</label>
+            <input
+              id="login-password"
+              type="password"
+              class="form-control"
+              formControlName="password"
+              autocomplete="current-password"
+              [class.is-invalid]="isInvalid(form.controls.password)"
+            />
+            <div class="invalid-feedback">{{ 'form.required' | translate }}</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100" [disabled]="submitting()">
+            {{ (submitting() ? 'session.login.submitting' : 'session.login.submit') | translate }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

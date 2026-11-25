@@ -24,6 +24,7 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
 - `src/app/shared`: pipes y componentes reutilizables sin lógica de negocio.
 - `src/app/features/<nombre>`: una carpeta por pantalla o área funcional (`home`, luego `session`, `users`, `catalog`, etc.).
 - `src/app/api`: cliente HTTP generado desde el OpenAPI del backend (a partir del paso 2). **Nunca se edita a mano.** Se regenera con `npm run api:update`.
+- Hasta que se ejecute `npm run api:update` por primera vez, los servicios tipados se escriben a mano en `src/app/core/api` (por ahora `auth-api.ts` y `me-api.ts`), con interfaces que coinciden con los records Java del backend. Cuando se genere `src/app/api`, esos servicios se sustituyen por el cliente generado y se borran.
 - Las llamadas a la API usan **rutas relativas** que empiezan por `/api/`. El interceptor `api-base-url` les antepone `apiBaseUrl`, que se lee de `config.json` al arrancar (`AppConfigService`). Nunca se escribe una URL absoluta ni un puerto en el código.
 - **Una web por nodo:** cada nodo (central, tienda 1, tienda 2) sirve su propia web y esa web solo llama a su propio backend, con llamadas directas (CORS). No hay proxy ni selector de servidor.
 - `public/config.json` es la configuración de `npm start` (apunta a la central en la máquina virtual). En Docker, `API_BASE_URL` genera el `config.json` de cada nodo al arrancar el contenedor.
@@ -34,6 +35,8 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
 - Rutas bajo `/api/v1`. Errores en RFC 9457 (`application/problem+json`) con la propiedad `code`.
 - Al mostrar un error, se muestra el texto traducido de la aplicación; el campo `detail` solo se muestra como detalle adicional.
 - Los permisos de cada botón salen de `/me/privileges` (paso 2). No se fijan roles en el código.
+- Algunos errores del backend no traen `code`: las credenciales incorrectas (401), la cuenta bloqueada (423), el cambio de contraseña pendiente (403 del filtro) y la validación (400 con `errors`). `resolveErrorCode` deduce el código del estado HTTP cuando falta; las pantallas pueden indicar el código exacto (por ejemplo `INVALID_CREDENTIALS` en el login).
+- Sesión: los tokens se guardan en `sessionStorage`. Con la contraseña pendiente, el backend solo permite `GET /me`, `POST /me/password` y `POST /auth/logout`, así que menús y privilegios no se cargan hasta que se cambie la contraseña.
 
 ## Testing
 
@@ -43,7 +46,7 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
 
 ## Forma de trabajo
 
-- Alcance actual: **paso 1 (base)** del MVP del frontend. No implementar pantallas fuera del paso en curso.
+- Alcance actual: **paso 2 (sesión y menú)** del MVP del frontend. No implementar pantallas fuera del paso en curso.
 - Cambios pequeños y enfocados; un commit por paso lógico.
 - Si una decisión no está en el plan o lo contradice, preguntar antes de implementarla y, una vez decidida, actualizar `docs/plan.md` del backend.
 
