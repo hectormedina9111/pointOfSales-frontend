@@ -55,9 +55,9 @@ import {
 import { IfPrivilegeDirective } from '../../../shared/directives/if-privilege.directive';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { CheckoutModalComponent } from './checkout-modal';
-import { DiscountChoice, DiscountFormComponent } from './discount-form';
-import { HoldsModalComponent } from './holds-modal';
-import { SaleTotalsComponent } from './sale-totals';
+import { DiscountChoice, DiscountFormComponent } from '../shared/discount-form';
+import { HoldsModalComponent } from '../order/holds-modal';
+import { SaleTotalsComponent } from '../shared/sale-totals';
 
 /** Pausa tras el último cambio antes de pedir los totales, en milisegundos. */
 const QUOTE_DEBOUNCE_MS = 300;

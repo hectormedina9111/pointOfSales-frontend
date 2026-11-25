@@ -38,8 +38,8 @@ import {
   numberToCents,
 } from '../../../shared/forms/amounts';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
-import { ManagerAuthorizationComponent } from './manager-authorization';
-import { SaleTotalsComponent } from './sale-totals';
+import { ManagerAuthorizationComponent } from '../shared/manager-authorization';
+import { SaleTotalsComponent } from '../shared/sale-totals';
 
 /** Una fila de pago del formulario. amountReceived, reference y cardLast4 aparecen según el método. */
 type PaymentRow = FormGroup<{

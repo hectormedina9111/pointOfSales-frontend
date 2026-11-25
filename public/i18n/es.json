@@ -824,7 +824,7 @@
   "sales.pos.authorization.intro": "Este descuento necesita que un jefe de tienda lo autorice. Las credenciales se usan solo para este cobro y no se guardan.",
   "sales.pos.authorization.username": "Usuario del jefe de tienda",
   "sales.pos.authorization.password": "Contraseña",
-  "sales.pos.authorization.submit": "Autorizar y cobrar",
+  "sales.pos.authorization.submit": "Autorizar",
   "sales.pos.checkout.title": "Cobrar venta",
   "sales.pos.checkout.step.review": "Revisar",
   "sales.pos.checkout.step.payments": "Pagos",

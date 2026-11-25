@@ -824,7 +824,7 @@
   "sales.pos.authorization.intro": "This discount needs a store manager to authorize it. The credentials are used only for this charge and are not stored.",
   "sales.pos.authorization.username": "Store manager username",
   "sales.pos.authorization.password": "Password",
-  "sales.pos.authorization.submit": "Authorize and charge",
+  "sales.pos.authorization.submit": "Authorize",
   "sales.pos.checkout.title": "Charge sale",
   "sales.pos.checkout.step.review": "Review",
   "sales.pos.checkout.step.payments": "Payments",
