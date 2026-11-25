@@ -1,0 +1,62 @@
+<div class="row g-2 mb-3">
+  <div class="col-6 col-md-3">
+    <div class="border rounded p-2 h-100">
+      <div class="small text-body-secondary">{{ 'sales.checkout.total' | translate }}</div>
+      <div class="h5 font-monospace mb-0" data-testid="checkout-total">{{ money(totalCents()) }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="border rounded p-2 h-100">
+      <div class="small text-body-secondary">{{ 'sales.checkout.paid' | translate }}</div>
+      <div class="h5 font-monospace mb-0" data-testid="paid-amount">{{ money(paidCents()) }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="border rounded p-2 h-100">
+      <div class="small text-body-secondary">{{ 'sales.checkout.pending' | translate }}</div>
+      <div class="h5 font-monospace mb-0" data-testid="pending-amount"
+        [class.text-danger]="pendingCents() > 0" [class.text-warning]="pendingCents() < 0" [class.text-success]="pendingCents() === 0">{{ money(pendingCents()) }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="border rounded p-2 h-100">
+      <div class="small text-body-secondary">{{ 'sales.checkout.change' | translate }}</div>
+      <div class="h5 font-monospace mb-0" data-testid="change-amount">{{ money(changeCents()) }}</div>
+    </div>
+  </div>
+</div>
+
+@if (payments().length === 0) {
+  <p class="text-body-secondary small mb-0">{{ 'sales.checkout.payment.none' | translate }}</p>
+} @else {
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'sales.list.detail.method' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'sales.list.detail.amount' | translate }}</th>
+          <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (payment of payments(); track payment.key) {
+          <tr>
+            <td>
+              {{ payment.methodName }}
+              @if (payment.request.reference) {
+                <div class="small text-body-secondary">{{ payment.request.reference }}</div>
+              }
+              @if (payment.request.cardLast4) {
+                <div class="small text-body-secondary">{{ 'sales.ticket.cardEnding' | translate: { last4: payment.request.cardLast4 } }}</div>
+              }
+            </td>
+            <td class="text-end font-monospace">{{ money(paymentCents(payment)) }}</td>
+            <td class="text-end">
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removed.emit(payment.key)">{{ 'common.delete' | translate }}</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

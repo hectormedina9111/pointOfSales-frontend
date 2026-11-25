@@ -1,0 +1,60 @@
+<form [formGroup]="form" novalidate (ngSubmit)="add()" class="border rounded p-3 mb-3">
+  <h3 class="h6 mb-3">{{ 'sales.checkout.payment.add' | translate }}</h3>
+
+  <app-problem-alert [error]="methodsError()" />
+
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-md-6">
+      <app-field-label targetId="checkout-pay-method" [required]="true">{{ 'sales.checkout.method' | translate }}</app-field-label>
+      <select id="checkout-pay-method" class="form-select" formControlName="paymentMethodCode"
+        [class.is-invalid]="isInvalid(form.controls.paymentMethodCode)">
+        <option value="" disabled>{{ 'common.select' | translate }}</option>
+        @for (method of methods(); track method.code) {
+          <option [value]="method.code">{{ method.name }}</option>
+        }
+      </select>
+      <app-field-error [control]="form.controls.paymentMethodCode" />
+    </div>
+
+    <div class="col-6 col-md-6">
+      <app-field-label targetId="checkout-pay-amount" [required]="true">{{ 'sales.checkout.amount' | translate }}</app-field-label>
+      <input id="checkout-pay-amount" type="text" inputmode="decimal" class="form-control font-monospace text-end"
+        formControlName="amount" [class.is-invalid]="isInvalid(form.controls.amount)" />
+      <app-field-error [control]="form.controls.amount" invalidKey="validation.amount" />
+    </div>
+
+    @if (selectedMethod()?.allowsChange) {
+      <div class="col-6 col-md-6">
+        <app-field-label targetId="checkout-pay-received">{{ 'sales.checkout.amountReceived' | translate }}</app-field-label>
+        <input id="checkout-pay-received" type="text" inputmode="decimal" class="form-control font-monospace text-end"
+          formControlName="amountReceived" [class.is-invalid]="isInvalid(form.controls.amountReceived)" />
+        <app-field-error [control]="form.controls.amountReceived" invalidKey="validation.amount" />
+      </div>
+    }
+
+    @if (selectedMethod()?.requiresReference) {
+      <div class="col-12 col-md-6">
+        <app-field-label targetId="checkout-pay-reference" [required]="true">{{ 'sales.checkout.reference' | translate }}</app-field-label>
+        <input id="checkout-pay-reference" type="text" class="form-control" maxlength="60" formControlName="reference"
+          [class.is-invalid]="isInvalid(form.controls.reference)" />
+        <app-field-error [control]="form.controls.reference" />
+      </div>
+    }
+
+    @if (selectedMethod()?.code === 'CARD') {
+      <div class="col-6 col-md-4">
+        <app-field-label targetId="checkout-pay-card">{{ 'sales.checkout.cardLast4' | translate }}</app-field-label>
+        <input id="checkout-pay-card" type="text" inputmode="numeric" class="form-control font-monospace" maxlength="4"
+          formControlName="cardLast4" [class.is-invalid]="isInvalid(form.controls.cardLast4)" />
+        <app-field-error [control]="form.controls.cardLast4" />
+      </div>
+    }
+
+    <div class="col-12">
+      @if (ruleError(); as key) {
+        <div class="alert alert-warning py-2 mb-2" role="alert">{{ key | translate }}</div>
+      }
+      <button type="submit" class="btn btn-outline-primary">{{ 'sales.checkout.payment.button' | translate }}</button>
+    </div>
+  </div>
+</form>
