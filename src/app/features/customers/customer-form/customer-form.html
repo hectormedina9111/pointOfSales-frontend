@@ -1,0 +1,158 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">
+      {{ (customer === null ? 'customers.form.createTitle' : 'customers.form.editTitle') | translate }}
+    </h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <app-problem-alert [error]="lookupError()" />
+    <app-problem-alert [error]="error()" />
+
+    <app-stepper [saving]="submitting()" (finish)="submit()" (cancel)="activeModal.dismiss()">
+      <!-- 1. Tipo y documento -->
+      <app-step labelKey="customers.step.type" [controls]="typeControls">
+        <div class="row g-3">
+          <div class="col-12">
+            <app-field-label targetId="customer-type-person" [required]="true">{{ 'customers.field.customerType' | translate }}</app-field-label>
+            <div class="d-flex flex-wrap gap-4">
+              @for (type of customerTypes; track type) {
+                <div class="form-check">
+                  <input [id]="'customer-type-' + type.toLowerCase()" type="radio" class="form-check-input"
+                    formControlName="customerType" [value]="type" />
+                  <label class="form-check-label" [attr.for]="'customer-type-' + type.toLowerCase()">
+                    {{ 'customers.customerType.' + type | translate }}
+                  </label>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <app-field-label targetId="customer-document-type" [required]="true">{{ 'customers.field.documentType' | translate }}</app-field-label>
+            <select id="customer-document-type" class="form-select" formControlName="documentType"
+              [class.is-invalid]="isInvalid(form.controls.documentType)">
+              <option [ngValue]="null">{{ 'common.select' | translate }}</option>
+              @for (type of documentTypes; track type) {
+                <option [ngValue]="type">{{ 'customers.documentType.' + type | translate }}</option>
+              }
+            </select>
+            <app-field-error [control]="form.controls.documentType" />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <app-field-label targetId="customer-document-number" [required]="form.controls.documentType.value !== 'NONE'">{{ 'customers.field.documentNumber' | translate }}</app-field-label>
+            <input id="customer-document-number" type="text" class="form-control font-monospace" formControlName="documentNumber"
+              [class.is-invalid]="isInvalid(form.controls.documentNumber)" />
+            <app-field-error [control]="form.controls.documentNumber" />
+          </div>
+        </div>
+      </app-step>
+
+      <!-- 2. Nombre -->
+      <app-step labelKey="customers.step.name" [controls]="nameControls">
+        <div class="row g-3">
+          @if (form.controls.customerType.value === 'PERSON') {
+            <div class="col-12 col-md-6">
+              <app-field-label targetId="customer-first-name" [required]="true">{{ 'customers.field.firstName' | translate }}</app-field-label>
+              <input id="customer-first-name" type="text" class="form-control" formControlName="firstName"
+                [class.is-invalid]="isInvalid(form.controls.firstName)" />
+              <app-field-error [control]="form.controls.firstName" />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <app-field-label targetId="customer-middle-name">{{ 'customers.field.middleName' | translate }}</app-field-label>
+              <input id="customer-middle-name" type="text" class="form-control" formControlName="middleName"
+                [class.is-invalid]="isInvalid(form.controls.middleName)" />
+              <app-field-error [control]="form.controls.middleName" />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <app-field-label targetId="customer-last-name" [required]="true">{{ 'customers.field.lastName' | translate }}</app-field-label>
+              <input id="customer-last-name" type="text" class="form-control" formControlName="lastName"
+                [class.is-invalid]="isInvalid(form.controls.lastName)" />
+              <app-field-error [control]="form.controls.lastName" />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <app-field-label targetId="customer-second-last-name">{{ 'customers.field.secondLastName' | translate }}</app-field-label>
+              <input id="customer-second-last-name" type="text" class="form-control" formControlName="secondLastName"
+                [class.is-invalid]="isInvalid(form.controls.secondLastName)" />
+              <app-field-error [control]="form.controls.secondLastName" />
+            </div>
+          } @else {
+            <div class="col-12">
+              <app-field-label targetId="customer-business-name" [required]="true">{{ 'customers.field.businessName' | translate }}</app-field-label>
+              <input id="customer-business-name" type="text" class="form-control" formControlName="businessName"
+                [class.is-invalid]="isInvalid(form.controls.businessName)" />
+              <app-field-error [control]="form.controls.businessName" />
+            </div>
+          }
+        </div>
+      </app-step>
+
+      <!-- 3. Contacto -->
+      <app-step labelKey="customers.step.contact" [controls]="contactControls">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <app-field-label targetId="customer-phone">{{ 'customers.field.phone' | translate }}</app-field-label>
+            <input id="customer-phone" type="tel" class="form-control" formControlName="phone"
+              [class.is-invalid]="isInvalid(form.controls.phone)" />
+            <app-field-error [control]="form.controls.phone" />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <app-field-label targetId="customer-email">{{ 'customers.field.email' | translate }}</app-field-label>
+            <input id="customer-email" type="email" class="form-control" formControlName="email"
+              [class.is-invalid]="isInvalid(form.controls.email)" />
+            <app-field-error [control]="form.controls.email" />
+          </div>
+
+          <div class="col-12">
+            <app-field-label targetId="customer-address">{{ 'customers.field.address' | translate }}</app-field-label>
+            <textarea id="customer-address" class="form-control" rows="2" formControlName="address"
+              [class.is-invalid]="isInvalid(form.controls.address)"></textarea>
+            <app-field-error [control]="form.controls.address" />
+          </div>
+        </div>
+      </app-step>
+
+      <!-- 4. Comercial -->
+      <app-step labelKey="customers.step.commercial" [controls]="commercialControls">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <app-field-label targetId="customer-external-code">{{ 'customers.field.externalCode' | translate }}</app-field-label>
+            <input id="customer-external-code" type="text" class="form-control font-monospace" formControlName="externalCode"
+              [class.is-invalid]="isInvalid(form.controls.externalCode)" />
+            <app-field-error [control]="form.controls.externalCode" />
+            <div class="form-text">{{ 'customers.hint.externalCode' | translate }}</div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <app-field-label targetId="customer-price-list">{{ 'customers.field.priceList' | translate }}</app-field-label>
+            <select id="customer-price-list" class="form-select" formControlName="priceListId">
+              <option [ngValue]="null">{{ 'customers.option.noPriceList' | translate }}</option>
+              @for (list of priceListOptions(); track list.id) {
+                <option [ngValue]="list.id">
+                  {{ list.code }} - {{ list.name }}{{ list.active ? '' : ' ' + ('common.inactiveSuffix' | translate) }}
+                </option>
+              }
+            </select>
+            <div class="form-text">{{ 'customers.hint.priceList' | translate }}</div>
+          </div>
+        </div>
+      </app-step>
+
+      <!-- 5. Resumen -->
+      <app-step labelKey="stepper.summary" [controls]="noControls">
+        <dl class="row mb-0">
+          @for (row of summaryRows(); track row.labelKey) {
+            <dt class="col-sm-4 fw-normal text-body-secondary">{{ row.labelKey | translate }}</dt>
+            <dd class="col-sm-8 mb-2 text-break">{{ row.value }}</dd>
+          }
+        </dl>
+      </app-step>
+    </app-stepper>
+  </div>
+</form>
