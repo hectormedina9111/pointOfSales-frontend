@@ -1,0 +1,47 @@
+<div class="stepper" (keydown)="onKeydown($event)">
+  <ol class="list-unstyled d-flex flex-wrap gap-3 mb-4 pb-3 border-bottom" [attr.aria-label]="'stepper.steps' | translate">
+    @for (step of steps(); track step; let i = $index) {
+      <li class="d-flex align-items-center gap-2" [attr.aria-current]="stateOf(i) === 'current' ? 'step' : null">
+        @if (stateOf(i) === 'done') {
+          <button type="button" class="btn btn-link btn-sm p-0 d-flex align-items-center gap-2 text-decoration-none" (click)="goTo(i)">
+            <span class="badge rounded-pill text-bg-success">{{ i + 1 }}</span>
+            <span>{{ step.labelKey() | translate }}</span>
+            <span class="visually-hidden">({{ 'stepper.stateDone' | translate }})</span>
+          </button>
+        } @else {
+          <span class="d-flex align-items-center gap-2" [class.fw-semibold]="stateOf(i) === 'current'" [class.text-body-secondary]="stateOf(i) === 'pending'">
+            <span class="badge rounded-pill" [class.text-bg-primary]="stateOf(i) === 'current'" [class.text-bg-light]="stateOf(i) === 'pending'" [class.border]="stateOf(i) === 'pending'">{{ i + 1 }}</span>
+            <span>{{ step.labelKey() | translate }}</span>
+            <span class="visually-hidden">({{ (stateOf(i) === 'current' ? 'stepper.stateCurrent' : 'stepper.statePending') | translate }})</span>
+          </span>
+        }
+      </li>
+    }
+  </ol>
+
+  <ng-content />
+
+  @if (invalidAttempts() > 0) {
+    <div class="alert alert-warning mt-3 mb-0 py-2" role="alert">{{ 'stepper.invalid' | translate }}</div>
+  }
+
+  <div class="d-flex flex-wrap justify-content-between gap-2 mt-4 pt-3 border-top">
+    <button type="button" class="btn btn-outline-secondary" (click)="cancel.emit()">{{ 'common.cancel' | translate }}</button>
+    <div class="d-flex gap-2">
+      @if (current() > 0) {
+        <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ 'stepper.back' | translate }}</button>
+      }
+      @if (isLast()) {
+        <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="save()">
+          {{ (saving() ? 'common.saving' : saveLabelKey()) | translate }}
+        </button>
+      } @else {
+        <!-- aria-disabled y no disabled: así el clic sigue marcando los errores del paso. -->
+        <button type="button" class="btn btn-primary" [class.opacity-50]="!currentValid()"
+          [attr.aria-disabled]="currentValid() ? null : 'true'" (click)="next()">
+          {{ 'stepper.next' | translate }}
+        </button>
+      }
+    </div>
+  </div>
+</div>

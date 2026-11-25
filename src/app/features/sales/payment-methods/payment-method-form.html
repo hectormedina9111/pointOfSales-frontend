@@ -1,0 +1,49 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">{{ 'sales.paymentMethods.form.editTitle' | translate }}</h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <app-problem-alert [error]="error()" />
+
+    <div class="row g-3">
+      <div class="col-12">
+        <div class="form-label mb-1">{{ 'sales.paymentMethods.field.code' | translate }}</div>
+        <div class="font-monospace">{{ method?.code }}</div>
+        <div class="form-text">{{ 'sales.paymentMethods.hint.code' | translate }}</div>
+      </div>
+
+      <div class="col-12">
+        <app-field-label targetId="payment-method-name" [required]="true">{{ 'sales.paymentMethods.field.name' | translate }}</app-field-label>
+        <input id="payment-method-name" type="text" class="form-control" formControlName="name"
+          [class.is-invalid]="isInvalid(form.controls.name)" />
+        <app-field-error [control]="form.controls.name" />
+      </div>
+
+      <div class="col-12">
+        <div class="form-check">
+          <input id="payment-method-reference" type="checkbox" class="form-check-input" formControlName="requiresReference" />
+          <label class="form-check-label" for="payment-method-reference">{{ 'sales.paymentMethods.field.requiresReference' | translate }}</label>
+        </div>
+        <div class="form-check">
+          <input id="payment-method-change" type="checkbox" class="form-check-input" formControlName="allowsChange" />
+          <label class="form-check-label" for="payment-method-change">{{ 'sales.paymentMethods.field.allowsChange' | translate }}</label>
+        </div>
+        <div class="form-check">
+          <input id="payment-method-active" type="checkbox" class="form-check-input" formControlName="active" />
+          <label class="form-check-label" for="payment-method-active">{{ 'sales.paymentMethods.field.active' | translate }}</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+      {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+    </button>
+  </div>
+</form>

@@ -1,0 +1,64 @@
+<div class="mb-3">
+  <h1 class="h3 mb-1">{{ 'sales.paymentMethods.title' | translate }}</h1>
+  <p class="text-body-secondary mb-0">{{ 'sales.paymentMethods.intro' | translate }}</p>
+</div>
+
+@if (notice(); as key) {
+  <div class="alert alert-success alert-dismissible" role="status">
+    {{ key | translate }}
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+  </div>
+}
+
+<app-problem-alert [error]="methods.error()" />
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'sales.paymentMethods.column.code' | translate }}</th>
+        <th scope="col">{{ 'sales.paymentMethods.column.name' | translate }}</th>
+        <th scope="col">{{ 'sales.paymentMethods.column.requiresReference' | translate }}</th>
+        <th scope="col">{{ 'sales.paymentMethods.column.allowsChange' | translate }}</th>
+        <th scope="col">{{ 'common.active' | translate }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (method of methods.items(); track method.id) {
+        <tr>
+          <td class="fw-semibold font-monospace">{{ method.code }}</td>
+          <td>{{ method.name }}</td>
+          <td>{{ (method.requiresReference ? 'common.yes' : 'common.no') | translate }}</td>
+          <td>{{ (method.allowsChange ? 'common.yes' : 'common.no') | translate }}</td>
+          <td>
+            <span class="badge" [class.text-bg-success]="method.active" [class.text-bg-secondary]="!method.active">
+              {{ (method.active ? 'common.active' : 'common.inactive') | translate }}
+            </span>
+          </td>
+          <td class="text-end text-nowrap">
+            @if (isCentral()) {
+              <button *appIfPrivilege="'PUT_PAYMENT_METHODS_ID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="edit(method)">
+                {{ 'common.edit' | translate }}
+              </button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="text-center text-body-secondary">
+            {{ (methods.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="methods.page()"
+  [size]="methods.size()"
+  [total]="methods.total()"
+  (pageChange)="methods.goToPage($event)"
+  (sizeChange)="methods.setSize($event)"
+/>

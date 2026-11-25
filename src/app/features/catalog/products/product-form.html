@@ -13,143 +13,163 @@
     @if (lookupsLoading()) {
       <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
     } @else {
-      <div class="row g-3">
-        <!-- Identificación -->
-        <div class="col-12 col-md-4">
-          <label class="form-label" for="product-sku">{{ 'catalog.products.field.sku' | translate }}</label>
-          <input id="product-sku" type="text" class="form-control font-monospace" formControlName="sku"
-            [class.is-invalid]="isInvalid(form.controls.sku)" />
-          <app-field-error [control]="form.controls.sku" />
-        </div>
+      <app-stepper [saving]="submitting()" (finish)="submit()" (cancel)="activeModal.dismiss()">
+        <!-- 1. Identificación -->
+        <app-step labelKey="catalog.products.step.identification" [controls]="identificationControls">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <app-field-label targetId="product-sku" [required]="true">{{ 'catalog.products.field.sku' | translate }}</app-field-label>
+              <input id="product-sku" type="text" class="form-control font-monospace" formControlName="sku"
+                [class.is-invalid]="isInvalid(form.controls.sku)" />
+              <app-field-error [control]="form.controls.sku" />
+            </div>
 
-        <div class="col-12 col-md-4">
-          <label class="form-label" for="product-barcode">{{ 'catalog.products.field.barcode' | translate }}</label>
-          <input id="product-barcode" type="text" class="form-control font-monospace" formControlName="barcode"
-            [class.is-invalid]="isInvalid(form.controls.barcode)" />
-          <app-field-error [control]="form.controls.barcode" />
-        </div>
+            <div class="col-12 col-md-4">
+              <app-field-label targetId="product-barcode">{{ 'catalog.products.field.barcode' | translate }}</app-field-label>
+              <input id="product-barcode" type="text" class="form-control font-monospace" formControlName="barcode"
+                [class.is-invalid]="isInvalid(form.controls.barcode)" />
+              <app-field-error [control]="form.controls.barcode" />
+            </div>
 
-        <div class="col-12 col-md-4">
-          <label class="form-label" for="product-type">{{ 'catalog.products.field.productType' | translate }}</label>
-          <select id="product-type" class="form-select" formControlName="productType">
-            @for (type of productTypes; track type) {
-              <option [value]="type">{{ 'catalog.products.type.' + type | translate }}</option>
-            }
-          </select>
-          <div class="form-text">{{ 'catalog.products.hint.service' | translate }}</div>
-        </div>
+            <div class="col-12 col-md-4">
+              <app-field-label targetId="product-type" [required]="true">{{ 'catalog.products.field.productType' | translate }}</app-field-label>
+              <select id="product-type" class="form-select" formControlName="productType">
+                @for (type of productTypes; track type) {
+                  <option [value]="type">{{ 'catalog.products.type.' + type | translate }}</option>
+                }
+              </select>
+              <div class="form-text">{{ 'catalog.products.hint.service' | translate }}</div>
+            </div>
 
-        <div class="col-12">
-          <label class="form-label" for="product-name">{{ 'catalog.products.field.name' | translate }}</label>
-          <input id="product-name" type="text" class="form-control" formControlName="name"
-            [class.is-invalid]="isInvalid(form.controls.name)" />
-          <app-field-error [control]="form.controls.name" />
-        </div>
+            <div class="col-12">
+              <app-field-label targetId="product-name" [required]="true">{{ 'catalog.products.field.name' | translate }}</app-field-label>
+              <input id="product-name" type="text" class="form-control" formControlName="name"
+                [class.is-invalid]="isInvalid(form.controls.name)" />
+              <app-field-error [control]="form.controls.name" />
+            </div>
 
-        <div class="col-12">
-          <label class="form-label" for="product-description">{{ 'catalog.products.field.description' | translate }}</label>
-          <textarea id="product-description" class="form-control" rows="2" formControlName="description"></textarea>
-        </div>
+            <div class="col-12">
+              <app-field-label targetId="product-description">{{ 'catalog.products.field.description' | translate }}</app-field-label>
+              <textarea id="product-description" class="form-control" rows="2" formControlName="description"></textarea>
+            </div>
 
-        <!-- Clasificación -->
-        <div class="col-12 col-md-4">
-          <label class="form-label" for="product-category">{{ 'catalog.products.field.category' | translate }}</label>
-          <select id="product-category" class="form-select" formControlName="categoryId">
-            <option [ngValue]="null">{{ 'catalog.products.option.noCategory' | translate }}</option>
-            @for (row of categoryOptions(); track row.item.id) {
-              <option [ngValue]="row.item.id">
-                {{ indent(row.level) }}{{ row.item.name }}{{ row.item.active ? '' : ' ' + ('common.inactiveSuffix' | translate) }}
-              </option>
-            }
-          </select>
-        </div>
+            <div class="col-12 col-md-8">
+              <app-field-label targetId="product-image-url">{{ 'catalog.products.field.imageUrl' | translate }}</app-field-label>
+              <input id="product-image-url" type="text" class="form-control" formControlName="imageUrl"
+                [class.is-invalid]="isInvalid(form.controls.imageUrl)" />
+              <app-field-error [control]="form.controls.imageUrl" />
+            </div>
 
-        <div class="col-12 col-md-4">
-          <label class="form-label" for="product-tax">{{ 'catalog.products.field.tax' | translate }}</label>
-          <select id="product-tax" class="form-select" formControlName="taxId"
-            [class.is-invalid]="isInvalid(form.controls.taxId)">
-            <option [ngValue]="null">{{ 'common.select' | translate }}</option>
-            @for (tax of taxOptions(); track tax.id) {
-              <option [ngValue]="tax.id">{{ taxLabel(tax) }}{{ tax.active ? '' : ' ' + ('common.inactiveSuffix' | translate) }}</option>
-            }
-          </select>
-          <app-field-error [control]="form.controls.taxId" />
-        </div>
-
-        <div class="col-12 col-md-4">
-          <label class="form-label" for="product-unit">{{ 'catalog.products.field.unit' | translate }}</label>
-          <select id="product-unit" class="form-select" formControlName="unitOfMeasureId"
-            [class.is-invalid]="isInvalid(form.controls.unitOfMeasureId)">
-            <option [ngValue]="null">{{ 'common.select' | translate }}</option>
-            @for (unit of unitOptions(); track unit.id) {
-              <option [ngValue]="unit.id">
-                {{ unit.code }} - {{ unit.name }}{{ unit.active ? '' : ' ' + ('common.inactiveSuffix' | translate) }}
-              </option>
-            }
-          </select>
-          <app-field-error [control]="form.controls.unitOfMeasureId" />
-        </div>
-
-        <!-- Precios -->
-        <div class="col-12 col-md-4">
-          <label class="form-label" for="product-sale-price">{{ 'catalog.products.field.salePrice' | translate }}</label>
-          <input id="product-sale-price" type="text" inputmode="decimal" class="form-control font-monospace" formControlName="salePrice"
-            [class.is-invalid]="isInvalid(form.controls.salePrice)" />
-          <app-field-error [control]="form.controls.salePrice" invalidKey="validation.amount" />
-          <div class="form-text">{{ 'catalog.products.hint.taxIncluded' | translate }}</div>
-        </div>
-
-        <div class="col-12 col-md-4">
-          <label class="form-label" for="product-cost">{{ 'catalog.products.field.cost' | translate }}</label>
-          <input id="product-cost" type="text" inputmode="decimal" class="form-control font-monospace" formControlName="cost"
-            [class.is-invalid]="isInvalid(form.controls.cost)" />
-          <app-field-error [control]="form.controls.cost" invalidKey="validation.amount" />
-        </div>
-
-        <div class="col-12 col-md-4">
-          <label class="form-label" for="product-min-stock">{{ 'catalog.products.field.minStock' | translate }}</label>
-          <input id="product-min-stock" type="text" inputmode="decimal" class="form-control font-monospace" formControlName="minStock"
-            [class.is-invalid]="isInvalid(form.controls.minStock)" />
-          <app-field-error [control]="form.controls.minStock" invalidKey="validation.quantity" />
-        </div>
-
-        <div class="col-12">
-          <label class="form-label" for="product-image-url">{{ 'catalog.products.field.imageUrl' | translate }}</label>
-          <input id="product-image-url" type="text" class="form-control" formControlName="imageUrl"
-            [class.is-invalid]="isInvalid(form.controls.imageUrl)" />
-          <app-field-error [control]="form.controls.imageUrl" />
-        </div>
-
-        <!-- Inventario y facturación -->
-        <div class="col-12">
-          <div class="form-check">
-            <input id="product-tracks-inventory" type="checkbox" class="form-check-input" formControlName="tracksInventory" />
-            <label class="form-check-label" for="product-tracks-inventory">{{ 'catalog.products.field.tracksInventory' | translate }}</label>
+            <div class="col-12 col-md-4 d-flex align-items-end">
+              <div class="form-check mb-2">
+                <input id="product-active" type="checkbox" class="form-check-input" formControlName="active" />
+                <label class="form-check-label" for="product-active">{{ 'catalog.products.field.active' | translate }}</label>
+              </div>
+            </div>
           </div>
-          <div class="form-check">
-            <input id="product-tracks-serials" type="checkbox" class="form-check-input" formControlName="tracksSerials" />
-            <label class="form-check-label" for="product-tracks-serials">{{ 'catalog.products.field.tracksSerials' | translate }}</label>
-            <div class="form-text mt-0">{{ 'catalog.products.hint.serials' | translate }}</div>
+        </app-step>
+
+        <!-- 2. Clasificación -->
+        <app-step labelKey="catalog.products.step.classification" [controls]="classificationControls">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <app-field-label targetId="product-category">{{ 'catalog.products.field.category' | translate }}</app-field-label>
+              <select id="product-category" class="form-select" formControlName="categoryId">
+                <option [ngValue]="null">{{ 'catalog.products.option.noCategory' | translate }}</option>
+                @for (row of categoryOptions(); track row.item.id) {
+                  <option [ngValue]="row.item.id">
+                    {{ indent(row.level) }}{{ row.item.name }}{{ row.item.active ? '' : ' ' + ('common.inactiveSuffix' | translate) }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <app-field-label targetId="product-unit" [required]="true">{{ 'catalog.products.field.unit' | translate }}</app-field-label>
+              <select id="product-unit" class="form-select" formControlName="unitOfMeasureId"
+                [class.is-invalid]="isInvalid(form.controls.unitOfMeasureId)">
+                <option [ngValue]="null">{{ 'common.select' | translate }}</option>
+                @for (unit of unitOptions(); track unit.id) {
+                  <option [ngValue]="unit.id">
+                    {{ unit.code }} - {{ unit.name }}{{ unit.active ? '' : ' ' + ('common.inactiveSuffix' | translate) }}
+                  </option>
+                }
+              </select>
+              <app-field-error [control]="form.controls.unitOfMeasureId" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <app-field-label targetId="product-tax" [required]="true">{{ 'catalog.products.field.tax' | translate }}</app-field-label>
+              <select id="product-tax" class="form-select" formControlName="taxId"
+                [class.is-invalid]="isInvalid(form.controls.taxId)">
+                <option [ngValue]="null">{{ 'common.select' | translate }}</option>
+                @for (tax of taxOptions(); track tax.id) {
+                  <option [ngValue]="tax.id">{{ taxLabel(tax) }}{{ tax.active ? '' : ' ' + ('common.inactiveSuffix' | translate) }}</option>
+                }
+              </select>
+              <app-field-error [control]="form.controls.taxId" />
+            </div>
           </div>
-          <div class="form-check">
-            <input id="product-exclusive-invoice" type="checkbox" class="form-check-input" formControlName="requiresExclusiveInvoice" />
-            <label class="form-check-label" for="product-exclusive-invoice">{{ 'catalog.products.field.requiresExclusiveInvoice' | translate }}</label>
+        </app-step>
+
+        <!-- 3. Precio y costo -->
+        <app-step labelKey="catalog.products.step.priceCost" [controls]="priceControls">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <app-field-label targetId="product-sale-price" [required]="true">{{ 'catalog.products.field.salePrice' | translate }}</app-field-label>
+              <input id="product-sale-price" type="text" inputmode="decimal" class="form-control font-monospace" formControlName="salePrice"
+                [class.is-invalid]="isInvalid(form.controls.salePrice)" />
+              <app-field-error [control]="form.controls.salePrice" invalidKey="validation.amount" />
+              <div class="form-text">{{ 'catalog.products.hint.taxIncluded' | translate }}</div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <app-field-label targetId="product-cost" [required]="true">{{ 'catalog.products.field.cost' | translate }}</app-field-label>
+              <input id="product-cost" type="text" inputmode="decimal" class="form-control font-monospace" formControlName="cost"
+                [class.is-invalid]="isInvalid(form.controls.cost)" />
+              <app-field-error [control]="form.controls.cost" invalidKey="validation.amount" />
+            </div>
           </div>
-          <div class="form-check">
-            <input id="product-active" type="checkbox" class="form-check-input" formControlName="active" />
-            <label class="form-check-label" for="product-active">{{ 'catalog.products.field.active' | translate }}</label>
+        </app-step>
+
+        <!-- 4. Inventario -->
+        <app-step labelKey="catalog.products.step.inventory" [controls]="inventoryControls">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <div class="form-check">
+                <input id="product-tracks-inventory" type="checkbox" class="form-check-input" formControlName="tracksInventory" />
+                <label class="form-check-label" for="product-tracks-inventory">{{ 'catalog.products.field.tracksInventory' | translate }}</label>
+              </div>
+              <div class="form-check">
+                <input id="product-tracks-serials" type="checkbox" class="form-check-input" formControlName="tracksSerials" />
+                <label class="form-check-label" for="product-tracks-serials">{{ 'catalog.products.field.tracksSerials' | translate }}</label>
+                <div class="form-text mt-0">{{ 'catalog.products.hint.serials' | translate }}</div>
+              </div>
+              <div class="form-check">
+                <input id="product-exclusive-invoice" type="checkbox" class="form-check-input" formControlName="requiresExclusiveInvoice" />
+                <label class="form-check-label" for="product-exclusive-invoice">{{ 'catalog.products.field.requiresExclusiveInvoice' | translate }}</label>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <app-field-label targetId="product-min-stock">{{ 'catalog.products.field.minStock' | translate }}</app-field-label>
+              <input id="product-min-stock" type="text" inputmode="decimal" class="form-control font-monospace" formControlName="minStock"
+                [class.is-invalid]="isInvalid(form.controls.minStock)" />
+              <app-field-error [control]="form.controls.minStock" invalidKey="validation.quantity" />
+            </div>
           </div>
-        </div>
-      </div>
+        </app-step>
+
+        <!-- 5. Resumen -->
+        <app-step labelKey="stepper.summary" [controls]="noControls">
+          <dl class="row mb-0">
+            @for (row of summaryRows(); track row.labelKey) {
+              <dt class="col-sm-4 fw-normal text-body-secondary">{{ row.labelKey | translate }}</dt>
+              <dd class="col-sm-8 mb-2 text-break">{{ row.value }}</dd>
+            }
+          </dl>
+        </app-step>
+      </app-stepper>
     }
-  </div>
-
-  <div class="modal-footer">
-    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
-      {{ 'common.cancel' | translate }}
-    </button>
-    <button type="submit" class="btn btn-primary" [disabled]="submitting() || lookupsLoading()">
-      {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
-    </button>
   </div>
 </form>
