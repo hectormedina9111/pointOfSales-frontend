@@ -1,0 +1,97 @@
+<!-- Búsqueda: código de barras o texto. F2 la enfoca. -->
+<app-field-label targetId="order-product-search" [required]="true">{{ 'sales.pos.search.label' | translate }}</app-field-label>
+<input #searchInput id="order-product-search" type="search" class="form-control form-control-lg" autocomplete="off"
+  [formControl]="search" [placeholder]="'sales.pos.search.placeholder' | translate"
+  (keydown.enter)="$event.preventDefault(); onSearchEnter()" />
+<div class="form-text mb-2">{{ 'sales.pos.search.hint' | translate }}</div>
+
+@if (searching()) {
+  <div class="small text-body-secondary mt-2">{{ 'sales.pos.search.searching' | translate }}</div>
+}
+<app-problem-alert [error]="searchError()" />
+
+@if (searchResults().length > 0) {
+  <div class="list-group mt-2">
+    @for (product of searchResults(); track product.id) {
+      <button type="button" class="list-group-item list-group-item-action" (click)="addProduct(product)">
+        <span class="font-monospace fw-semibold me-2">{{ product.sku }}</span>{{ product.name }}
+      </button>
+    }
+  </div>
+} @else if (searchedText() !== '') {
+  <div class="small text-body-secondary mt-2">{{ 'sales.pos.search.noResults' | translate }}</div>
+}
+
+@if (lineMessage(); as key) {
+  <div class="alert alert-warning py-2 mt-2 mb-0" role="alert">{{ key | translate }}</div>
+}
+
+<!-- Líneas de la orden -->
+<div class="mt-4">
+  <app-problem-alert [error]="store.quoteError()" />
+
+  @if (!store.hasLines()) {
+    <p class="text-body-secondary mb-0">{{ 'sales.order.products.empty' | translate }}</p>
+  } @else {
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'sales.pos.lines.description' | translate }}</th>
+            <th scope="col">{{ 'sales.pos.lines.quantity' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.pos.lines.unitPrice' | translate }}</th>
+            <th scope="col">{{ 'sales.pos.lines.discount' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'sales.pos.lines.total' | translate }}</th>
+            <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of store.lines(); track line.key; let i = $index) {
+            @let quoted = quotedLine(i);
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ line.name }}</div>
+                <div class="small font-monospace text-body-secondary">{{ line.sku }}</div>
+              </td>
+              <td>
+                <div class="input-group input-group-sm flex-nowrap" style="width: 10rem;">
+                  <button type="button" class="btn btn-outline-secondary" [attr.aria-label]="'sales.pos.lines.decrease' | translate" (click)="decrease(line)">-</button>
+                  <input type="text" inputmode="decimal" class="form-control text-end font-monospace"
+                    [attr.aria-label]="'sales.pos.lines.quantity' | translate" [value]="quantityText(line)"
+                    (change)="onQuantityChange(line, $event)" />
+                  <button type="button" class="btn btn-outline-secondary" [attr.aria-label]="'sales.pos.lines.increase' | translate" (click)="increase(line)">+</button>
+                </div>
+              </td>
+              <td class="text-end">
+                <div class="font-monospace">{{ quoted ? money(quoted.unitPrice) : '' }}</div>
+                @if (quoted; as current) {
+                  @if (current.priceOverridden) {
+                    <span class="badge text-bg-warning" data-testid="price-overridden">
+                      {{ 'sales.order.products.listPrice' | translate }}: {{ money(current.listPrice) }}
+                    </span>
+                  }
+                }
+              </td>
+              <td>
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="editLineDiscount(line)">
+                  @if (line.discountType === null) {
+                    {{ 'sales.pos.lines.noDiscount' | translate }}
+                  } @else if (line.discountType === 'PERCENTAGE') {
+                    {{ line.discountValue }} %
+                  } @else {
+                    {{ money(numeric(line.discountValue)) }}
+                  }
+                </button>
+              </td>
+              <td class="text-end font-monospace fw-semibold">{{ quoted ? money(quoted.total) : '' }}</td>
+              <td class="text-end text-nowrap">
+                <button type="button" class="btn btn-sm btn-outline-secondary me-1" (click)="changePrice(line, i)">{{ 'sales.order.products.changePrice' | translate }}</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeLine(line.key)">{{ 'common.delete' | translate }}</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

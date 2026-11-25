@@ -1,0 +1,16 @@
+<app-field-label targetId="order-type-cash" [required]="true">{{ 'sales.order.type.legend' | translate }}</app-field-label>
+
+<div class="d-flex flex-column gap-3">
+  @for (type of types; track type) {
+    <div class="form-check border rounded p-3 mb-0" [class.opacity-75]="!isAvailable(type)">
+      <input class="form-check-input" type="radio" name="order-type" [id]="'order-type-' + type.toLowerCase()" [value]="type"
+        [checked]="store.orderType() === type" [disabled]="!isAvailable(type)"
+        [attr.aria-describedby]="isAvailable(type) ? null : 'order-type-credit-hint'"
+        (change)="store.setOrderType(type)" />
+      <label class="form-check-label fw-semibold" [attr.for]="'order-type-' + type.toLowerCase()">{{ 'sales.order.type.' + type | translate }}</label>
+      @if (!isAvailable(type)) {
+        <div id="order-type-credit-hint" class="form-text">{{ 'sales.order.type.creditHint' | translate }}</div>
+      }
+    </div>
+  }
+</div>

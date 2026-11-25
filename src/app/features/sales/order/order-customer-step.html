@@ -1,0 +1,49 @@
+<div class="mb-3">
+  <div class="small text-body-secondary">{{ 'sales.order.customer.selected' | translate }}</div>
+  <div class="border rounded p-3 d-flex flex-wrap justify-content-between align-items-center gap-2" data-testid="selected-customer">
+    @if (store.customer().finalConsumer) {
+      <span class="fw-semibold">{{ 'customers.finalConsumer' | translate }}</span>
+    } @else {
+      <span>
+        <span class="fw-semibold">{{ store.customer().displayName }}</span>
+        @if (store.customer().documentNumber) {
+          <span class="small text-body-secondary ms-2">{{ 'customers.documentType.' + store.customer().documentType | translate }} {{ store.customer().documentNumber }}</span>
+        }
+      </span>
+    }
+    @if (!store.customer().finalConsumer) {
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="selectFinalConsumer()">{{ 'sales.order.customer.useFinalConsumer' | translate }}</button>
+    }
+  </div>
+</div>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <button type="button" class="btn btn-outline-primary" (click)="selectFinalConsumer()">{{ 'sales.order.customer.finalConsumer' | translate }}</button>
+  <button *appIfPrivilege="'POST_CUSTOMERS'" type="button" class="btn btn-outline-primary" (click)="newCustomer()">{{ 'sales.order.customer.new' | translate }}</button>
+</div>
+
+<app-field-label targetId="order-customer-search">{{ 'sales.order.customer.search' | translate }}</app-field-label>
+<input id="order-customer-search" type="search" class="form-control" autocomplete="off"
+  [formControl]="search" [placeholder]="'customers.search.placeholder' | translate" />
+<div class="form-text">{{ 'sales.order.customer.hint' | translate }}</div>
+
+<app-problem-alert [error]="searchError()" />
+
+@if (searching()) {
+  <div class="small text-body-secondary mt-2">{{ 'common.loading' | translate }}</div>
+}
+
+@if (results().length > 0) {
+  <div class="list-group mt-2">
+    @for (customer of results(); track customer.id) {
+      <button type="button" class="list-group-item list-group-item-action" (click)="selectCustomer(customer)">
+        <span class="fw-semibold">{{ customer.displayName }}</span>
+        @if (customer.documentNumber) {
+          <span class="small text-body-secondary ms-2">{{ 'customers.documentType.' + customer.documentType | translate }} {{ customer.documentNumber }}</span>
+        }
+      </button>
+    }
+  </div>
+} @else if (searchedText() !== '') {
+  <div class="small text-body-secondary mt-2">{{ 'sales.order.customer.noResults' | translate }}</div>
+}

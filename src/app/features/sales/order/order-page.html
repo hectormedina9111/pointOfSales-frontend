@@ -1,0 +1,71 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'sales.order.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'sales.order.intro' | translate }}</p>
+  </div>
+  @if (isStore() && sessionState() === 'open') {
+    <div class="d-flex flex-wrap gap-2">
+      <button *appIfPrivilege="'GET_SALES_HOLDS'" type="button" class="btn btn-outline-primary" [disabled]="store.busy()" (click)="openHolds()">
+        {{ 'sales.pos.actions.holds' | translate }}
+      </button>
+      <button type="button" class="btn btn-outline-danger" [disabled]="(!store.hasLines() && store.savedId() === null) || store.busy()" (click)="cancelOrder()">
+        {{ 'sales.order.cancel.button' | translate }}
+      </button>
+    </div>
+  }
+</div>
+
+@if (isCentral()) {
+  <div class="alert alert-info" role="status">{{ 'sales.pos.centralInfo' | translate }}</div>
+} @else if (isStore()) {
+  @switch (sessionState()) {
+    @case ('loading') {
+      <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+    }
+    @case ('error') {
+      <app-problem-alert [error]="loadError()" />
+    }
+    @case ('none') {
+      <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2" role="alert">
+        <span>{{ 'sales.pos.noSession' | translate }}</span>
+        <a class="btn btn-primary btn-sm" routerLink="/cash/session">{{ 'sales.pos.noSessionAction' | translate }}</a>
+      </div>
+    }
+    @case ('open') {
+      @if (invalidId()) {
+        <div class="alert alert-warning" role="alert">{{ 'sales.order.invalidId' | translate }}</div>
+      } @else if (notEditable()) {
+        <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2" role="alert">
+          <span>{{ 'sales.order.notEditable' | translate }}</span>
+          <a class="btn btn-outline-primary btn-sm" routerLink="/sales">{{ 'sales.list.title' | translate }}</a>
+        </div>
+      } @else if (loadingSaved()) {
+        <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+      } @else {
+        @if (store.savedId(); as id) {
+          <div class="alert alert-info py-2" role="status">{{ 'sales.order.editing' | translate: { id: id } }}</div>
+        }
+        <app-problem-alert [error]="store.actionError()" />
+
+        <div class="card">
+          <div class="card-body">
+            <app-stepper [saving]="store.busy()" saveLabelKey="sales.order.save" (finish)="save()" (cancel)="cancelOrder()">
+              <app-step labelKey="sales.order.step.customer" [controls]="customerControls">
+                <app-order-customer-step />
+              </app-step>
+              <app-step labelKey="sales.order.step.type" [controls]="typeControls">
+                <app-order-type-step />
+              </app-step>
+              <app-step labelKey="sales.order.step.products" [controls]="productControls">
+                <app-order-products-step />
+              </app-step>
+              <app-step labelKey="sales.order.step.summary" [controls]="noControls">
+                <app-order-summary-step />
+              </app-step>
+            </app-stepper>
+          </div>
+        </div>
+      }
+    }
+  }
+}

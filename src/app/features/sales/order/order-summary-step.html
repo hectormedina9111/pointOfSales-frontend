@@ -1,0 +1,97 @@
+<dl class="row mb-3">
+  <dt class="col-sm-3 fw-normal">{{ 'sales.order.summary.customer' | translate }}</dt>
+  <dd class="col-sm-9 mb-1" data-testid="summary-customer">
+    @if (store.customer().finalConsumer) {
+      {{ 'customers.finalConsumer' | translate }}
+    } @else {
+      {{ store.customer().displayName }}
+      @if (store.customer().documentNumber) {
+        <span class="small text-body-secondary ms-1">{{ 'customers.documentType.' + store.customer().documentType | translate }} {{ store.customer().documentNumber }}</span>
+      }
+    }
+  </dd>
+  <dt class="col-sm-3 fw-normal">{{ 'sales.order.summary.orderType' | translate }}</dt>
+  <dd class="col-sm-9 mb-0">{{ 'sales.order.type.' + store.orderType() | translate }}</dd>
+</dl>
+
+@if (store.hasLines()) {
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'sales.pos.lines.description' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'sales.pos.lines.quantity' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'sales.pos.lines.unitPrice' | translate }}</th>
+          <th scope="col">{{ 'sales.pos.lines.discount' | translate }}</th>
+          <th scope="col" class="text-end">{{ 'sales.pos.lines.total' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of store.lines(); track line.key; let i = $index) {
+          @let quoted = quotedLine(i);
+          <tr>
+            <td>{{ line.name }} <span class="small text-body-secondary font-monospace">{{ line.sku }}</span></td>
+            <td class="text-end font-monospace">{{ quantityLabel(line.quantity) }}</td>
+            <td class="text-end">
+              <div class="font-monospace">{{ quoted ? money(quoted.unitPrice) : '' }}</div>
+              @if (quoted; as current) {
+                @if (current.priceOverridden) {
+                  <span class="badge text-bg-warning">{{ 'sales.order.products.listPrice' | translate }}: {{ money(current.listPrice) }}</span>
+                }
+              }
+            </td>
+            <td class="small">
+              @if (line.discountType === null) {
+                {{ 'sales.pos.lines.noDiscount' | translate }}
+              } @else if (line.discountType === 'PERCENTAGE') {
+                {{ line.discountValue }} %
+              } @else {
+                {{ money(numeric(line.discountValue)) }}
+              }
+            </td>
+            <td class="text-end font-monospace">{{ quoted ? money(quoted.total) : '' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<div class="row g-4">
+  <div class="col-12 col-md-6">
+    <button type="button" class="btn btn-outline-secondary w-100" [disabled]="!store.hasLines()" (click)="editSaleDiscount()">
+      {{ 'sales.pos.saleDiscount.button' | translate }}
+      @if (store.saleDiscount().type !== null) {
+        <span class="badge text-bg-info ms-1">
+          @if (store.saleDiscount().type === 'PERCENTAGE') {
+            {{ store.saleDiscount().value }} %
+          } @else {
+            {{ money(numeric(store.saleDiscount().value)) }}
+          }
+        </span>
+      }
+    </button>
+
+    @if (store.quote(); as current) {
+      @if (current.discountAuthorizationRequired) {
+        <div class="alert alert-warning py-2 small mt-3 mb-0">{{ 'sales.pos.totals.authorizationNote' | translate }}</div>
+      }
+      @if (current.priceAuthorizationRequired) {
+        <div class="alert alert-warning py-2 small mt-3 mb-0">{{ 'sales.order.summary.priceAuthorizationNote' | translate }}</div>
+      }
+    }
+    <p class="small text-body-secondary mt-3 mb-0">{{ 'sales.order.summary.saveHint' | translate }}</p>
+  </div>
+
+  <div class="col-12 col-md-6">
+    <h3 class="h6">{{ 'sales.pos.totals.title' | translate }}</h3>
+    @if (store.quote(); as current) {
+      <app-sale-totals [totals]="current.totals" [currency]="store.currency()" />
+    } @else {
+      <p class="text-body-secondary small mb-0">{{ 'sales.pos.totals.empty' | translate }}</p>
+    }
+    @if (store.pendingQuote()) {
+      <div class="small text-body-secondary mt-2">{{ 'sales.pos.totals.calculating' | translate }}</div>
+    }
+  </div>
+</div>
