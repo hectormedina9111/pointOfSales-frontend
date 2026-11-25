@@ -1,0 +1,48 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="modal-header">
+    <h2 class="modal-title h5">
+      {{ (unit === null ? 'catalog.units.form.createTitle' : 'catalog.units.form.editTitle') | translate }}
+    </h2>
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <app-problem-alert [error]="error()" />
+
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <label class="form-label" for="unit-code">{{ 'catalog.units.field.code' | translate }}</label>
+        <input id="unit-code" type="text" class="form-control font-monospace" formControlName="code"
+          [class.is-invalid]="isInvalid(form.controls.code)" />
+        <app-field-error [control]="form.controls.code" />
+      </div>
+
+      <div class="col-12 col-md-8">
+        <label class="form-label" for="unit-name">{{ 'catalog.units.field.name' | translate }}</label>
+        <input id="unit-name" type="text" class="form-control" formControlName="name"
+          [class.is-invalid]="isInvalid(form.controls.name)" />
+        <app-field-error [control]="form.controls.name" />
+      </div>
+
+      <div class="col-12">
+        <div class="form-check">
+          <input id="unit-decimals" type="checkbox" class="form-check-input" formControlName="allowsDecimals" />
+          <label class="form-check-label" for="unit-decimals">{{ 'catalog.units.field.allowsDecimals' | translate }}</label>
+        </div>
+        <div class="form-check">
+          <input id="unit-active" type="checkbox" class="form-check-input" formControlName="active" />
+          <label class="form-check-label" for="unit-active">{{ 'catalog.units.field.active' | translate }}</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+      {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+    </button>
+  </div>
+</form>

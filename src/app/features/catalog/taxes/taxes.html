@@ -1,0 +1,83 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'catalog.taxes.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'catalog.taxes.intro' | translate }}</p>
+  </div>
+  @if (isCentral()) {
+    <button *appIfPrivilege="'POST_TAXES'" type="button" class="btn btn-primary" (click)="create()">
+      {{ 'catalog.taxes.new' | translate }}
+    </button>
+  }
+</div>
+
+<div class="row g-2 align-items-end mb-3">
+  <div class="col-12 col-md-4 col-lg-3">
+    <label class="form-label small mb-1" for="tax-country-filter">{{ 'catalog.taxes.filter.country' | translate }}</label>
+    <select id="tax-country-filter" class="form-select" [formControl]="countryFilter">
+      <option [ngValue]="null">{{ 'catalog.taxes.filter.allCountries' | translate }}</option>
+      @for (country of countries(); track country.id) {
+        <option [ngValue]="country.id">{{ country.isoCode }} - {{ country.name }}</option>
+      }
+    </select>
+  </div>
+</div>
+
+@if (notice(); as key) {
+  <div class="alert alert-success alert-dismissible" role="status">
+    {{ key | translate }}
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+  </div>
+}
+
+<app-problem-alert [error]="taxes.error()" />
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'catalog.taxes.column.country' | translate }}</th>
+        <th scope="col">{{ 'catalog.taxes.column.code' | translate }}</th>
+        <th scope="col">{{ 'catalog.taxes.column.name' | translate }}</th>
+        <th scope="col" class="text-end">{{ 'catalog.taxes.column.rate' | translate }}</th>
+        <th scope="col">{{ 'common.active' | translate }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (tax of taxes.items(); track tax.id) {
+        <tr>
+          <td class="font-monospace">{{ countryName(tax.countryId) }}</td>
+          <td class="fw-semibold font-monospace">{{ tax.code }}</td>
+          <td>{{ tax.name }}</td>
+          <td class="text-end font-monospace">{{ formatAmount(tax.rate) }}%</td>
+          <td>
+            <span class="badge" [class.text-bg-success]="tax.active" [class.text-bg-secondary]="!tax.active">
+              {{ (tax.active ? 'common.active' : 'common.inactive') | translate }}
+            </span>
+          </td>
+          <td class="text-end text-nowrap">
+            @if (isCentral()) {
+              <button *appIfPrivilege="'PUT_TAXES_ID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="edit(tax)">
+                {{ 'common.edit' | translate }}
+              </button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="text-center text-body-secondary">
+            {{ (taxes.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="taxes.page()"
+  [size]="taxes.size()"
+  [total]="taxes.total()"
+  (pageChange)="taxes.goToPage($event)"
+  (sizeChange)="taxes.setSize($event)"
+/>

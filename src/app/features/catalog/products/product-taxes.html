@@ -1,0 +1,59 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{{ 'catalog.products.taxes.title' | translate: { name: product.name } }}</h2>
+  <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <p class="small text-body-secondary">{{ 'catalog.products.taxes.intro' | translate }}</p>
+  <app-problem-alert [error]="loadError()" />
+  <app-problem-alert [error]="saveError()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary mb-0">{{ 'common.loading' | translate }}</p>
+  } @else {
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'catalog.products.taxes.column.country' | translate }}</th>
+            <th scope="col">{{ 'catalog.products.taxes.column.tax' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.country.id) {
+            <tr>
+              <td class="fw-semibold text-nowrap">
+                {{ row.country.isoCode }} - {{ row.country.name }}
+                @if (!row.country.active) {
+                  <span class="badge text-bg-secondary ms-1">{{ 'common.inactive' | translate }}</span>
+                }
+              </td>
+              <td>
+                <select class="form-select form-select-sm" [attr.aria-label]="row.country.name"
+                  (change)="setTax(row.country.id, $event)">
+                  <option value="" [selected]="row.taxId === null">{{ 'catalog.products.taxes.none' | translate }}</option>
+                  @for (tax of row.options; track tax.id) {
+                    <option [value]="tax.id" [selected]="tax.id === row.taxId">{{ taxLabel(tax) }}</option>
+                  }
+                </select>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="2" class="text-center text-body-secondary">{{ 'common.empty' | translate }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">
+    {{ 'common.cancel' | translate }}
+  </button>
+  <button type="button" class="btn btn-primary" [disabled]="submitting() || loading()" (click)="save()">
+    {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+  </button>
+</div>

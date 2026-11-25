@@ -1,0 +1,69 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'catalog.categories.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'catalog.categories.intro' | translate }}</p>
+  </div>
+  @if (isCentral()) {
+    <button *appIfPrivilege="'POST_CATEGORIES'" type="button" class="btn btn-primary" (click)="create()">
+      {{ 'catalog.categories.new' | translate }}
+    </button>
+  }
+</div>
+
+@if (notice(); as key) {
+  <div class="alert alert-success alert-dismissible" role="status">
+    {{ key | translate }}
+    <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+  </div>
+}
+
+<app-problem-alert [error]="error()" />
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'catalog.categories.column.name' | translate }}</th>
+        <th scope="col">{{ 'common.active' | translate }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.item.id) {
+        <tr>
+          <td>
+            <span class="d-inline-block" [style.padding-left.rem]="row.level * 1.5">
+              @if (row.level > 0) {
+                <span class="text-body-secondary me-1" aria-hidden="true">&#8627;</span>
+              }
+              <span [class.fw-semibold]="row.level === 0">{{ row.item.name }}</span>
+            </span>
+          </td>
+          <td>
+            <span class="badge" [class.text-bg-success]="row.item.active" [class.text-bg-secondary]="!row.item.active">
+              {{ (row.item.active ? 'common.active' : 'common.inactive') | translate }}
+            </span>
+          </td>
+          <td class="text-end text-nowrap">
+            @if (isCentral()) {
+              <button *appIfPrivilege="'PUT_CATEGORIES_ID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="edit(row.item)">
+                {{ 'common.edit' | translate }}
+              </button>
+              @if (row.item.active) {
+                <button *appIfPrivilege="'DELETE_CATEGORIES_ID'" type="button" class="btn btn-sm btn-outline-danger ms-1" (click)="deactivate(row.item)">
+                  {{ 'common.deactivate' | translate }}
+                </button>
+              }
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="3" class="text-center text-body-secondary">
+            {{ (loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
