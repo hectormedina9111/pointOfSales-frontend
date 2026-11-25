@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 
 import { ProductView } from '../../../../core/api/products-api';
-import { ProblemAlertComponent } from '../../../../shared/components/problem-alert/problem-alert';
 import { ProductPickerComponent } from '../../../../shared/components/product-picker/product-picker';
 import { FieldLabelComponent } from '../../../../shared/components/field-label/field-label';
 import { SerialChipsComponent } from '../../../../shared/components/serial-chips/serial-chips';
@@ -16,7 +15,7 @@ import { TransferDraftStore, TransferLine } from './transfer-draft.store';
  */
 @Component({
   selector: 'app-transfer-lines-step',
-  imports: [ProblemAlertComponent, FieldLabelComponent, ProductPickerComponent, SerialChipsComponent, TranslatePipe],
+  imports: [FieldLabelComponent, ProductPickerComponent, SerialChipsComponent, TranslatePipe],
   templateUrl: './transfer-lines-step.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
