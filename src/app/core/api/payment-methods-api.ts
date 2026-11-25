@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -33,8 +33,13 @@ export interface PaymentMethodRequest {
 export class PaymentMethodsApi {
   private readonly http = inject(HttpClient);
 
-  list(request: PageRequest): Observable<Page<PaymentMethodView>> {
-    return this.http.get<Page<PaymentMethodView>>('/api/v1/payment-methods', { params: pageParams(request) });
+  /** active null trae todos; true o false filtran por estado. */
+  list(request: PageRequest, active: boolean | null = null): Observable<Page<PaymentMethodView>> {
+    let params: HttpParams = pageParams(request);
+    if (active !== null) {
+      params = params.set('active', active);
+    }
+    return this.http.get<Page<PaymentMethodView>>('/api/v1/payment-methods', { params });
   }
 
   update(id: number, body: PaymentMethodRequest): Observable<PaymentMethodView> {

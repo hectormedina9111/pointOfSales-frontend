@@ -1,0 +1,225 @@
+<h1 class="h3 mb-1">{{ 'cash.session.title' | translate }}</h1>
+<p class="text-body-secondary mb-3">{{ 'cash.session.intro' | translate }}</p>
+
+@if (isCentral()) {
+  <div class="alert alert-info" role="status">{{ 'cash.session.centralInfo' | translate }}</div>
+} @else if (isStore()) {
+  @if (notice(); as key) {
+    <div class="alert alert-success alert-dismissible" role="status">
+      {{ key | translate }}
+      <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+    </div>
+  }
+
+  <app-problem-alert [error]="loadError()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (session(); as current) {
+    <!-- Sesión abierta -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+          <div>
+            <h2 class="h5 mb-1">{{ registerLabel(current.cashRegisterId) }}</h2>
+            <span class="badge text-bg-success">{{ 'cash.session.status.OPEN' | translate }}</span>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            @if (can('POST_CASH_SESSIONS_ID_MOVEMENTS')) {
+              <button type="button" class="btn btn-outline-primary" (click)="addMovement('DEPOSIT')">{{ 'cash.session.deposit.button' | translate }}</button>
+              <button type="button" class="btn btn-outline-primary" (click)="addMovement('WITHDRAWAL')">{{ 'cash.session.withdrawal.button' | translate }}</button>
+            }
+            @if (can('POST_CASH_SESSIONS_ID_CLOSE')) {
+              <button type="button" class="btn btn-primary" (click)="closeSession()">{{ 'cash.session.close.button' | translate }}</button>
+            }
+          </div>
+        </div>
+        <dl class="row mb-0">
+          <dt class="col-sm-4">{{ 'cash.session.field.openedAt' | translate }}</dt>
+          <dd class="col-sm-8">{{ current.openedAt | localDateTime }}</dd>
+          <dt class="col-sm-4">{{ 'cash.session.field.openingAmount' | translate }}</dt>
+          <dd class="col-sm-8 font-monospace mb-0">{{ money(current.openingAmount) }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12 col-lg-5">
+        <h2 class="h5">{{ 'cash.session.summary.title' | translate }}</h2>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th scope="col">{{ 'cash.session.column.method' | translate }}</th>
+                <th scope="col" class="text-end">{{ 'cash.session.column.expected' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of summaryRows(); track row.code) {
+                <tr>
+                  <td>{{ row.name }}</td>
+                  <td class="text-end font-monospace">{{ money(row.expected) }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="2" class="text-center text-body-secondary">{{ 'common.empty' | translate }}</td></tr>
+              }
+            </tbody>
+            @if (summary(); as summaryView) {
+              <tfoot>
+                <tr class="fw-semibold">
+                  <td>{{ 'cash.session.column.total' | translate }}</td>
+                  <td class="text-end font-monospace">{{ money(summaryView.expectedTotal) }}</td>
+                </tr>
+              </tfoot>
+            }
+          </table>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-7">
+        <h2 class="h5">{{ 'cash.session.movements.title' | translate }}</h2>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th scope="col">{{ 'cash.session.column.time' | translate }}</th>
+                <th scope="col">{{ 'cash.session.column.type' | translate }}</th>
+                <th scope="col">{{ 'cash.session.column.reason' | translate }}</th>
+                <th scope="col" class="text-end">{{ 'cash.session.column.amount' | translate }}</th>
+                <th scope="col">{{ 'cash.session.column.authorized' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (movement of current.movements; track movement.id) {
+                <tr>
+                  <td class="small">{{ movement.movedAt | localDateTime }}</td>
+                  <td>
+                    @if (movement.type === 'DEPOSIT') {
+                      {{ 'cash.session.movement.type.DEPOSIT' | translate }}
+                    } @else {
+                      {{ 'cash.session.movement.type.WITHDRAWAL' | translate }}
+                    }
+                  </td>
+                  <td>{{ movement.reason }}</td>
+                  <td class="text-end font-monospace">{{ money(movement.amount) }}</td>
+                  <td>{{ (movement.authorizedBy === null ? 'common.no' : 'common.yes') | translate }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="text-center text-body-secondary">{{ 'cash.session.movements.empty' | translate }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  } @else if (closed(); as result) {
+    <!-- Resultado del último cierre, con su versión para imprimir -->
+    <div class="card mb-4">
+      <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span class="fw-semibold">{{ 'cash.session.closed.title' | translate }}</span>
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="print()">{{ 'cash.session.closed.print' | translate }}</button>
+      </div>
+      <div class="card-body cash-print-area">
+        <h2 class="h5">{{ 'cash.session.closed.report' | translate }}</h2>
+        <p class="mb-3">{{ registerLabel(result.cashRegisterId) }}</p>
+        <dl class="row mb-3">
+          <dt class="col-sm-4">{{ 'cash.session.field.openedAt' | translate }}</dt>
+          <dd class="col-sm-8">{{ result.openedAt | localDateTime }}</dd>
+          <dt class="col-sm-4">{{ 'cash.session.field.closedAt' | translate }}</dt>
+          <dd class="col-sm-8">{{ result.closedAt | localDateTime }}</dd>
+          <dt class="col-sm-4">{{ 'cash.session.field.openingAmount' | translate }}</dt>
+          <dd class="col-sm-8 font-monospace">{{ money(result.openingAmount) }}</dd>
+        </dl>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th scope="col">{{ 'cash.close.column.method' | translate }}</th>
+                <th scope="col" class="text-end">{{ 'cash.close.column.expected' | translate }}</th>
+                <th scope="col" class="text-end">{{ 'cash.close.column.counted' | translate }}</th>
+                <th scope="col" class="text-end">{{ 'cash.close.column.difference' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of result.countDetail ?? []; track line.method) {
+                <tr>
+                  <td>{{ methodName(line.method) }}</td>
+                  <td class="text-end font-monospace">{{ money(line.expected) }}</td>
+                  <td class="text-end font-monospace">{{ money(line.counted) }}</td>
+                  <td class="text-end">
+                    <span class="badge font-monospace" [class]="differenceBadge(line.difference)">{{ money(line.difference) }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr class="fw-semibold">
+                <td>{{ 'cash.close.column.total' | translate }}</td>
+                <td class="text-end font-monospace">{{ money(result.expectedTotal) }}</td>
+                <td class="text-end font-monospace">{{ money(result.countedTotal) }}</td>
+                <td class="text-end">
+                  <span class="badge font-monospace" [class]="differenceBadge(result.difference)">{{ money(result.difference) }}</span>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        @if (result.notes; as notes) {
+          <p class="mb-0"><span class="fw-semibold">{{ 'cash.close.field.notes' | translate }}:</span> {{ notes }}</p>
+        }
+      </div>
+    </div>
+  } @else {
+    <!-- Sin sesión abierta: asistente de apertura, si el usuario puede abrir -->
+    @if (can('POST_CASH_SESSIONS')) {
+      @if (activeRegisters().length === 0) {
+        <div class="alert alert-warning" role="status">{{ 'cash.session.noRegisters' | translate }}</div>
+      }
+      <div class="card">
+        <div class="card-body">
+          <h2 class="h5 mb-3">{{ 'cash.session.open.title' | translate }}</h2>
+          <app-problem-alert [error]="openError()" />
+          <form [formGroup]="openForm">
+            <app-stepper [saving]="opening()" saveLabelKey="cash.session.open.submit" (finish)="open()" (cancel)="cancelOpen()">
+              <!-- 1. Caja -->
+              <app-step labelKey="cash.session.open.step.register" [controls]="registerControls">
+                <app-field-label targetId="open-register" [required]="true">{{ 'cash.session.open.field.register' | translate }}</app-field-label>
+                <select id="open-register" class="form-select" formControlName="cashRegisterId"
+                  [class.is-invalid]="isInvalid(openForm.controls.cashRegisterId)">
+                  <option [ngValue]="null">{{ 'common.select' | translate }}</option>
+                  @for (register of activeRegisters(); track register.id) {
+                    <option [ngValue]="register.id">{{ register.code }} · {{ register.name }}</option>
+                  }
+                </select>
+                <app-field-error [control]="openForm.controls.cashRegisterId" />
+              </app-step>
+
+              <!-- 2. Fondo inicial -->
+              <app-step labelKey="cash.session.open.step.amount" [controls]="amountControls">
+                <app-field-label targetId="open-amount" [required]="true">{{ 'cash.session.open.field.openingAmount' | translate }}</app-field-label>
+                <input id="open-amount" type="text" inputmode="decimal" class="form-control font-monospace" formControlName="openingAmount"
+                  [class.is-invalid]="isInvalid(openForm.controls.openingAmount)" />
+                <app-field-error [control]="openForm.controls.openingAmount" invalidKey="validation.amount" />
+                <div class="form-text">{{ 'cash.session.open.hint.amount' | translate }}</div>
+              </app-step>
+
+              <!-- 3. Resumen -->
+              <app-step labelKey="cash.session.open.step.summary">
+                <dl class="row mb-0">
+                  <dt class="col-sm-4">{{ 'cash.session.open.field.register' | translate }}</dt>
+                  <dd class="col-sm-8">{{ registerLabel(openForm.controls.cashRegisterId.value ?? 0) }}</dd>
+                  <dt class="col-sm-4">{{ 'cash.session.field.openingAmount' | translate }}</dt>
+                  <dd class="col-sm-8 font-monospace">{{ openForm.controls.openingAmount.value }}</dd>
+                  <dt class="col-sm-4">{{ 'cash.session.open.field.date' | translate }}</dt>
+                  <dd class="col-sm-8">{{ today | localDateTime }}</dd>
+                </dl>
+              </app-step>
+            </app-stepper>
+          </form>
+        </div>
+      </div>
+    } @else {
+      <div class="alert alert-secondary" role="status">{{ 'cash.session.noSession' | translate }}</div>
+    }
+  }
+}

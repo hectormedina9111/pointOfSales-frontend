@@ -1,0 +1,99 @@
+<div class="modal-header">
+  <h2 class="modal-title h5">{{ 'cash.sessions.detail.title' | translate }}</h2>
+  <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <app-problem-alert [error]="error()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (session(); as item) {
+    <dl class="row mb-4">
+      <dt class="col-sm-4">{{ 'cash.sessions.column.register' | translate }}</dt>
+      <dd class="col-sm-8">{{ registerLabel }}</dd>
+      <dt class="col-sm-4">{{ 'cash.sessions.column.cashier' | translate }}</dt>
+      <dd class="col-sm-8">{{ cashierLabel }}</dd>
+      <dt class="col-sm-4">{{ 'cash.sessions.column.status' | translate }}</dt>
+      <dd class="col-sm-8">
+        <span class="badge" [class.text-bg-success]="item.status === 'OPEN'" [class.text-bg-secondary]="item.status === 'CLOSED'">
+          {{ (item.status === 'OPEN' ? 'cash.session.status.OPEN' : 'cash.session.status.CLOSED') | translate }}
+        </span>
+      </dd>
+      <dt class="col-sm-4">{{ 'cash.sessions.column.opened' | translate }}</dt>
+      <dd class="col-sm-8">{{ item.openedAt | localDateTime }}</dd>
+      <dt class="col-sm-4">{{ 'cash.sessions.column.closed' | translate }}</dt>
+      <dd class="col-sm-8">{{ item.closedAt | localDateTime }}</dd>
+      <dt class="col-sm-4">{{ 'cash.sessions.column.opening' | translate }}</dt>
+      <dd class="col-sm-8 font-monospace">{{ money(item.openingAmount) }}</dd>
+      @if (item.notes; as notes) {
+        <dt class="col-sm-4">{{ 'cash.close.field.notes' | translate }}</dt>
+        <dd class="col-sm-8">{{ notes }}</dd>
+      }
+    </dl>
+
+    <h3 class="h6">{{ 'cash.sessions.detail.count' | translate }}</h3>
+    <div class="table-responsive mb-4">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'cash.close.column.method' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'cash.close.column.expected' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'cash.close.column.counted' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'cash.close.column.difference' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of item.countDetail ?? []; track line.method) {
+            <tr>
+              <td>{{ methodName(line.method) }}</td>
+              <td class="text-end font-monospace">{{ money(line.expected) }}</td>
+              <td class="text-end font-monospace">{{ money(line.counted) }}</td>
+              <td class="text-end"><span class="badge font-monospace" [class]="differenceBadge(line.difference)">{{ money(line.difference) }}</span></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="text-center text-body-secondary">{{ 'cash.sessions.detail.noCount' | translate }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="h6">{{ 'cash.session.movements.title' | translate }}</h3>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'cash.session.column.time' | translate }}</th>
+            <th scope="col">{{ 'cash.session.column.type' | translate }}</th>
+            <th scope="col">{{ 'cash.session.column.reason' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'cash.session.column.amount' | translate }}</th>
+            <th scope="col">{{ 'cash.session.column.authorized' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (movement of item.movements; track movement.id) {
+            <tr>
+              <td class="small">{{ movement.movedAt | localDateTime }}</td>
+              <td>
+                @if (movement.type === 'DEPOSIT') {
+                  {{ 'cash.session.movement.type.DEPOSIT' | translate }}
+                } @else {
+                  {{ 'cash.session.movement.type.WITHDRAWAL' | translate }}
+                }
+              </td>
+              <td>{{ movement.reason }}</td>
+              <td class="text-end font-monospace">{{ money(movement.amount) }}</td>
+              <td>{{ (movement.authorizedBy === null ? 'common.no' : 'common.yes') | translate }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="text-center text-body-secondary">{{ 'cash.session.movements.empty' | translate }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss()">{{ 'common.close' | translate }}</button>
+</div>

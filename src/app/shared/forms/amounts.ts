@@ -22,3 +22,46 @@ export function percentValidator(control: AbstractControl): ValidationErrors | n
 export function formatAmount(value: number | null): string {
   return value === null ? '' : value.toFixed(2);
 }
+
+/**
+ * Convierte un monto escrito ("12.5", "12.50") a centavos enteros, para restar sin errores de
+ * coma flotante. Devuelve null si el texto no es un monto válido.
+ */
+export function amountToCents(text: string): number | null {
+  const value = text.trim();
+  if (!AMOUNT_PATTERN.test(value)) {
+    return null;
+  }
+  const [whole, fraction = ''] = value.split('.');
+  return Number(whole) * 100 + Number(fraction.padEnd(2, '0'));
+}
+
+/** Convierte un monto del backend (número) a centavos enteros, redondeando a 2 decimales. */
+export function numberToCents(value: number): number {
+  return Math.round(value * 100);
+}
+
+/** Centavos enteros a monto con dos decimales ("-3.50"), listo para enviar como texto. */
+export function centsToAmount(cents: number): string {
+  const sign = cents < 0 ? '-' : '';
+  const absolute = Math.abs(cents);
+  return `${sign}${Math.floor(absolute / 100)}.${String(absolute % 100).padStart(2, '0')}`;
+}
+
+/**
+ * Muestra un monto con su moneda ("L 1,250.00") según el idioma. Sin moneda (la empresa no está
+ * configurada), solo los dos decimales. Null se muestra como guion.
+ */
+export function formatMoney(value: number | null, currency: string | null, locale: string): string {
+  if (value === null) {
+    return '—';
+  }
+  if (currency === null) {
+    return value.toFixed(2);
+  }
+  try {
+    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value);
+  } catch {
+    return `${currency} ${value.toFixed(2)}`;
+  }
+}

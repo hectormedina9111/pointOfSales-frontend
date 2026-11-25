@@ -108,8 +108,18 @@ export const routes: Routes = [
   // Rutas del menú que aún no tienen pantalla. Cada una se reemplaza por su pantalla en su etapa.
   underConstructionRoute('sales/pos'),
   underConstructionRoute('sales'),
-  underConstructionRoute('cash/session'),
-  underConstructionRoute('cash/sessions'),
+  {
+    path: 'cash/session',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/cash/session/cash-session').then((module) => module.CashSessionComponent),
+  },
+  {
+    path: 'cash/sessions',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/cash/sessions/cash-sessions').then((module) => module.CashSessionsComponent),
+  },
   {
     path: 'cash/registers',
     canActivate: [authGuard],
