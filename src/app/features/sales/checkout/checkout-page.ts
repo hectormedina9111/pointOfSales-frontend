@@ -17,6 +17,7 @@ import {
   NewPayment,
   canConfirmPayments,
   changeOf,
+  isCreditNoteMethod,
   paidOf,
   pendingOf,
 } from './payment-math';
@@ -61,6 +62,13 @@ export class CheckoutPageComponent {
   protected readonly paidCents = computed(() => paidOf(this.requests()));
   protected readonly pendingCents = computed(() => pendingOf(this.totalCents(), this.requests()));
   protected readonly changeCents = computed(() => changeOf(this.requests()));
+  /** Números de las notas de crédito ya agregadas; el formulario no deja usar una dos veces. */
+  protected readonly creditNoteNumbers = computed(() =>
+    this.requests()
+      .filter((request) => isCreditNoteMethod(request.paymentMethodCode))
+      .map((request) => request.creditNoteNumber ?? '')
+      .filter((number) => number !== ''),
+  );
   protected readonly canConfirm = computed(
     () => this.sale() !== null && !this.saving() && canConfirmPayments(this.totalCents(), this.requests()),
   );

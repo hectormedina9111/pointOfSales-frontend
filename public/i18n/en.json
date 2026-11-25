@@ -1128,5 +1128,17 @@
   "creditNotes.detail.back": "Back to credit notes",
   "creditNotes.detail.invalidId": "The credit note number is not valid.",
   "creditNotes.detail.customer": "Customer",
-  "creditNotes.detail.return": "Originating return"
+  "creditNotes.detail.return": "Originating return",
+  "sales.checkout.creditNote.number": "Credit note number",
+  "sales.checkout.creditNote.check": "Check",
+  "sales.checkout.creditNote.checking": "Checking…",
+  "sales.checkout.creditNote.balance": "Customer: {customer}. Available balance: {balance}.",
+  "sales.checkout.creditNote.used": "This credit note has no balance left.",
+  "sales.checkout.creditNote.lookupRequired": "Check the credit note number before adding this payment.",
+  "sales.checkout.creditNote.applied": "Credit note {number}",
+  "error.CENTRAL_UNAVAILABLE": "The central node cannot be reached. Credit notes can only be used online.",
+  "error.CREDIT_NOTE_NOT_FOUND": "The credit note does not exist.",
+  "error.CREDIT_NOTE_INSUFFICIENT_BALANCE": "The credit note does not have enough balance for this payment.",
+  "error.CREDIT_NOTE_NUMBER_REQUIRED": "Enter the credit note number.",
+  "error.DUPLICATE_CREDIT_NOTE_PAYMENT": "This credit note is already used in this sale."
 }

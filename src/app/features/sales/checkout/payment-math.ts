@@ -1,5 +1,6 @@
-import { PaymentRequest } from '../../../core/api/sales-api';
-import { amountToCents, centsToAmount } from '../../../shared/forms/amounts';
+import { CreditNoteLookupView } from '../../../core/api/credit-notes-api';
+import { CREDIT_NOTE_PAYMENT_METHOD, PaymentRequest } from '../../../core/api/sales-api';
+import { amountToCents, centsToAmount, numberToCents } from '../../../shared/forms/amounts';
 
 /** Código del método de pago con tarjeta; solo para él se envían los cuatro últimos dígitos. */
 const CARD_METHOD = 'CARD';
@@ -17,6 +18,16 @@ export interface PaymentInput {
   readonly amountReceived: string;
   readonly reference: string;
   readonly cardLast4: string;
+  readonly creditNoteNumber: string;
+}
+
+/**
+ * Búsqueda de una nota de crédito en la central. requestedNumber es el número con el que se buscó:
+ * si la persona cambia el número después, la búsqueda ya no sirve para el pago.
+ */
+export interface CreditNoteCheck {
+  readonly requestedNumber: string;
+  readonly note: CreditNoteLookupView;
 }
 
 /** Un pago que se acaba de agregar: el nombre del método para mostrarlo y el cuerpo que se envía. */
@@ -68,6 +79,56 @@ export function suggestedAmount(pendingCents: number): string {
   return centsToAmount(Math.max(0, pendingCents));
 }
 
+/** Verdadero si el método es nota de crédito, que necesita el número de la nota y una búsqueda previa. */
+export function isCreditNoteMethod(code: string): boolean {
+  return code === CREDIT_NOTE_PAYMENT_METHOD;
+}
+
+/** Monto que se propone con una nota: lo menor entre su saldo y lo pendiente, sin negativos. */
+export function creditNoteSuggestedAmount(balance: number, pendingCents: number): string {
+  return centsToAmount(Math.max(0, Math.min(numberToCents(balance), pendingCents)));
+}
+
+/**
+ * Clave de traducción del error de un pago con nota de crédito que se quiere agregar, o null si es
+ * válido. El monto va hasta el saldo y hasta lo pendiente; la nota debe estar buscada, con saldo
+ * activo y no usada antes en la misma venta. Sin búsqueda vigente, no se agrega.
+ */
+export function creditNotePaymentError(
+  input: PaymentInput,
+  check: CreditNoteCheck | null,
+  usedNumbers: readonly string[],
+  pendingCents: number,
+): string | null {
+  const amount = amountToCents(input.amount);
+  if (amount === null || amount <= 0) {
+    return 'error.INVALID_PAYMENT_AMOUNT';
+  }
+  if (pendingCents <= 0) {
+    return 'sales.checkout.nothingPending';
+  }
+  if (amount > pendingCents) {
+    return 'sales.checkout.amountExceedsPending';
+  }
+  const number = input.creditNoteNumber.trim();
+  if (number === '') {
+    return 'error.CREDIT_NOTE_NUMBER_REQUIRED';
+  }
+  if (check === null || check.requestedNumber !== number) {
+    return 'sales.checkout.creditNote.lookupRequired';
+  }
+  if (check.note.status !== 'ACTIVE') {
+    return 'sales.checkout.creditNote.used';
+  }
+  if (usedNumbers.includes(number)) {
+    return 'error.DUPLICATE_CREDIT_NOTE_PAYMENT';
+  }
+  if (amount > numberToCents(check.note.balance)) {
+    return 'error.CREDIT_NOTE_INSUFFICIENT_BALANCE';
+  }
+  return null;
+}
+
 /**
  * Ajusta lo escrito al monto pendiente. En un método que da vuelto (efectivo), si se escribe más de
  * lo que falta, se aplica solo lo pendiente y lo escrito queda como monto recibido: la diferencia es
@@ -113,7 +174,10 @@ export function paymentError(input: PaymentInput, method: PaymentMethodRules, pe
   return null;
 }
 
-/** Cuerpo de un pago. amountReceived solo para métodos que dan vuelto (por defecto, el mismo monto). */
+/**
+ * Cuerpo de un pago. amountReceived solo para métodos que dan vuelto (por defecto, el mismo monto).
+ * creditNoteNumber solo para nota de crédito.
+ */
 export function toPaymentRequest(input: PaymentInput, method: PaymentMethodRules): PaymentRequest {
   const amount = input.amount.trim();
   const cardLast4 = input.cardLast4.trim();
@@ -123,5 +187,6 @@ export function toPaymentRequest(input: PaymentInput, method: PaymentMethodRules
     amountReceived: method.allowsChange ? input.amountReceived.trim() || amount : null,
     reference: method.requiresReference ? input.reference.trim() : null,
     cardLast4: method.code === CARD_METHOD && cardLast4 !== '' ? cardLast4 : null,
+    creditNoteNumber: isCreditNoteMethod(method.code) ? input.creditNoteNumber.trim() : null,
   };
 }

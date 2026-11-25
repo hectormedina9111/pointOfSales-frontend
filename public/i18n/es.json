@@ -1128,5 +1128,17 @@
   "creditNotes.detail.back": "Volver a las notas",
   "creditNotes.detail.invalidId": "El número de nota no es válido.",
   "creditNotes.detail.customer": "Cliente",
-  "creditNotes.detail.return": "Devolución de origen"
+  "creditNotes.detail.return": "Devolución de origen",
+  "sales.checkout.creditNote.number": "Número de nota de crédito",
+  "sales.checkout.creditNote.check": "Verificar",
+  "sales.checkout.creditNote.checking": "Verificando…",
+  "sales.checkout.creditNote.balance": "Cliente: {customer}. Saldo disponible: {balance}.",
+  "sales.checkout.creditNote.used": "Esta nota de crédito ya no tiene saldo.",
+  "sales.checkout.creditNote.lookupRequired": "Verifique el número de la nota de crédito antes de agregar este pago.",
+  "sales.checkout.creditNote.applied": "Nota de crédito {number}",
+  "error.CENTRAL_UNAVAILABLE": "No hay conexión con la central. Las notas de crédito solo se usan con conexión.",
+  "error.CREDIT_NOTE_NOT_FOUND": "La nota de crédito no existe.",
+  "error.CREDIT_NOTE_INSUFFICIENT_BALANCE": "La nota de crédito no tiene saldo suficiente para este pago.",
+  "error.CREDIT_NOTE_NUMBER_REQUIRED": "Escriba el número de la nota de crédito.",
+  "error.DUPLICATE_CREDIT_NOTE_PAYMENT": "Esta nota de crédito ya se usa en esta venta."
 }
