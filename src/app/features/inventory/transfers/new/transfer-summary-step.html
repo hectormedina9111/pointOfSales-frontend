@@ -1,0 +1,39 @@
+<dl class="row mb-4">
+  <dt class="col-sm-3">{{ 'inventory.transfers.field.origin' | translate }}</dt>
+  <dd class="col-sm-9">{{ draft.originName() ?? '—' }}</dd>
+
+  <dt class="col-sm-3">{{ 'inventory.transfers.field.destination' | translate }}</dt>
+  <dd class="col-sm-9">{{ draft.destinationName() ?? '—' }}</dd>
+
+  <dt class="col-sm-3">{{ 'inventory.documents.field.notes' | translate }}</dt>
+  <dd class="col-sm-9 mb-0">{{ draft.form.controls.notes.value.trim() || '—' }}</dd>
+</dl>
+
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'inventory.stock.column.product' | translate }}</th>
+        <th scope="col" class="text-end">{{ 'inventory.documents.column.quantity' | translate }}</th>
+        <th scope="col">{{ 'inventory.transfers.column.serials' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (line of draft.lines(); track line.key) {
+        <tr>
+          <td>
+            <span class="font-monospace me-2">{{ line.sku }}</span>{{ line.name }}
+          </td>
+          <td class="text-end font-monospace">{{ quantity(line) }}</td>
+          <td>
+            @if (line.tracksSerials) {
+              <span class="font-monospace small">{{ line.serials.join(', ') || '—' }}</span>
+            } @else {
+              <span class="text-body-secondary">—</span>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

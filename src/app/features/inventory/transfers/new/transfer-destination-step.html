@@ -1,0 +1,35 @@
+<div class="row g-3" [formGroup]="form">
+  @if (isCentral()) {
+    <div class="col-12 col-md-6">
+      <app-field-label targetId="transfer-origin" [required]="true">{{ 'inventory.transfers.field.origin' | translate }}</app-field-label>
+      <select id="transfer-origin" class="form-select" formControlName="originBranchId"
+        [class.is-invalid]="isInvalid(form.controls.originBranchId)">
+        <option [ngValue]="null">{{ 'common.select' | translate }}</option>
+        @for (branch of originOptions(); track branch.id) {
+          <option [ngValue]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+        }
+      </select>
+      <app-field-error [control]="form.controls.originBranchId" />
+    </div>
+  }
+
+  <div class="col-12 col-md-6">
+    <app-field-label targetId="transfer-destination" [required]="true">{{ 'inventory.transfers.field.destination' | translate }}</app-field-label>
+    <select id="transfer-destination" class="form-select" formControlName="destinationBranchId"
+      [class.is-invalid]="isInvalid(form.controls.destinationBranchId)">
+      <option [ngValue]="null">{{ 'common.select' | translate }}</option>
+      @for (branch of draft.destinationOptions(); track branch.id) {
+        <option [ngValue]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+      }
+    </select>
+    <app-field-error [control]="form.controls.destinationBranchId" />
+    @if (noDestinations()) {
+      <div class="form-text text-warning-emphasis" role="status">{{ 'inventory.transfers.noDestinations' | translate }}</div>
+    }
+  </div>
+
+  <div class="col-12">
+    <app-field-label targetId="transfer-notes">{{ 'inventory.documents.field.notes' | translate }}</app-field-label>
+    <textarea id="transfer-notes" class="form-control" rows="2" formControlName="notes"></textarea>
+  </div>
+</div>

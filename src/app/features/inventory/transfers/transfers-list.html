@@ -1,0 +1,122 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'inventory.transfers.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'inventory.transfers.intro' | translate }}</p>
+  </div>
+  <a *appIfPrivilege="'POST_INVENTORY_TRANSFERS'" class="btn btn-primary" routerLink="/inventory/transfers/new">
+    {{ 'inventory.transfers.new' | translate }}
+  </a>
+</div>
+
+<form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" role="search" (submit)="$event.preventDefault()">
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="transfer-filter-search">{{ 'inventory.transfers.filter.number' | translate }}</label>
+    <input id="transfer-filter-search" type="search" class="form-control" autocomplete="off" formControlName="search" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="transfer-filter-direction">{{ 'inventory.transfers.filter.direction' | translate }}</label>
+    <select id="transfer-filter-direction" class="form-select" formControlName="direction">
+      <option value="">{{ 'common.all' | translate }}</option>
+      @for (direction of directions; track direction) {
+        <option [value]="direction">{{ 'inventory.transfers.direction.' + direction | translate }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="transfer-filter-status">{{ 'inventory.transfers.filter.status' | translate }}</label>
+    <select id="transfer-filter-status" class="form-select" formControlName="status">
+      <option value="">{{ 'common.all' | translate }}</option>
+      @for (status of statuses; track status) {
+        <option [value]="status">{{ 'inventory.transfers.status.' + status | translate }}</option>
+      }
+    </select>
+  </div>
+  @if (isCentral()) {
+    <div class="col-12 col-sm-6 col-lg-2">
+      <label class="form-label small mb-1" for="transfer-filter-branch">{{ 'inventory.transfers.filter.branch' | translate }}</label>
+      <select id="transfer-filter-branch" class="form-select" formControlName="branchId">
+        <option value="">{{ 'common.all' | translate }}</option>
+        @for (branch of branches(); track branch.id) {
+          <option [value]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+        }
+      </select>
+    </div>
+  }
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="transfer-filter-from">{{ 'inventory.transfers.filter.from' | translate }}</label>
+    <input id="transfer-filter-from" type="date" class="form-control" formControlName="from" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <label class="form-label small mb-1" for="transfer-filter-to">{{ 'inventory.transfers.filter.to' | translate }}</label>
+    <input id="transfer-filter-to" type="date" class="form-control" formControlName="to" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+      {{ 'inventory.transfers.filter.clear' | translate }}
+    </button>
+  </div>
+</form>
+
+@if (rangeInvalid()) {
+  <div class="alert alert-warning" role="alert">{{ 'inventory.transfers.rangeInvalid' | translate }}</div>
+}
+<app-problem-alert [error]="transfers.error()" />
+<app-problem-alert [error]="lookupError()" />
+
+<p class="small text-body-secondary mb-2" data-testid="transfers-total">
+  {{ 'inventory.transfers.count' | translate: { count: transfers.total() } }}
+</p>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'inventory.transfers.column.number' | translate }}</th>
+        <th scope="col">{{ 'inventory.transfers.column.sentAt' | translate }}</th>
+        <th scope="col">{{ 'inventory.transfers.column.origin' | translate }}</th>
+        <th scope="col">{{ 'inventory.transfers.column.destination' | translate }}</th>
+        <th scope="col">{{ 'inventory.transfers.column.status' | translate }}</th>
+        <th scope="col">{{ 'inventory.transfers.column.sentBy' | translate }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of transfers.items(); track item.id) {
+        <tr>
+          <td class="font-monospace">
+            <a [routerLink]="['/inventory/transfers', item.id]" [state]="{ returnUrl: currentUrl() }">{{ item.number }}</a>
+          </td>
+          <td class="small">{{ item.sentAt | localDateTime }}</td>
+          <td>{{ item.originBranchName }}</td>
+          <td>{{ item.destinationBranchName }}</td>
+          <td>
+            <span class="badge" [class]="statusClass(item)">{{ 'inventory.transfers.status.' + item.status | translate }}</span>
+          </td>
+          <td>{{ item.sentByName }}</td>
+          <td class="text-end">
+            @if (item.status === 'IN_TRANSIT' && isIncoming(item)) {
+              <a *appIfPrivilege="'POST_INVENTORY_TRANSFERS_ID_RECEIPT'" class="btn btn-sm btn-outline-primary"
+                [routerLink]="['/inventory/transfers', item.id, 'receive']" [state]="{ returnUrl: currentUrl() }">
+                {{ 'inventory.transfers.receive' | translate }}
+              </a>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="text-center text-body-secondary">
+            {{ (transfers.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="transfers.page()"
+  [size]="transfers.size()"
+  [total]="transfers.total()"
+  (pageChange)="transfers.goToPage($event)"
+  (sizeChange)="transfers.setSize($event)"
+/>

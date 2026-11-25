@@ -1,8 +1,7 @@
 import { MovementReferenceType } from '../../../core/api/inventory-api';
 
 /**
- * Ruta de la pantalla del origen de un movimiento, o null si todavía no tiene pantalla (por
- * ejemplo, las transferencias).
+ * Ruta de la pantalla del origen de un movimiento, o null si no tiene pantalla.
  */
 export function movementReferenceLink(
   referenceType: MovementReferenceType,
@@ -14,6 +13,8 @@ export function movementReferenceLink(
     case 'SALE':
     case 'SALE_RETURN':
       return ['/sales/orders', String(referenceId)];
+    case 'TRANSFER':
+      return ['/inventory/transfers', String(referenceId)];
     default:
       return null;
   }

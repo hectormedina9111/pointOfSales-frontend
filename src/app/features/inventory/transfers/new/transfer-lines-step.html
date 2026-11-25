@@ -1,0 +1,64 @@
+<!-- Búsqueda: código de barras, SKU o nombre. Elegir un producto lo agrega a la transferencia. -->
+<app-field-label targetId="transfer-product-search" [required]="true">{{ 'inventory.lines.search' | translate }}</app-field-label>
+<app-product-picker inputId="transfer-product-search" (productPicked)="addProduct($event)" />
+
+@if (lineMessage(); as key) {
+  <div class="alert alert-warning py-2 mt-2 mb-0" role="alert">{{ key | translate }}</div>
+}
+
+<div class="mt-4">
+  @if (draft.lines().length === 0) {
+    <p class="text-body-secondary mb-0">{{ 'inventory.lines.empty' | translate }}</p>
+  } @else {
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'inventory.stock.column.product' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.documents.column.quantity' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.transfers.lines.stock' | translate }}</th>
+            <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of draft.lines(); track line.key) {
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ line.name }}</div>
+                <div class="small font-monospace text-body-secondary">{{ line.sku }}</div>
+                @if (line.tracksSerials) {
+                  <div class="mt-2">
+                    <app-serial-chips
+                      [inputId]="'transfer-line-serial-' + line.key"
+                      labelKey="serials.input.lineLabel"
+                      [serials]="line.serials"
+                      [pickProductId]="line.productId"
+                      [pickBranchId]="draft.effectiveOriginId()"
+                      (added)="addSerial(line, $event)"
+                      (removed)="removeSerial(line, $event)" />
+                  </div>
+                }
+              </td>
+              <td style="width: 9rem;">
+                @if (line.tracksSerials) {
+                  <span class="d-block text-end font-monospace" data-testid="serial-quantity">{{ valueText(line) }}</span>
+                } @else {
+                  <input type="text" inputmode="decimal" class="form-control form-control-sm text-end font-monospace"
+                    [class.is-invalid]="!draft.isLineValid(line)"
+                    [attr.aria-label]="'inventory.documents.column.quantity' | translate"
+                    [value]="valueText(line)" (change)="onValueChange(line, $event)" />
+                }
+              </td>
+              <td class="text-end font-monospace" data-testid="origin-stock">{{ draft.stockText(line) }}</td>
+              <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeLine(line)">
+                  {{ 'inventory.lines.remove' | translate }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

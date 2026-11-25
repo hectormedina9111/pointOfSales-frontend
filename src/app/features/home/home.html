@@ -46,6 +46,7 @@
       }
 
       <app-below-min-stock-widget *appIfPrivilege="'GET_INVENTORY'" />
+      <app-incoming-transfers-widget *appIfPrivilege="'GET_INVENTORY_TRANSFERS'" />
 
       @if (isCentral()) {
         <app-stores-widget *appIfPrivilege="'GET_STORE_NODES'" />

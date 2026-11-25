@@ -222,6 +222,32 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'inventory/transfers',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/transfers/transfers-list').then((module) => module.TransfersListComponent),
+  },
+  {
+    path: 'inventory/transfers/new',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/transfers/new/transfer-page').then((module) => module.TransferPageComponent),
+  },
+  {
+    path: 'inventory/transfers/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/transfers/transfer-detail-page').then((module) => module.TransferDetailPageComponent),
+  },
+  {
+    path: 'inventory/transfers/:id/receive',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/transfers/receive/transfer-receive-page').then(
+        (module) => module.TransferReceivePageComponent,
+      ),
+  },
+  {
     path: 'inventory/serials',
     canActivate: [authGuard],
     loadComponent: () =>
