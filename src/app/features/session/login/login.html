@@ -7,6 +7,9 @@
 
         @if (passwordChanged) {
           <div class="alert alert-success" role="status">{{ 'session.passwordChanged' | translate }}</div>
+          @if (isStore()) {
+            <div class="alert alert-info" role="note">{{ 'session.passwordReplicating' | translate }}</div>
+          }
         }
 
         <app-problem-alert [error]="error()" [code]="errorCode()" />
