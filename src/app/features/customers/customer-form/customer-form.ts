@@ -254,6 +254,6 @@ export class CustomerFormComponent implements OnInit {
 
 /** Cambia los validadores de un control y recalcula su estado para que el paso lo vea. */
 function setRules(control: AbstractControl, validators: readonly ValidatorFn[]): void {
-  control.setValidators(validators);
+  control.setValidators([...validators]);
   control.updateValueAndValidity();
 }
