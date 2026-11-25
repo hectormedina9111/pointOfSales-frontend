@@ -1,0 +1,69 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ 'inventory.documents.detail.title' | translate }}</h1>
+  <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ 'inventory.documents.detail.back' | translate }}</button>
+</div>
+
+@if (invalidId()) {
+  <div class="alert alert-warning" role="alert">{{ 'inventory.documents.invalidId' | translate }}</div>
+} @else {
+  <app-problem-alert [error]="loadError()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (document(); as current) {
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+          <span class="h5 font-monospace mb-0">{{ current.number }}</span>
+          <span class="badge text-bg-light border">{{ 'inventory.documentType.' + current.type | translate }}</span>
+        </div>
+        <dl class="row mb-0">
+          <dt class="col-sm-3">{{ 'inventory.documents.column.postedAt' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.postedAt | localDateTime }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.documents.column.branch' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.branchName }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.documents.column.user' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.userName }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.documents.column.reason' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.reason ?? '—' }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.documents.field.notes' | translate }}</dt>
+          <dd class="col-sm-9 mb-0">{{ current.notes ?? '—' }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    <h2 class="h5 mb-2">{{ 'inventory.documents.detail.lines' | translate }}</h2>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'inventory.stock.column.sku' | translate }}</th>
+            <th scope="col">{{ 'inventory.stock.column.product' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.documents.column.quantity' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.documents.column.previous' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.documents.column.counted' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.documents.column.difference' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.documents.column.unitCost' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of current.lines; track $index) {
+            <tr>
+              <td class="font-monospace">{{ line.productSku }}</td>
+              <td>{{ line.productName }}</td>
+              <td class="text-end font-monospace">{{ quantity(line.quantity) }}</td>
+              <td class="text-end font-monospace">{{ quantity(line.previousQuantity) }}</td>
+              <td class="text-end font-monospace">{{ quantity(line.countedQuantity) }}</td>
+              <td class="text-end font-monospace">{{ difference(line) ?? '—' }}</td>
+              <td class="text-end font-monospace">{{ money(line.unitCost) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}

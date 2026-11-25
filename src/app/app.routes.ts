@@ -201,6 +201,20 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/inventory/stock/stock-detail-page').then((module) => module.StockDetailPageComponent),
   },
+  {
+    path: 'inventory/documents',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/documents/documents-list').then((module) => module.DocumentsListComponent),
+  },
+  {
+    path: 'inventory/documents/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/documents/document-detail-page').then(
+        (module) => module.DocumentDetailPageComponent,
+      ),
+  },
   // Cualquier otra dirección: página no encontrada, solo para usuarios con sesión.
   {
     path: '**',
