@@ -30,6 +30,8 @@ Reglas permanentes para trabajar en este repositorio. El plan completo está en 
 - **Una web por nodo:** cada nodo (central, tienda 1, tienda 2) sirve su propia web y esa web solo llama a su propio backend, con llamadas directas (CORS). No hay proxy ni selector de servidor.
 - `public/config.json` es la configuración de `npm start` (apunta a la central en la máquina virtual). En Docker, `API_BASE_URL` genera el `config.json` de cada nodo al arrancar el contenedor.
 - **Formularios con pasos:** los formularios con muchos campos o varios pasos se hacen como asistente por pasos (stepper). Cada paso marca sus campos obligatorios con `*` y no deja avanzar hasta que son válidos; el último paso muestra un resumen antes de guardar.
+  - Reutilizar `app-stepper` + `app-step` (`src/app/shared/components/stepper`), solo con Bootstrap. Cada `app-step` recibe `labelKey` y `[controls]`; el asistente emite `finish` solo si todos los pasos son válidos.
+  - Reutilizar `app-field-label` (`src/app/shared/components/field-label`) para la etiqueta de todo campo nuevo: `<app-field-label targetId="id-del-control" [required]="true">{{ 'clave' | translate }}</app-field-label>`. Muestra el `*` rojo y el texto "obligatorio" para lectores de pantalla.
 - La lógica de negocio no va en las plantillas: si una pantalla necesita decidir algo, eso se calcula en el componente o en un servicio.
 
 ## API del backend

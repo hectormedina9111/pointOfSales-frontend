@@ -1,0 +1,10 @@
+<div class="text-center py-5">
+  @if (notFound) {
+    <h1 class="h3">{{ 'notFound.title' | translate }}</h1>
+    <p class="text-body-secondary">{{ 'notFound.intro' | translate }}</p>
+  } @else {
+    <h1 class="h3">{{ 'underConstruction.title' | translate }}</h1>
+    <p class="text-body-secondary">{{ 'underConstruction.intro' | translate }}</p>
+  }
+  <a class="btn btn-outline-primary" routerLink="/">{{ 'page.backHome' | translate }}</a>
+</div>

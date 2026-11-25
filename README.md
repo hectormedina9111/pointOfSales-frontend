@@ -59,6 +59,8 @@ El menú lateral sale de los menús que el backend entrega a cada usuario. Cada 
 - **Catálogo:** unidades de medida, impuestos por país, categorías en forma de árbol, y productos con búsqueda y asignación de impuestos por país.
 - **Precios:** listas de precios con sus precios por producto, y consulta de precio (precio unitario, base gravable, impuesto y tasa).
 - **Tiendas:** nodos (solo en la central: estado, latidos, cambios pendientes, código de activación, asignación de sucursal y revocación) y estado de sincronización (solo en una tienda).
+- **Ventas:** las pantallas de punto de venta, ventas realizadas, mi caja y sesiones de caja están en construcción (se muestran como "En construcción" hasta su etapa). Las rutas que no existen muestran "Página no encontrada".
+- **Configuración de ventas:** cajas por sucursal (filtros por sucursal y estado; alta y edición solo en la central) y métodos de pago (solo edición en la central; los códigos los define el sistema).
 - **Auditoría:** bitácora paginada con filtros, y comparación de valores antes y después de cada cambio.
 - **Cambio de contraseña:** disponible en la central y en las tiendas, desde el menú del usuario.
 
@@ -112,6 +114,10 @@ Hasta que se ejecute `npm run api:update` por primera vez, los servicios se escr
 - `npm run build`: compila la aplicación en `dist/pos-frontend/browser`.
 - `npm run watch`: compila en modo desarrollo y vuelve a compilar al cambiar archivos.
 - `npm run check:i18n`: verifica las traducciones.
+
+## Formularios con pasos
+
+Los formularios largos son asistentes por pasos con `app-stepper` y `app-step` (`src/app/shared/components/stepper`). Cada paso recibe los controles que debe validar; el botón Siguiente no avanza mientras haya errores: marca los campos y lleva el foco al primero con error. El último paso es el resumen y guarda. Los campos obligatorios se marcan con `app-field-label` (`required`), que muestra el asterisco. El alta de producto (`catalog/products/product-form`) es el ejemplo.
 
 ## Reglas del proyecto
 

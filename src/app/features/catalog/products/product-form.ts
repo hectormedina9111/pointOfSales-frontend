@@ -10,21 +10,39 @@ import { listAllPages } from '../../../core/api/page';
 import { ProductRequest, ProductType, ProductView, ProductsApi } from '../../../core/api/products-api';
 import { TaxView, TaxesApi } from '../../../core/api/taxes-api';
 import { UnitOfMeasureView, UnitsApi } from '../../../core/api/units-api';
+import { TranslationService } from '../../../core/i18n/translation.service';
 import { FieldErrorComponent, isInvalidControl } from '../../../shared/components/field-error/field-error';
+import { FieldLabelComponent } from '../../../shared/components/field-label/field-label';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
+import { StepComponent, StepperComponent } from '../../../shared/components/stepper/stepper';
 import { AMOUNT_PATTERN, QUANTITY_PATTERN, formatAmount } from '../../../shared/forms/amounts';
 import { blankToNull } from '../../../shared/forms/form-values';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { TreeRow, flattenTree, indentLabel } from '../../../shared/tree/tree';
 
+/** Fila del resumen del último paso: etiqueta (clave de traducción) y valor ya en texto. */
+interface SummaryRow {
+  readonly labelKey: string;
+  readonly value: string;
+}
+
 /**
- * Alta y edición de producto. Reglas entre campos: un servicio no controla inventario ni seriales,
- * y controlar seriales obliga a controlar inventario. Los montos viajan como texto y se validan
- * con patrones; la web no calcula nada con ellos. Cierra el diálogo con el producto guardado.
+ * Alta y edición de producto, en un asistente de cinco pasos. Reglas entre campos: un servicio no
+ * controla inventario ni seriales, y controlar seriales obliga a controlar inventario. Los montos
+ * viajan como texto y se validan con patrones; la web no calcula nada con ellos. Cierra el diálogo
+ * con el producto guardado.
  */
 @Component({
   selector: 'app-product-form',
-  imports: [ReactiveFormsModule, ProblemAlertComponent, FieldErrorComponent, TranslatePipe],
+  imports: [
+    ReactiveFormsModule,
+    ProblemAlertComponent,
+    FieldErrorComponent,
+    FieldLabelComponent,
+    StepperComponent,
+    StepComponent,
+    TranslatePipe,
+  ],
   templateUrl: './product-form.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -34,6 +52,7 @@ export class ProductFormComponent implements OnInit {
   private readonly taxesApi = inject(TaxesApi);
   private readonly unitsApi = inject(UnitsApi);
   private readonly countriesApi = inject(CountriesApi);
+  private readonly translation = inject(TranslationService);
   private readonly fb = inject(NonNullableFormBuilder);
   protected readonly activeModal = inject(NgbActiveModal);
 
@@ -62,7 +81,7 @@ export class ProductFormComponent implements OnInit {
     unitOfMeasureId: this.fb.control<number | null>(null, [Validators.required]),
     productType: this.fb.control<ProductType>('GOOD', [Validators.required]),
     salePrice: this.fb.control('', [Validators.required, Validators.pattern(AMOUNT_PATTERN)]),
-    cost: this.fb.control('', [Validators.pattern(AMOUNT_PATTERN)]),
+    cost: this.fb.control('', [Validators.required, Validators.pattern(AMOUNT_PATTERN)]),
     tracksInventory: this.fb.control(true),
     tracksSerials: this.fb.control(false),
     requiresExclusiveInvoice: this.fb.control(false),
@@ -70,6 +89,25 @@ export class ProductFormComponent implements OnInit {
     imageUrl: this.fb.control('', [Validators.maxLength(300)]),
     active: this.fb.control(true),
   });
+
+  /** Controles de cada paso: el asistente no avanza mientras alguno tenga error. */
+  protected readonly identificationControls: readonly AbstractControl[] = [
+    this.form.controls.sku,
+    this.form.controls.barcode,
+    this.form.controls.name,
+    this.form.controls.description,
+    this.form.controls.productType,
+    this.form.controls.imageUrl,
+  ];
+  protected readonly classificationControls: readonly AbstractControl[] = [
+    this.form.controls.categoryId,
+    this.form.controls.unitOfMeasureId,
+    this.form.controls.taxId,
+  ];
+  protected readonly priceControls: readonly AbstractControl[] = [this.form.controls.salePrice, this.form.controls.cost];
+  protected readonly inventoryControls: readonly AbstractControl[] = [this.form.controls.minStock];
+  /** El resumen no tiene campos propios. */
+  protected readonly noControls: readonly AbstractControl[] = [];
 
   /** Impuestos activos, más el del producto aunque esté inactivo. */
   protected taxOptions(): readonly TaxView[] {
@@ -119,6 +157,42 @@ export class ProductFormComponent implements OnInit {
   protected taxLabel(tax: TaxView): string {
     const iso = this.countries().get(tax.countryId) ?? '';
     return `${iso} - ${tax.code} - ${tax.name} (${formatAmount(tax.rate)}%)`;
+  }
+
+  /** Filas del resumen del último paso, con los valores actuales del formulario. */
+  protected summaryRows(): readonly SummaryRow[] {
+    const raw = this.form.getRawValue();
+    const none = this.t('common.none');
+    const yesNo = (value: boolean): string => this.t(value ? 'common.yes' : 'common.no');
+    const text = (value: string): string => (value.trim() === '' ? none : value.trim());
+    const category = raw.categoryId === null
+      ? this.t('catalog.products.option.noCategory')
+      : (this.categories().find((row) => row.item.id === raw.categoryId)?.item.name ?? none);
+    const unit = this.units().find((row) => row.id === raw.unitOfMeasureId);
+    const tax = this.taxes().find((row) => row.id === raw.taxId);
+
+    return [
+      { labelKey: 'catalog.products.field.sku', value: text(raw.sku) },
+      { labelKey: 'catalog.products.field.barcode', value: text(raw.barcode) },
+      { labelKey: 'catalog.products.field.name', value: text(raw.name) },
+      { labelKey: 'catalog.products.field.description', value: text(raw.description) },
+      { labelKey: 'catalog.products.field.imageUrl', value: text(raw.imageUrl) },
+      { labelKey: 'catalog.products.field.productType', value: this.t(`catalog.products.type.${raw.productType}`) },
+      { labelKey: 'catalog.products.field.category', value: category },
+      { labelKey: 'catalog.products.field.unit', value: unit ? `${unit.code} - ${unit.name}` : none },
+      { labelKey: 'catalog.products.field.tax', value: tax ? this.taxLabel(tax) : none },
+      { labelKey: 'catalog.products.field.salePrice', value: text(raw.salePrice) },
+      { labelKey: 'catalog.products.field.cost', value: text(raw.cost) },
+      { labelKey: 'catalog.products.field.tracksInventory', value: yesNo(raw.tracksInventory) },
+      { labelKey: 'catalog.products.field.tracksSerials', value: yesNo(raw.tracksSerials) },
+      { labelKey: 'catalog.products.field.minStock', value: text(raw.minStock) },
+      { labelKey: 'catalog.products.field.requiresExclusiveInvoice', value: yesNo(raw.requiresExclusiveInvoice) },
+      { labelKey: 'catalog.products.field.active', value: yesNo(raw.active) },
+    ];
+  }
+
+  protected t(key: string): string {
+    return this.translation.translate(key);
   }
 
   protected submit(): void {

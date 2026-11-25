@@ -1,0 +1,6 @@
+@if (active()) {
+  <section>
+    <h2 #heading class="h5 mb-3" tabindex="-1">{{ labelKey() | translate }}</h2>
+    <ng-content />
+  </section>
+}

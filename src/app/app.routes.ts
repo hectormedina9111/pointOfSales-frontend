@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+import { Route, Routes } from '@angular/router';
 
 import { authGuard } from './core/auth/auth.guard';
 
@@ -105,8 +105,39 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/audit/audit-log').then((module) => module.AuditLogComponent),
   },
+  // Rutas del menú que aún no tienen pantalla. Cada una se reemplaza por su pantalla en su etapa.
+  underConstructionRoute('sales/pos'),
+  underConstructionRoute('sales'),
+  underConstructionRoute('cash/session'),
+  underConstructionRoute('cash/sessions'),
+  {
+    path: 'cash/registers',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/cash/registers/cash-registers').then((module) => module.CashRegistersComponent),
+  },
+  {
+    path: 'sales/payment-methods',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/sales/payment-methods/payment-methods').then((module) => module.PaymentMethodsComponent),
+  },
+  // Cualquier otra dirección: página no encontrada, solo para usuarios con sesión.
   {
     path: '**',
-    redirectTo: '',
+    canActivate: [authGuard],
+    data: { variant: 'notFound' },
+    loadComponent: () =>
+      import('./features/under-construction/under-construction').then((module) => module.UnderConstructionComponent),
   },
 ];
+
+/** Ruta de una pantalla que todavía no existe: muestra "En construcción". */
+function underConstructionRoute(path: string): Route {
+  return {
+    path,
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/under-construction/under-construction').then((module) => module.UnderConstructionComponent),
+  };
+}
