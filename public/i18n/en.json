@@ -1140,5 +1140,21 @@
   "error.CREDIT_NOTE_NOT_FOUND": "The credit note does not exist.",
   "error.CREDIT_NOTE_INSUFFICIENT_BALANCE": "The credit note does not have enough balance for this payment.",
   "error.CREDIT_NOTE_NUMBER_REQUIRED": "Enter the credit note number.",
-  "error.DUPLICATE_CREDIT_NOTE_PAYMENT": "This credit note is already used in this sale."
+  "error.DUPLICATE_CREDIT_NOTE_PAYMENT": "This credit note is already used in this sale.",
+  "creditNotes.detail.uses.title": "Uses",
+  "creditNotes.detail.uses.intro": "Purchases where this credit note was used, as recorded in the central node.",
+  "creditNotes.detail.check": "Check current balance",
+  "creditNotes.detail.checking": "Checking…",
+  "creditNotes.detail.balanceHint": "The balance above is the one synchronized to this store. Check it to see the balance in the central node.",
+  "creditNotes.detail.currentBalance": "Current balance in the central node: {balance}",
+  "creditNotes.uses.column.date": "Date",
+  "creditNotes.uses.column.store": "Store",
+  "creditNotes.uses.column.amount": "Amount",
+  "creditNotes.uses.column.status": "Status",
+  "creditNotes.uses.column.sale": "Sale",
+  "creditNotes.uses.status.APPLIED": "Applied",
+  "creditNotes.uses.status.CONFIRMED": "Confirmed",
+  "creditNotes.uses.status.RELEASED": "Released",
+  "creditNotes.uses.openSale": "Open sale",
+  "creditNotes.uses.unknownStore": "Store (id {id})"
 }

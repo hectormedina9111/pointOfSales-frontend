@@ -1140,5 +1140,21 @@
   "error.CREDIT_NOTE_NOT_FOUND": "La nota de crédito no existe.",
   "error.CREDIT_NOTE_INSUFFICIENT_BALANCE": "La nota de crédito no tiene saldo suficiente para este pago.",
   "error.CREDIT_NOTE_NUMBER_REQUIRED": "Escriba el número de la nota de crédito.",
-  "error.DUPLICATE_CREDIT_NOTE_PAYMENT": "Esta nota de crédito ya se usa en esta venta."
+  "error.DUPLICATE_CREDIT_NOTE_PAYMENT": "Esta nota de crédito ya se usa en esta venta.",
+  "creditNotes.detail.uses.title": "Usos",
+  "creditNotes.detail.uses.intro": "Compras en las que se usó esta nota de crédito, según la central.",
+  "creditNotes.detail.check": "Consultar saldo actual",
+  "creditNotes.detail.checking": "Consultando…",
+  "creditNotes.detail.balanceHint": "El saldo de arriba es el que se sincronizó en esta tienda. Consúltelo para ver el saldo en la central.",
+  "creditNotes.detail.currentBalance": "Saldo actual en la central: {balance}",
+  "creditNotes.uses.column.date": "Fecha",
+  "creditNotes.uses.column.store": "Tienda",
+  "creditNotes.uses.column.amount": "Monto",
+  "creditNotes.uses.column.status": "Estado",
+  "creditNotes.uses.column.sale": "Venta",
+  "creditNotes.uses.status.APPLIED": "Aplicado",
+  "creditNotes.uses.status.CONFIRMED": "Confirmado",
+  "creditNotes.uses.status.RELEASED": "Liberado",
+  "creditNotes.uses.openSale": "Ver venta",
+  "creditNotes.uses.unknownStore": "Tienda (id {id})"
 }
