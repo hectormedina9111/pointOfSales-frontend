@@ -1369,5 +1369,18 @@
   "inventory.transfers.noDestinations": "There is no other branch to send to. Destination branches must be active and different from the origin.",
   "inventory.transfers.lines.stock": "Stock at origin",
   "inventory.transfers.lines.duplicate": "This product is already in the transfer.",
-  "inventory.transfers.column.serials": "Serial numbers"
+  "inventory.transfers.column.serials": "Serial numbers",
+  "inventory.transfers.detail.title": "Transfer",
+  "inventory.transfers.detail.back": "Back to transfers",
+  "inventory.transfers.detail.receive": "Receive transfer",
+  "inventory.transfers.detail.lines": "Products sent",
+  "inventory.transfers.detail.received": "Received",
+  "inventory.transfers.detail.missing": "Missing",
+  "inventory.transfers.invalidId": "The transfer number is not valid.",
+  "inventory.transfers.field.sentAt": "Sent",
+  "inventory.transfers.field.receivedAt": "Received",
+  "inventory.transfers.field.receiveNotes": "Receipt notes",
+  "inventory.transfers.column.sent": "Sent",
+  "inventory.transfers.column.received": "Received",
+  "inventory.transfers.column.difference": "Difference"
 }

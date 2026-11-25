@@ -1369,5 +1369,18 @@
   "inventory.transfers.noDestinations": "No hay otra sucursal a la que enviar. Las sucursales de destino deben estar activas y ser distintas del origen.",
   "inventory.transfers.lines.stock": "Existencia en origen",
   "inventory.transfers.lines.duplicate": "Este producto ya está en la transferencia.",
-  "inventory.transfers.column.serials": "Seriales"
+  "inventory.transfers.column.serials": "Seriales",
+  "inventory.transfers.detail.title": "Transferencia",
+  "inventory.transfers.detail.back": "Volver a transferencias",
+  "inventory.transfers.detail.receive": "Recibir transferencia",
+  "inventory.transfers.detail.lines": "Productos enviados",
+  "inventory.transfers.detail.received": "Recibidos",
+  "inventory.transfers.detail.missing": "Faltan",
+  "inventory.transfers.invalidId": "El número de transferencia no es válido.",
+  "inventory.transfers.field.sentAt": "Enviada",
+  "inventory.transfers.field.receivedAt": "Recibida",
+  "inventory.transfers.field.receiveNotes": "Notas de recepción",
+  "inventory.transfers.column.sent": "Enviado",
+  "inventory.transfers.column.received": "Recibido",
+  "inventory.transfers.column.difference": "Diferencia"
 }

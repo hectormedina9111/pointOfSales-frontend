@@ -1,0 +1,103 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ 'inventory.transfers.detail.title' | translate }}</h1>
+  <div class="d-flex flex-wrap gap-2">
+    @if (canReceive()) {
+      <a *appIfPrivilege="'POST_INVENTORY_TRANSFERS_ID_RECEIPT'" class="btn btn-primary"
+        [routerLink]="['/inventory/transfers', transfer()?.id, 'receive']">
+        {{ 'inventory.transfers.detail.receive' | translate }}
+      </a>
+    }
+    <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ 'inventory.transfers.detail.back' | translate }}</button>
+  </div>
+</div>
+
+@if (invalidId()) {
+  <div class="alert alert-warning" role="alert">{{ 'inventory.transfers.invalidId' | translate }}</div>
+} @else {
+  <app-problem-alert [error]="loadError()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (transfer(); as current) {
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+          <span class="h5 font-monospace mb-0">{{ current.number }}</span>
+          <span class="badge" [class]="statusClass()" data-testid="transfer-status">
+            {{ 'inventory.transfers.status.' + current.status | translate }}
+          </span>
+        </div>
+        <dl class="row mb-0">
+          <dt class="col-sm-3">{{ 'inventory.transfers.field.origin' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.originBranchName }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.transfers.field.destination' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.destinationBranchName }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.transfers.field.sentAt' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.sentAt | localDateTime }} · {{ current.sentByName }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.transfers.field.receivedAt' | translate }}</dt>
+          <dd class="col-sm-9">
+            @if (current.receivedAt) {
+              {{ current.receivedAt | localDateTime }} · {{ current.receivedByName }}
+            } @else {
+              —
+            }
+          </dd>
+
+          <dt class="col-sm-3">{{ 'inventory.documents.field.notes' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.notes ?? '—' }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.transfers.field.receiveNotes' | translate }}</dt>
+          <dd class="col-sm-9 mb-0">{{ current.receiveNotes ?? '—' }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    <h2 class="h5 mb-2">{{ 'inventory.transfers.detail.lines' | translate }}</h2>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'inventory.stock.column.product' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.transfers.column.sent' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.transfers.column.received' | translate }}</th>
+            <th scope="col" class="text-end">{{ 'inventory.transfers.column.difference' | translate }}</th>
+            <th scope="col">{{ 'inventory.transfers.column.serials' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.id) {
+            <tr [class.table-warning]="row.differs" [attr.data-testid]="row.differs ? 'line-differs' : null">
+              <td>
+                <div class="fw-semibold">{{ row.name }}</div>
+                <div class="small font-monospace text-body-secondary">{{ row.sku }}</div>
+              </td>
+              <td class="text-end font-monospace">{{ row.sent }}</td>
+              <td class="text-end font-monospace">{{ row.received }}</td>
+              <td class="text-end font-monospace" [class.fw-bold]="row.differs" [class.text-danger]="row.differs">{{ row.difference }}</td>
+              <td>
+                @if (row.serials.length > 0) {
+                  <div class="small font-monospace">{{ row.serials.join(', ') }}</div>
+                  @if (row.receivedSerials.length > 0 || row.missingSerials.length > 0) {
+                    <div class="small mt-1">
+                      <span class="text-body-secondary">{{ 'inventory.transfers.detail.received' | translate }}:</span>
+                      <span class="font-monospace">{{ row.receivedSerials.join(', ') || '—' }}</span>
+                    </div>
+                  }
+                  @if (row.missingSerials.length > 0) {
+                    <div class="small text-danger mt-1">
+                      {{ 'inventory.transfers.detail.missing' | translate }}:
+                      <span class="font-monospace">{{ row.missingSerials.join(', ') }}</span>
+                    </div>
+                  }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}
