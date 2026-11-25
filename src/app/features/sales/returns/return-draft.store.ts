@@ -237,11 +237,18 @@ export class ReturnDraftStore {
     );
   }
 
-  /** Líneas con cantidad mayor que cero, en la forma del backend (tres decimales). */
+  /**
+   * Líneas con cantidad mayor que cero, en la forma del backend (tres decimales). Recorre los controles
+   * que existen: al armar las filas, cada alta avisa del cambio antes de que estén todas.
+   */
   private selectedLines(): ReturnLineRequest[] {
-    return (this.returnable()?.lines ?? []).flatMap((line, index) => {
-      const thousandths = quantityThousandths(this.lineControl(index).value) ?? 0;
-      return thousandths > 0 ? [{ saleLineId: line.saleLineId, quantity: thousandthsToQuantity(thousandths) }] : [];
+    const lines = this.returnable()?.lines ?? [];
+    return this.linesControl.controls.flatMap((control, index) => {
+      const line = lines[index];
+      const thousandths = quantityThousandths(control.value) ?? 0;
+      return line !== undefined && thousandths > 0
+        ? [{ saleLineId: line.saleLineId, quantity: thousandthsToQuantity(thousandths) }]
+        : [];
     });
   }
 
