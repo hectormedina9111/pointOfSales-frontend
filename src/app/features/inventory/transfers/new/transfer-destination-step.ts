@@ -22,7 +22,7 @@ export class TransferDestinationStepComponent {
   protected readonly isCentral = this.draft.isCentral;
   protected readonly isInvalid = isInvalidControl;
   /** Solo las sucursales activas se ofrecen como origen en la central. */
-  protected readonly originOptions = computed(() => this.draft.branches().filter((branch) => branch.active));
+  protected readonly originOptions = this.draft.originOptions;
   /** Sin sucursales de destino el envío no es posible: se avisa en lugar de mostrar una lista vacía. */
   protected readonly noDestinations = computed(
     () => this.draft.branches().length > 0 && this.draft.destinationOptions().length === 0,

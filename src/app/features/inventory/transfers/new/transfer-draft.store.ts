@@ -4,10 +4,8 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { catchError, map, of, throwError } from 'rxjs';
 
-import { BranchView, BranchesApi } from '../../../../core/api/branches-api';
-import { InventoryApi, TransferRequest } from '../../../../core/api/inventory-api';
+import { InventoryApi, TransferBranchView, TransferRequest } from '../../../../core/api/inventory-api';
 import { ProductView } from '../../../../core/api/products-api';
-import { listAllPages } from '../../../../core/api/page';
 import { SystemInfoService } from '../../../../core/system/system-info.service';
 import { thousandthsToQuantity } from '../../../../shared/forms/amounts';
 import { blankToNull } from '../../../../shared/forms/form-values';
@@ -43,7 +41,6 @@ export interface TransferLine {
 export class TransferDraftStore {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly api = inject(InventoryApi);
-  private readonly branchesApi = inject(BranchesApi);
   private readonly systemInfo = inject(SystemInfoService);
 
   /** Solo la central elige sucursal de origen; una tienda envía desde la suya. */
@@ -68,19 +65,22 @@ export class TransferDraftStore {
     initialValue: null as number | null,
   });
 
-  readonly branches = signal<readonly BranchView[]>([]);
+  readonly branches = signal<readonly TransferBranchView[]>([]);
+
+  /** Orígenes posibles: las sucursales que opera este nodo. */
+  readonly originOptions = computed(() => this.branches().filter((branch) => branch.operatedHere));
   readonly lines = signal<readonly TransferLine[]>([]);
   readonly lookupError = signal<unknown>(null);
 
   /** Sucursal de origen: la elegida en la central, o la única de la tienda. */
   readonly effectiveOriginId = computed(() =>
-    this.isCentral() ? this.originBranchId() : (this.branches()[0]?.id ?? null),
+    this.isCentral() ? this.originBranchId() : (this.originOptions()[0]?.id ?? null),
   );
 
   /** Destinos posibles: sucursales activas distintas del origen. */
   readonly destinationOptions = computed(() => {
     const origin = this.effectiveOriginId();
-    return this.branches().filter((branch) => branch.active && branch.id !== origin);
+    return this.branches().filter((branch) => branch.id !== origin);
   });
 
   readonly originName = computed(() => this.branchName(this.effectiveOriginId()));
@@ -96,7 +96,7 @@ export class TransferDraftStore {
 
     this.form.controls.originBranchId.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.onOriginChanged());
 
-    listAllPages((request) => this.branchesApi.list(request), 'code').subscribe({
+    this.api.transferBranches().subscribe({
       next: (branches) => this.branches.set(branches),
       error: (error: unknown) => this.lookupError.set(error),
     });

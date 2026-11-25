@@ -141,6 +141,17 @@ export interface InventoryDocumentFilters {
   readonly to: string | null;
 }
 
+/**
+ * Sucursal que se puede usar en una transferencia (GET /api/v1/inventory/transfer-branches): todas las
+ * activas, porque una tienda solo ve la suya en /branches. operatedHere marca las que opera este nodo.
+ */
+export interface TransferBranchView {
+  readonly id: number;
+  readonly code: string;
+  readonly name: string;
+  readonly operatedHere: boolean;
+}
+
 /** Estado de una transferencia (enum TransferStatus del backend). */
 export type TransferStatus = 'IN_TRANSIT' | 'RECEIVED' | 'RECEIVED_WITH_DIFFERENCES';
 
@@ -312,6 +323,10 @@ export class InventoryApi {
   }
 
   /** Transferencias paginadas. La dirección es relativa a la sucursal que consulta el nodo. */
+  transferBranches(): Observable<readonly TransferBranchView[]> {
+    return this.http.get<readonly TransferBranchView[]>('/api/v1/inventory/transfer-branches');
+  }
+
   transfers(request: PageRequest, filters: TransferFilters): Observable<Page<TransferView>> {
     let params: HttpParams = pageParams(request);
     if (filters.direction !== null) {
