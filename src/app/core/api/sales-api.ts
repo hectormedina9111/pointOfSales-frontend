@@ -229,7 +229,9 @@ export interface TicketView extends SaleCustomerFields {
 /**
  * Filtros del listado de ventas. Un valor null no filtra. Las fechas son instantes ISO-8601.
  * cashierId solo se usa con ACTION_SALES_VIEW_ALL; sin ese privilegio el servidor muestra solo las
- * ventas del usuario. branchId solo tiene efecto en la central.
+ * ventas del usuario. branchId solo tiene efecto en la central. search busca por número de recibo
+ * o interno; minTotal y maxTotal son montos en texto (dos decimales como máximo). Los filtros
+ * opcionales no van en las consultas que no los usan (por ejemplo, las ventas de hoy del inicio).
  */
 export interface SaleFilters {
   readonly status: SaleStatus | null;
@@ -238,6 +240,11 @@ export interface SaleFilters {
   readonly branchId: number | null;
   readonly from: string | null;
   readonly to: string | null;
+  readonly search?: string | null;
+  readonly customerId?: number | null;
+  readonly orderType?: OrderType | null;
+  readonly minTotal?: string | null;
+  readonly maxTotal?: string | null;
 }
 
 /**
@@ -280,25 +287,26 @@ export class SalesApi {
     return this.http.post<SaleView>(`/api/v1/sales/holds/${id}/checkout`, body);
   }
 
+  /** Ventas paginadas. El orden va en request.sort (por ejemplo "createdAt,desc" o "total,asc"). */
   list(request: PageRequest, filters: SaleFilters): Observable<Page<SaleSummaryView>> {
     let params: HttpParams = pageParams(request);
-    if (filters.status !== null) {
-      params = params.set('status', filters.status);
-    }
-    if (filters.cashSessionId !== null) {
-      params = params.set('cashSessionId', filters.cashSessionId);
-    }
-    if (filters.cashierId !== null) {
-      params = params.set('cashierId', filters.cashierId);
-    }
-    if (filters.branchId !== null) {
-      params = params.set('branchId', filters.branchId);
-    }
-    if (filters.from !== null) {
-      params = params.set('from', filters.from);
-    }
-    if (filters.to !== null) {
-      params = params.set('to', filters.to);
+    const values: Record<string, string | number | null | undefined> = {
+      status: filters.status,
+      cashSessionId: filters.cashSessionId,
+      cashierId: filters.cashierId,
+      branchId: filters.branchId,
+      from: filters.from,
+      to: filters.to,
+      search: filters.search,
+      customerId: filters.customerId,
+      orderType: filters.orderType,
+      minTotal: filters.minTotal,
+      maxTotal: filters.maxTotal,
+    };
+    for (const [name, value] of Object.entries(values)) {
+      if (value !== null && value !== undefined && value !== '') {
+        params = params.set(name, value);
+      }
     }
     return this.http.get<Page<SaleSummaryView>>('/api/v1/sales', { params });
   }

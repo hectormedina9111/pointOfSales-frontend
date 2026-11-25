@@ -5,7 +5,7 @@
   </div>
   @if (isStore() && sessionState() === 'open') {
     <div class="d-flex flex-wrap gap-2">
-      <button *appIfPrivilege="'GET_SALES_HOLDS'" type="button" class="btn btn-outline-primary" [disabled]="store.busy()" (click)="openHolds()">
+      <button *appIfPrivilege="'GET_SALES_HOLDS'" type="button" class="btn btn-outline-primary" [disabled]="store.busy()" (click)="openSaved()">
         {{ 'sales.pos.actions.holds' | translate }}
       </button>
       <button type="button" class="btn btn-outline-danger" [disabled]="(!store.hasLines() && store.savedId() === null) || store.busy()" (click)="cancelOrder()">
