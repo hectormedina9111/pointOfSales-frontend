@@ -30,6 +30,17 @@
     </div>
 
     <dl class="row small mb-0">
+      <dt class="col-6">{{ 'stores.nodes.field.pendingUpload' | translate }}</dt>
+      <dd class="col-6 mb-1">
+        <span class="badge" [class.text-bg-warning]="node().pendingUploadCount > 0"
+          [class.text-bg-secondary]="node().pendingUploadCount === 0">{{ node().pendingUploadCount }}</span>
+      </dd>
+
+      @if (node().pendingUploadCount > 0) {
+        <dt class="col-6 text-warning-emphasis">{{ 'stores.nodes.field.oldestPending' | translate }}</dt>
+        <dd class="col-6 mb-1 text-warning-emphasis">{{ node().oldestPendingAt | relativeTime }}</dd>
+      }
+
       <dt class="col-6">{{ 'stores.nodes.field.connection' | translate }}</dt>
       <dd class="col-6 mb-1">
         <span class="badge" [class.text-bg-success]="node().connected" [class.text-bg-secondary]="!node().connected">

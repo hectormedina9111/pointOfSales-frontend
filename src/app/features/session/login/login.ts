@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { SystemInfoService } from '../../../core/system/system-info.service';
 import { ProblemAlertComponent } from '../../../shared/components/problem-alert/problem-alert';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
@@ -25,6 +26,8 @@ export class LoginComponent {
 
   /** Verdadero al volver de cambiar la contraseña: ?passwordChanged=1. */
   protected readonly passwordChanged = inject(ActivatedRoute).snapshot.queryParamMap.get('passwordChanged') === '1';
+  /** En una tienda, el cambio llega a la central por sincronización: se avisa tras cambiarlo. */
+  protected readonly isStore = inject(SystemInfoService).isStore;
   protected readonly submitting = signal(false);
   protected readonly error = signal<unknown>(null);
   protected readonly errorCode = signal<string | null>(null);

@@ -25,6 +25,10 @@ export interface StoreNodeView {
   readonly credentialRevokedAt: string | null;
   readonly latestVersion: number;
   readonly pendingChanges: number;
+  /** Envíos que la tienda aún no ha subido a la central (cambios de contraseña, documentos). */
+  readonly pendingUploadCount: number;
+  /** Momento del envío pendiente más antiguo; null si no hay ninguno. */
+  readonly oldestPendingAt: string | null;
   readonly connected: boolean;
   readonly syncState: StoreNodeState;
 }
