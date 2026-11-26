@@ -66,6 +66,14 @@ export const routes: Routes = [
       import('./features/catalog/categories/categories').then((module) => module.CategoriesComponent),
   },
   {
+    path: 'catalog/categories/:id/attributes',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/catalog/categories/category-attributes-page').then(
+        (module) => module.CategoryAttributesPageComponent,
+      ),
+  },
+  {
     path: 'catalog/products',
     canActivate: [authGuard],
     loadComponent: () =>

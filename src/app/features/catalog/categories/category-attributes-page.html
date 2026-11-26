@@ -1,0 +1,162 @@
+<div class="mb-3">
+  <a routerLink="/catalog/categories" class="small">{{ 'catalog.attributes.back' | translate }}</a>
+</div>
+
+@if (categoryId === null) {
+  <div class="alert alert-warning" role="alert">{{ 'catalog.attributes.invalidId' | translate }}</div>
+} @else {
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+    <div>
+      <h1 class="h3 mb-1">{{ 'catalog.attributes.title' | translate }}</h1>
+      @if (category(); as current) {
+        <p class="fw-semibold mb-1">{{ 'catalog.attributes.category' | translate: { name: current.name } }}</p>
+      }
+      <p class="text-body-secondary mb-0">{{ 'catalog.attributes.intro' | translate }}</p>
+    </div>
+    @if (isCentral()) {
+      <button *appIfPrivilege="'POST_CATEGORIES_ID_ATTRIBUTES'" type="button" class="btn btn-primary"
+        [disabled]="editing() !== null" (click)="startNew()">
+        {{ 'catalog.attributes.new' | translate }}
+      </button>
+    }
+  </div>
+
+  @if (notice(); as key) {
+    <div class="alert alert-success alert-dismissible" role="status">
+      {{ key | translate }}
+      <button type="button" class="btn-close" [attr.aria-label]="'common.close' | translate" (click)="dismissNotice()"></button>
+    </div>
+  }
+
+  <app-problem-alert [error]="loadError()" />
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <!-- La fila de edición se dibuja una sola vez: al principio si es un alta, o en lugar de la característica si es una edición. -->
+    <ng-template #editRow>
+      <tr>
+        <td style="min-width: 9rem;">
+          <app-field-label targetId="attribute-code" [required]="true">{{ 'catalog.attributes.field.code' | translate }}</app-field-label>
+          <input id="attribute-code" type="text" class="form-control form-control-sm font-monospace" autocomplete="off"
+            formControlName="code" [class.is-invalid]="isInvalid(form.controls.code)" />
+          <app-field-error [control]="form.controls.code" />
+          @if (editing()?.id !== null) {
+            <div class="form-text">{{ 'catalog.attributes.codeHint' | translate }}</div>
+          }
+        </td>
+        <td style="min-width: 11rem;">
+          <app-field-label targetId="attribute-name" [required]="true">{{ 'catalog.attributes.field.name' | translate }}</app-field-label>
+          <input id="attribute-name" type="text" class="form-control form-control-sm" autocomplete="off"
+            formControlName="name" [class.is-invalid]="isInvalid(form.controls.name)" />
+          <app-field-error [control]="form.controls.name" />
+        </td>
+        <td style="min-width: 8rem;">
+          <app-field-label targetId="attribute-data-type" [required]="true">{{ 'catalog.attributes.field.type' | translate }}</app-field-label>
+          <select id="attribute-data-type" class="form-select form-select-sm" formControlName="dataType">
+            @for (type of dataTypes; track type) {
+              <option [ngValue]="type">{{ 'catalog.attributes.type.' + type | translate }}</option>
+            }
+          </select>
+        </td>
+        <td style="min-width: 11rem;">
+          @if (isList()) {
+            <app-field-label targetId="attribute-options" [required]="true">{{ 'catalog.attributes.field.options' | translate }}</app-field-label>
+            <input id="attribute-options" type="text" class="form-control form-control-sm" autocomplete="off"
+              formControlName="options" />
+          }
+        </td>
+        <td>
+          <div class="form-check mt-4">
+            <input id="attribute-required" type="checkbox" class="form-check-input" formControlName="required" />
+            <label class="form-check-label" for="attribute-required">{{ 'catalog.attributes.field.required' | translate }}</label>
+          </div>
+        </td>
+        <td style="width: 6rem;">
+          <app-field-label targetId="attribute-order" [required]="true">{{ 'catalog.attributes.field.order' | translate }}</app-field-label>
+          <input id="attribute-order" type="number" min="0" step="1" class="form-control form-control-sm"
+            formControlName="sortOrder" [class.is-invalid]="isInvalid(form.controls.sortOrder)" />
+          <app-field-error [control]="form.controls.sortOrder" />
+        </td>
+        <td>
+          <div class="form-check mt-4">
+            <input id="attribute-active" type="checkbox" class="form-check-input" formControlName="active" />
+            <label class="form-check-label" for="attribute-active">{{ 'catalog.attributes.field.active' | translate }}</label>
+          </div>
+        </td>
+        <td class="text-end text-nowrap">
+          <button type="submit" class="btn btn-sm btn-primary" [disabled]="submitting()">
+            {{ (submitting() ? 'common.saving' : 'common.save') | translate }}
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary ms-1" (click)="cancelEdit()">
+            {{ 'common.cancel' | translate }}
+          </button>
+        </td>
+      </tr>
+    </ng-template>
+
+    @if (formMessage(); as key) {
+      <div class="alert alert-warning py-2" role="alert">{{ key | translate }}</div>
+    }
+    <app-problem-alert [error]="saveError()" />
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'catalog.attributes.column.code' | translate }}</th>
+            <th scope="col">{{ 'catalog.attributes.column.name' | translate }}</th>
+            <th scope="col">{{ 'catalog.attributes.column.type' | translate }}</th>
+            <th scope="col">{{ 'catalog.attributes.column.options' | translate }}</th>
+            <th scope="col">{{ 'catalog.attributes.column.required' | translate }}</th>
+            <th scope="col">{{ 'catalog.attributes.column.order' | translate }}</th>
+            <th scope="col">{{ 'common.active' | translate }}</th>
+            <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (editing()?.id === null) {
+            <ng-container *ngTemplateOutlet="editRow" />
+          }
+          @for (attribute of attributes(); track attribute.id) {
+            @if (editing()?.id === attribute.id) {
+              <ng-container *ngTemplateOutlet="editRow" />
+            } @else {
+              <tr>
+                <td class="font-monospace">{{ attribute.code }}</td>
+                <td>{{ attribute.name }}</td>
+                <td>{{ 'catalog.attributes.type.' + attribute.dataType | translate }}</td>
+                <td>{{ optionsText(attribute) }}</td>
+                <td>{{ (attribute.required ? 'common.yes' : 'common.no') | translate }}</td>
+                <td>{{ attribute.sortOrder }}</td>
+                <td>
+                  <span class="badge" [class.text-bg-success]="attribute.active" [class.text-bg-secondary]="!attribute.active">
+                    {{ (attribute.active ? 'common.active' : 'common.inactive') | translate }}
+                  </span>
+                </td>
+                <td class="text-end text-nowrap">
+                  @if (isCentral()) {
+                    <button *appIfPrivilege="'PUT_CATEGORIES_ID_ATTRIBUTES_ATTRIBUTEID'" type="button"
+                      class="btn btn-sm btn-outline-secondary" [disabled]="editing() !== null" (click)="startEdit(attribute)">
+                      {{ 'common.edit' | translate }}
+                    </button>
+                    @if (attribute.active) {
+                      <button *appIfPrivilege="'DELETE_CATEGORIES_ID_ATTRIBUTES_ATTRIBUTEID'" type="button"
+                        class="btn btn-sm btn-outline-danger ms-1" [disabled]="editing() !== null" (click)="deactivate(attribute)">
+                        {{ 'common.deactivate' | translate }}
+                      </button>
+                    }
+                  }
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr>
+              <td colspan="8" class="text-center text-body-secondary">
+                {{ (loading() ? 'common.loading' : 'catalog.attributes.empty') | translate }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </form>
+}
