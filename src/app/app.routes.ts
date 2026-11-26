@@ -261,6 +261,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/inventory/serials/serial-search').then((module) => module.SerialSearchComponent),
   },
+  {
+    path: 'inventory/equipment-loads/new',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/equipment-loads/equipment-load-page').then(
+        (module) => module.EquipmentLoadPageComponent,
+      ),
+  },
   // Cualquier otra dirección: página no encontrada, solo para usuarios con sesión.
   {
     path: '**',

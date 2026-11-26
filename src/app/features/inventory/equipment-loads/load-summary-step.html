@@ -1,0 +1,43 @@
+<dl class="row mb-4">
+  <dt class="col-sm-3">{{ 'equipment.load.product' | translate }}</dt>
+  <dd class="col-sm-9">
+    @if (store.product(); as product) {
+      <span class="font-monospace me-2">{{ product.sku }}</span>{{ product.name }}
+    } @else {
+      —
+    }
+  </dd>
+
+  <dt class="col-sm-3">{{ 'inventory.documents.field.branch' | translate }}</dt>
+  <dd class="col-sm-9">{{ store.branchName() ?? '—' }}</dd>
+
+  <dt class="col-sm-3">{{ 'inventory.documents.column.unitCost' | translate }}</dt>
+  <dd class="col-sm-9 font-monospace">{{ unitCost() }}</dd>
+
+  <dt class="col-sm-3">{{ 'inventory.documents.field.notes' | translate }}</dt>
+  <dd class="col-sm-9">{{ notes() }}</dd>
+
+  <dt class="col-sm-3">{{ 'equipment.load.summary.count' | translate }}</dt>
+  <dd class="col-sm-9 mb-0" data-testid="equipment-summary-count">{{ store.rows().length }}</dd>
+</dl>
+
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'equipment.load.column.serial' | translate }}</th>
+        <th scope="col">{{ 'equipment.load.column.externalCode' | translate }}</th>
+        <th scope="col">{{ 'equipment.load.column.characteristics' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of store.rows(); track row.key) {
+        <tr>
+          <td class="font-monospace">{{ row.serialNumber }}</td>
+          <td class="font-monospace">{{ row.externalCode || '—' }}</td>
+          <td>{{ summaryOf(row) || '—' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

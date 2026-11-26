@@ -1,0 +1,41 @@
+<div class="row g-3" [formGroup]="form">
+  @if (isCentral()) {
+    <div class="col-12 col-md-6">
+      <app-field-label targetId="load-branch" [required]="true">{{ 'inventory.documents.field.branch' | translate }}</app-field-label>
+      <select id="load-branch" class="form-select" formControlName="branchId" [class.is-invalid]="isInvalid(form.controls.branchId)">
+        <option [ngValue]="null">{{ 'common.select' | translate }}</option>
+        @for (branch of branchOptions(); track branch.id) {
+          <option [ngValue]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+        }
+      </select>
+      <app-field-error [control]="form.controls.branchId" />
+    </div>
+  }
+  <app-problem-alert [error]="store.lookupError()" />
+
+  <div class="col-12">
+    <app-field-label targetId="load-product-search" [required]="true">{{ 'equipment.load.product' | translate }}</app-field-label>
+    <app-product-picker inputId="load-product-search" [selected]="store.product()" (productPicked)="pickProduct($event)" />
+    <div class="form-text">{{ 'equipment.load.productHint' | translate }}</div>
+    @if (productMessage(); as key) {
+      <div class="small text-danger mt-1" role="alert">{{ key | translate }}</div>
+    }
+    @if (store.attributesLoading()) {
+      <div class="small text-body-secondary mt-1">{{ 'common.loading' | translate }}</div>
+    }
+    <app-problem-alert [error]="store.attributesError()" />
+  </div>
+
+  <div class="col-12 col-md-4">
+    <app-field-label targetId="load-unit-cost" [required]="true">{{ 'inventory.documents.column.unitCost' | translate }}</app-field-label>
+    <input id="load-unit-cost" type="text" inputmode="decimal" class="form-control font-monospace" autocomplete="off"
+      formControlName="unitCost" [class.is-invalid]="isInvalid(form.controls.unitCost)" />
+    <app-field-error [control]="form.controls.unitCost" invalidKey="validation.amount" />
+  </div>
+
+  <div class="col-12">
+    <app-field-label targetId="load-notes">{{ 'inventory.documents.field.notes' | translate }}</app-field-label>
+    <textarea id="load-notes" class="form-control" rows="2" formControlName="notes"></textarea>
+    <app-field-error [control]="form.controls.notes" />
+  </div>
+</div>

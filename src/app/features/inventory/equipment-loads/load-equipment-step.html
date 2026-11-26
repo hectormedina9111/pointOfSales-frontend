@@ -1,0 +1,111 @@
+<app-field-label targetId="load-scan" [required]="true">{{ 'equipment.load.scan.label' | translate }}</app-field-label>
+<input id="load-scan" type="text" class="form-control font-monospace" autocomplete="off" style="max-width: 24rem;"
+  [disabled]="store.product() === null" [placeholder]="'equipment.load.scan.placeholder' | translate"
+  (keydown.enter)="scan($event)" />
+<div class="form-text">
+  {{ (store.product() === null ? 'equipment.load.scan.needProduct' : 'equipment.load.scan.hint') | translate }}
+</div>
+@if (lineMessage(); as key) {
+  <div class="small text-danger mt-1" role="alert">{{ key | translate }}</div>
+}
+
+<app-problem-alert [error]="store.attributesError()" />
+
+<div class="card mt-4">
+  <div class="card-body">
+    <app-field-label targetId="load-csv-file">{{ 'equipment.csv.label' | translate }}</app-field-label>
+    <input id="load-csv-file" type="file" class="form-control" accept=".csv,text/csv" [disabled]="csvBusy() || store.product() === null"
+      (change)="onCsvSelected($event)" />
+    <div class="form-text">{{ 'equipment.csv.hint' | translate }}</div>
+
+    @if (csvBusy()) {
+      <div class="small text-body-secondary mt-2" role="status">{{ 'common.loading' | translate }}</div>
+    }
+    @if (csvResult(); as result) {
+      @if (result.header !== null) {
+        <div class="alert alert-danger py-2 mt-2 mb-0" role="alert">{{ result.header }}</div>
+      } @else if (result.empty) {
+        <div class="alert alert-warning py-2 mt-2 mb-0" role="alert">{{ 'equipment.csv.empty' | translate }}</div>
+      } @else {
+        <div class="small mt-2" role="status" data-testid="equipment-csv-added">
+          {{ 'equipment.csv.imported' | translate: { count: result.added } }}
+        </div>
+        @if (result.issues.length > 0) {
+          <ul class="small text-danger mt-2 mb-0 ps-3" data-testid="equipment-csv-issues">
+            @for (issue of result.issues; track $index) {
+              <li>{{ issue.text }}</li>
+            }
+          </ul>
+        }
+      }
+    }
+  </div>
+</div>
+
+<div class="mt-4">
+  <p class="small text-body-secondary mb-2" data-testid="equipment-count">
+    {{ 'equipment.load.count' | translate: { count: store.rows().length } }}
+  </p>
+  @if (store.rows().length === 0) {
+    <p class="text-body-secondary mb-0">{{ 'equipment.load.empty' | translate }}</p>
+  } @else {
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'equipment.load.column.serial' | translate }}</th>
+            <th scope="col">{{ 'equipment.load.column.externalCode' | translate }}</th>
+            @for (attribute of store.activeAttributes(); track attribute.id) {
+              <th scope="col">
+                {{ attribute.name }}
+                @if (attribute.required) {
+                  <span class="text-danger ms-1" aria-hidden="true">*</span>
+                  <span class="visually-hidden"> ({{ 'form.requiredHint' | translate }})</span>
+                }
+              </th>
+            }
+            <th scope="col"><span class="visually-hidden">{{ 'common.actions' | translate }}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of store.rows(); track row.key) {
+            @let issue = issueOf(row);
+            <tr>
+              <td style="min-width: 10rem;">
+                <input type="text" class="form-control form-control-sm font-monospace" autocomplete="off"
+                  [attr.aria-label]="'equipment.load.column.serial' | translate" [value]="row.serialNumber"
+                  [class.is-invalid]="!!issue?.serial" (change)="serialChanged(row, $event)" />
+                @if (issue?.serial; as key) {
+                  <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                }
+              </td>
+              <td style="min-width: 10rem;">
+                <input type="text" class="form-control form-control-sm font-monospace" autocomplete="off"
+                  [attr.aria-label]="'equipment.load.column.externalCode' | translate" [value]="row.externalCode"
+                  [class.is-invalid]="!!issue?.externalCode" (change)="externalCodeChanged(row, $event)" />
+                @if (issue?.externalCode; as key) {
+                  <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                }
+              </td>
+              @for (attribute of store.activeAttributes(); track attribute.id) {
+                <td style="min-width: 9rem;">
+                  <app-equipment-attribute-field [inputId]="'load-' + row.key + '-' + attribute.code" [attribute]="attribute"
+                    [value]="textOf(row, attribute.code)" [invalid]="!!issue?.attributes[attribute.code]" [showLabel]="false"
+                    (valueChange)="attributeChanged(row, attribute.code, $event)" />
+                  @if (issue?.attributes[attribute.code]; as key) {
+                    <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                  }
+                </td>
+              }
+              <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="store.removeRow(row.key)">
+                  {{ 'equipment.load.remove' | translate }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
