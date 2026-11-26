@@ -49,28 +49,6 @@ export interface SerialMovementView {
   readonly referenceNumber: string | null;
 }
 
-/**
- * Rastreo de un serial (record SerialTraceView). Varios productos pueden compartir el mismo número,
- * así que la búsqueda por número devuelve una fila por producto.
- */
-export interface SerialTraceView {
-  readonly id: number;
-  readonly productId: number;
-  readonly productSku: string;
-  readonly productName: string;
-  readonly serialNumber: string;
-  readonly status: SerialStatus;
-  readonly branchId: number;
-  readonly branchName: string;
-  readonly receivedAt: string | null;
-  readonly soldAt: string | null;
-  readonly saleId: number | null;
-  readonly saleReceiptNumber: string | null;
-  readonly externalCode: string | null;
-  readonly attributes: AttributeValues;
-  readonly movements: readonly SerialMovementView[];
-}
-
 /** Filtros de los seriales de un producto. Un valor null no filtra. */
 export interface ProductSerialFilters {
   readonly status: SerialStatus | null;
@@ -79,7 +57,7 @@ export interface ProductSerialFilters {
 }
 
 /**
- * Llamadas a los seriales: /api/v1/products/{id}/serials y /api/v1/serials. Escrito a mano hasta que
+ * Llamadas a los seriales: /api/v1/products/{id}/serials. Escrito a mano hasta que
  * `npm run api:update` genere src/app/api a partir del OpenAPI del backend.
  */
 @Injectable({ providedIn: 'root' })
@@ -99,14 +77,5 @@ export class SerialsApi {
       params = params.set('search', filters.search);
     }
     return this.http.get<Page<ProductSerialView>>(`/api/v1/products/${productId}/serials`, { params });
-  }
-
-  /** Rastreo de un número de serie. productId es opcional: sin él, una fila por cada producto con ese número. */
-  trace(serialNumber: string, productId: number | null): Observable<readonly SerialTraceView[]> {
-    let params = new HttpParams().set('serialNumber', serialNumber);
-    if (productId !== null) {
-      params = params.set('productId', productId);
-    }
-    return this.http.get<readonly SerialTraceView[]>('/api/v1/serials', { params });
   }
 }
