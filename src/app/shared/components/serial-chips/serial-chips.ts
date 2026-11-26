@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, catchError, debounceTime, map, of, switchMap } from 'rxjs';
 
 import { ProductSerialView, SerialsApi } from '../../../core/api/serials-api';
+import { attributeSummary } from '../../equipment/attribute-summary';
 import { FieldLabelComponent } from '../field-label/field-label';
 import { ProblemAlertComponent } from '../problem-alert/problem-alert';
 import { TranslatePipe } from '../../pipes/translate.pipe';
@@ -17,8 +18,9 @@ const PICK_SIZE = 20;
 /**
  * Captura de seriales en chips. Enter (o un lector de código) agrega el serial escrito; cada chip se
  * puede quitar. Si se indica pickProductId, un botón abre la lista de seriales disponibles del
- * producto, buscada en el servidor. El padre decide qué hacer con cada serial: el componente solo
- * evita repetirlo dentro de la misma lista.
+ * producto, buscada en el servidor; cada serial de esa lista muestra su código externo y sus
+ * características. El padre decide qué hacer con cada serial: el componente solo evita repetirlo
+ * dentro de la misma lista.
  */
 @Component({
   selector: 'app-serial-chips',
@@ -116,6 +118,11 @@ export class SerialChipsComponent {
     if (next) {
       this.pickQuery.next(this.pickSearch.value);
     }
+  }
+
+  /** Código externo y resumen de características, al lado de cada serial de la lista. */
+  protected summary(item: ProductSerialView): string {
+    return attributeSummary(item.attributes);
   }
 
   protected pick(serial: string): void {
