@@ -5,7 +5,7 @@ import { startWith } from 'rxjs';
 
 import { AttributeView, CategoriesApi } from '../../../core/api/categories-api';
 import { BranchView, BranchesApi } from '../../../core/api/branches-api';
-import { EquipmentApi, EquipmentLoadRequest } from '../../../core/api/equipment-api';
+import { EquipmentLoadRequest } from '../../../core/api/equipment-api';
 import { ProductView } from '../../../core/api/products-api';
 import { listAllPages } from '../../../core/api/page';
 import { SystemInfoService } from '../../../core/system/system-info.service';
@@ -58,7 +58,6 @@ export interface ImportResult {
 @Injectable()
 export class EquipmentLoadStore {
   private readonly fb = inject(NonNullableFormBuilder);
-  private readonly equipment = inject(EquipmentApi);
   private readonly categoriesApi = inject(CategoriesApi);
   private readonly branchesApi = inject(BranchesApi);
   private readonly systemInfo = inject(SystemInfoService);
