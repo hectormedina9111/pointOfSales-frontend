@@ -256,10 +256,26 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'inventory/serials',
+    path: 'inventory/equipment',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/inventory/serials/serial-search').then((module) => module.SerialSearchComponent),
+      import('./features/inventory/equipment/equipment-list').then((module) => module.EquipmentListComponent),
+  },
+  {
+    path: 'inventory/equipment/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/equipment/equipment-detail-page').then(
+        (module) => module.EquipmentDetailPageComponent,
+      ),
+  },
+  // Los seriales pasaron a equipos: la búsqueda por número sigue funcionando desde el enlace antiguo.
+  {
+    path: 'inventory/serials',
+    redirectTo: ({ queryParams }) => {
+      const serial = String(queryParams['serialNumber'] ?? '').trim();
+      return serial === '' ? '/inventory/equipment' : `/inventory/equipment?search=${encodeURIComponent(serial)}`;
+    },
   },
   {
     path: 'inventory/equipment-loads/new',
