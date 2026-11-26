@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Observable, catchError, forkJoin, map, of } from 'rxjs';
 
 import { ProductView, ProductsApi } from '../../../../core/api/products-api';
@@ -46,7 +47,7 @@ interface ResolvedRow {
  */
 @Component({
   selector: 'app-document-lines-step',
-  imports: [ProblemAlertComponent, FieldLabelComponent, ProductPickerComponent, SerialChipsComponent, TranslatePipe],
+  imports: [ProblemAlertComponent, FieldLabelComponent, ProductPickerComponent, RouterLink, SerialChipsComponent, TranslatePipe],
   templateUrl: './document-lines-step.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -75,7 +76,20 @@ export class DocumentLinesStepComponent {
     return differenceText(line);
   }
 
+  /** Producto con serie que se intentó agregar a una entrada: no entra por aquí, sino por la carga de equipos. */
+  protected readonly serialEntryProduct = signal<ProductView | null>(null);
+
+  /**
+   * Un producto con serie no se agrega a una entrada general: sus unidades entran con la carga de equipos,
+   * que pide las características de cada una. El aviso lleva a la carga con el producto ya elegido.
+   */
   protected addProduct(product: ProductView): void {
+    if (product.tracksSerials && this.draft.type() === 'ENTRY') {
+      this.lineMessage.set(null);
+      this.serialEntryProduct.set(product);
+      return;
+    }
+    this.serialEntryProduct.set(null);
     this.lineMessage.set(this.draft.addProduct(product) ? null : 'inventory.lines.duplicate');
   }
 

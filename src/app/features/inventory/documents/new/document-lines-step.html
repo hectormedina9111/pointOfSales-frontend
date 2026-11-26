@@ -5,6 +5,12 @@
 @if (lineMessage(); as key) {
   <div class="alert alert-warning py-2 mt-2 mb-0" role="alert">{{ key | translate }}</div>
 }
+@if (serialEntryProduct(); as product) {
+  <div class="alert alert-info py-2 mt-2 mb-0" role="alert" data-testid="serial-entry-redirect">
+    {{ 'inventory.lines.serialEntry' | translate: { sku: product.sku } }}
+    <a [routerLink]="['/inventory/equipment-loads/new']" [queryParams]="{ productId: product.id }">{{ 'inventory.lines.serialEntryLink' | translate }}</a>
+  </div>
+}
 <app-problem-alert [error]="draft.lookupError()" />
 
 @if (isEntry()) {

@@ -1393,6 +1393,8 @@
   "inventory.lines.invalidQuantity": "Escribe una cantidad mayor que cero, con hasta 3 decimales.",
   "inventory.lines.invalidCount": "Escribe la cantidad contada: cero o más, con hasta 3 decimales.",
   "inventory.lines.invalidCost": "Escribe un costo unitario con hasta 2 decimales, por ejemplo 12.50.",
+  "inventory.lines.serialEntry": "{sku} controla números de serie: sus unidades entran con una carga de equipos, no con una entrada general.",
+  "inventory.lines.serialEntryLink": "Ir a la carga de equipos",
   "inventory.lines.empty": "Agrega al menos un producto.",
   "inventory.lines.current": "Actual",
   "inventory.lines.remove": "Quitar",

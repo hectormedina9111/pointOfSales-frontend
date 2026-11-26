@@ -1393,6 +1393,8 @@
   "inventory.lines.invalidQuantity": "Enter a quantity greater than zero, with up to 3 decimals.",
   "inventory.lines.invalidCount": "Enter the counted quantity: zero or more, with up to 3 decimals.",
   "inventory.lines.invalidCost": "Enter a unit cost with up to 2 decimals, for example 12.50.",
+  "inventory.lines.serialEntry": "{sku} tracks serial numbers: its units enter through an equipment load, not a general entry.",
+  "inventory.lines.serialEntryLink": "Go to the equipment load",
   "inventory.lines.empty": "Add at least one product.",
   "inventory.lines.current": "Current",
   "inventory.lines.remove": "Remove",
