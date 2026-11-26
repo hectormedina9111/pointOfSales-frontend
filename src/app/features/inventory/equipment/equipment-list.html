@@ -61,6 +61,28 @@
 <app-problem-alert [error]="equipment.error()" />
 <app-problem-alert [error]="lookupError()" />
 
+<app-problem-alert [error]="manualSalesError()" />
+
+@if (manualSales().length > 0) {
+  <div class="card mb-3" data-testid="manual-serials">
+    <div class="card-header small fw-semibold">{{ 'inventory.equipment.manual.title' | translate }}</div>
+    <ul class="list-group list-group-flush">
+      @for (row of manualSales(); track row.id) {
+        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div>
+            <span class="font-monospace fw-semibold me-2">{{ row.serialNumber }}</span>
+            <span class="small text-body-secondary">{{ row.productSku }} · {{ row.productName }}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge text-bg-info">{{ 'inventory.equipment.manual.badge' | translate }}</span>
+            <a [routerLink]="['/sales/orders', row.saleId]">{{ row.saleReceiptNumber ?? row.saleId }}</a>
+          </div>
+        </li>
+      }
+    </ul>
+  </div>
+}
+
 <p class="small text-body-secondary mb-2" data-testid="equipment-total">
   {{ 'inventory.equipment.count' | translate: { count: equipment.total() } }}
 </p>

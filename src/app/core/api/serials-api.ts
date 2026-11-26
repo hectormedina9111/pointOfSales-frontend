@@ -49,6 +49,31 @@ export interface SerialMovementView {
   readonly referenceNumber: string | null;
 }
 
+/**
+ * Origen de un resultado de búsqueda por serial: EQUIPMENT es un equipo de serie de lista; SALE es una
+ * serie manual que se registró al facturar.
+ */
+export type SerialSource = 'EQUIPMENT' | 'SALE';
+
+/**
+ * Resultado de buscar un número de serie (record SerialSearchView). Una fila por producto con ese número.
+ * Una serie SALE trae la venta donde se registró; una EQUIPMENT trae su id de equipo.
+ */
+export interface SerialSearchView {
+  readonly id: number;
+  readonly productId: number;
+  readonly productSku: string;
+  readonly productName: string;
+  readonly serialNumber: string;
+  readonly status: SerialStatus;
+  readonly branchId: number;
+  readonly branchName: string;
+  readonly soldAt: string | null;
+  readonly saleId: number | null;
+  readonly saleReceiptNumber: string | null;
+  readonly source: SerialSource;
+}
+
 /** Filtros de los seriales de un producto. Un valor null no filtra. */
 export interface ProductSerialFilters {
   readonly status: SerialStatus | null;
@@ -63,6 +88,13 @@ export interface ProductSerialFilters {
 @Injectable({ providedIn: 'root' })
 export class SerialsApi {
   private readonly http = inject(HttpClient);
+
+  /** Búsqueda por número de serie en todas las sucursales que ve el nodo. Lista sin paginar. */
+  searchBySerial(serialNumber: string): Observable<readonly SerialSearchView[]> {
+    return this.http.get<readonly SerialSearchView[]>('/api/v1/serials', {
+      params: new HttpParams().set('serialNumber', serialNumber),
+    });
+  }
 
   /** Seriales de un producto, paginados. La tienda ve los de su sucursal; el servidor lo decide si no se indica sucursal. */
   forProduct(productId: number, request: PageRequest, filters: ProductSerialFilters): Observable<Page<ProductSerialView>> {

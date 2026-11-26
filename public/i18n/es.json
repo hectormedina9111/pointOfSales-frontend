@@ -1253,6 +1253,8 @@
   "inventory.stock.detail.movements": "Movimientos",
   "inventory.equipment.title": "Equipos",
   "inventory.equipment.intro": "Unidades con número de serie, con sus características y su código externo.",
+  "inventory.equipment.manual.title": "Manual serials sold with that number",
+  "inventory.equipment.manual.badge": "Manual serial",
   "inventory.equipment.load": "Cargar equipos",
   "inventory.equipment.filter.search": "Serie o código externo",
   "inventory.equipment.filter.product": "Producto",
