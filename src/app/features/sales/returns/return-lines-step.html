@@ -27,7 +27,7 @@
             <td class="text-end font-monospace">{{ line.returnedQuantity.toFixed(3) }}</td>
             <td class="text-end font-monospace">{{ line.returnableQuantity.toFixed(3) }}</td>
             <td>
-              @if (line.tracksSerials) {
+              @if (store.usesSerials(line)) {
                 <input type="text" inputmode="decimal" class="form-control form-control-sm text-end font-monospace"
                   style="width: 9rem;" readonly [formControl]="store.lineControl(i)"
                   [attr.aria-label]="'sales.return.lines.quantity' | translate" />

@@ -28,6 +28,7 @@ import {
   thousandthsToQuantity,
 } from '../../../shared/forms/amounts';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { isEquipmentSerial, needsSerialPerUnit } from '../../../shared/serials/serial-mode';
 import { DiscountChoice, DiscountFormComponent } from '../shared/discount-form';
 import { PriceChangeFormComponent } from './price-change-form';
 import { CartLine, OrderDraftStore } from './order-draft.store';
@@ -106,6 +107,16 @@ export class OrderProductsStepComponent {
 
   protected quantityText(line: CartLine): string {
     return thousandthsToQuantity(line.quantity);
+  }
+
+  /** Una serie por unidad (manual o de lista): la línea muestra chips y la cantidad sale de ellos. */
+  protected usesSerials(line: CartLine): boolean {
+    return needsSerialPerUnit(line.serialMode);
+  }
+
+  /** Solo la serie de lista ofrece la lista de equipos disponibles; la manual se escribe libre. */
+  protected pickProductIdOf(line: CartLine): number | null {
+    return isEquipmentSerial(line.serialMode) ? line.productId : null;
   }
 
   /** Existencia del producto en la sucursal, o null si no controla inventario o aún no llega. */

@@ -72,7 +72,12 @@
         <tr>
           <td class="fw-semibold font-monospace">{{ product.sku }}</td>
           <td class="font-monospace">{{ product.barcode }}</td>
-          <td>{{ product.name }}</td>
+          <td>
+            {{ product.name }}
+            @if (serialBadgeKey(product); as key) {
+              <span class="badge text-bg-info ms-1">{{ key | translate }}</span>
+            }
+          </td>
           <td>{{ categoryName(product.categoryId) }}</td>
           <td class="text-end font-monospace">{{ formatAmount(product.salePrice) }}</td>
           <td>{{ 'catalog.products.type.' + product.productType | translate }}</td>

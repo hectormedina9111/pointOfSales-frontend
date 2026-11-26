@@ -9,11 +9,13 @@ import {
   ReturnQuoteRequest,
   ReturnQuoteView,
   ReturnRequest,
+  ReturnableLineView,
   ReturnableView,
   SalesApi,
 } from '../../../core/api/sales-api';
 import { numberToCents, numberToThousandths, thousandthsToQuantity } from '../../../shared/forms/amounts';
 import { randomUuid } from '../../../shared/ids/random-uuid';
+import { needsSerialPerUnit } from '../../../shared/serials/serial-mode';
 import {
   RefundDraft,
   RefundOption,
@@ -165,10 +167,15 @@ export class ReturnDraftStore {
     return this.linesControl.at(index);
   }
 
+  /** Verdadero si la línea devuelve series elegidas (manual o de lista) en vez de solo cantidad. */
+  usesSerials(line: ReturnableLineView): boolean {
+    return needsSerialPerUnit(line.serialMode);
+  }
+
   /** Pone en cada línea lo que todavía se puede devolver. Un producto con seriales devuelve todos sus seriales disponibles. */
   returnAll(): void {
     this.returnable()?.lines.forEach((line, index) => {
-      if (line.tracksSerials) {
+      if (this.usesSerials(line)) {
         this.setSerialSelection(index, line.returnableSerialNumbers);
         return;
       }
@@ -297,7 +304,7 @@ export class ReturnDraftStore {
         {
           saleLineId: line.saleLineId,
           quantity: thousandthsToQuantity(thousandths),
-          ...(line.tracksSerials ? { serialNumbers: [...this.chosenSerials(index)] } : {}),
+          ...(this.usesSerials(line) ? { serialNumbers: [...this.chosenSerials(index)] } : {}),
         },
       ];
     });

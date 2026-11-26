@@ -2,14 +2,14 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap, Params, Router, RouterLink } from '@angular/router';
-import { debounceTime } from 'rxjs';
+import { Observable, Subject, catchError, debounceTime, map, of, switchMap } from 'rxjs';
 
 import { BranchView, BranchesApi } from '../../../core/api/branches-api';
 import { CategoriesApi, CategoryView } from '../../../core/api/categories-api';
 import { EquipmentApi, EquipmentFilters, EquipmentView } from '../../../core/api/equipment-api';
 import { listAllPages } from '../../../core/api/page';
 import { ProductView, ProductsApi } from '../../../core/api/products-api';
-import { SerialStatus } from '../../../core/api/serials-api';
+import { SerialSearchView, SerialStatus, SerialsApi } from '../../../core/api/serials-api';
 import { SystemInfoService } from '../../../core/system/system-info.service';
 import { FieldLabelComponent } from '../../../shared/components/field-label/field-label';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination';
@@ -121,6 +121,7 @@ export class EquipmentListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly systemInfo = inject(SystemInfoService);
+  private readonly serials = inject(SerialsApi);
 
   protected readonly isCentral = this.systemInfo.isCentral;
   protected readonly statuses = STATUSES;
@@ -144,6 +145,10 @@ export class EquipmentListComponent implements OnInit {
   protected readonly categories = signal<readonly CategoryView[]>([]);
   protected readonly branches = signal<readonly BranchView[]>([]);
   protected readonly lookupError = signal<unknown>(null);
+  /** Series manuales vendidas que coinciden con la búsqueda (las de equipo ya están en la tabla). */
+  protected readonly manualSales = signal<readonly SerialSearchView[]>([]);
+  protected readonly manualSalesError = signal<unknown>(null);
+  private readonly manualSearch = new Subject<string>();
 
   private readonly branchMap = computed(
     () => new Map(this.branches().map((branch) => [branch.id, branch] as const)),
@@ -153,6 +158,14 @@ export class EquipmentListComponent implements OnInit {
     this.filterForm.valueChanges
       .pipe(debounceTime(FILTER_DEBOUNCE_MS), takeUntilDestroyed())
       .subscribe(() => this.navigateTo(this.formQuery()));
+
+    // Antes que la ruta: los parámetros iniciales emiten de inmediato y disparan la búsqueda de series.
+    this.manualSearch
+      .pipe(
+        switchMap((text) => this.findManualSales(text)),
+        takeUntilDestroyed(),
+      )
+      .subscribe((rows) => this.manualSales.set(rows));
 
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => this.onParams(params));
   }
@@ -224,7 +237,26 @@ export class EquipmentListComponent implements OnInit {
       );
     }
     this.loadSelectedProduct(next.productId);
+    this.manualSearch.next(next.search);
     this.equipment.restart();
+  }
+
+  /**
+   * Busca el número en la búsqueda de seriales y deja solo las series manuales (SALE): se muestran con
+   * su venta. Un error se muestra aparte y la tabla de equipos sigue igual.
+   */
+  private findManualSales(text: string): Observable<readonly SerialSearchView[]> {
+    this.manualSalesError.set(null);
+    if (text === '') {
+      return of([]);
+    }
+    return this.serials.searchBySerial(text).pipe(
+      map((rows) => rows.filter((row) => row.source === 'SALE')),
+      catchError((error: unknown) => {
+        this.manualSalesError.set(error);
+        return of([]);
+      }),
+    );
   }
 
   /** Nombra el producto del filtro. Un id que no existe deja el filtro sin nombre y avisa. */

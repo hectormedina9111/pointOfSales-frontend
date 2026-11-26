@@ -141,14 +141,21 @@
                 <label class="form-check-label" for="product-tracks-inventory">{{ 'catalog.products.field.tracksInventory' | translate }}</label>
               </div>
               <div class="form-check">
-                <input id="product-tracks-serials" type="checkbox" class="form-check-input" formControlName="tracksSerials" />
-                <label class="form-check-label" for="product-tracks-serials">{{ 'catalog.products.field.tracksSerials' | translate }}</label>
-                <div class="form-text mt-0">{{ 'catalog.products.hint.serials' | translate }}</div>
-              </div>
-              <div class="form-check">
                 <input id="product-exclusive-invoice" type="checkbox" class="form-check-input" formControlName="requiresExclusiveInvoice" />
                 <label class="form-check-label" for="product-exclusive-invoice">{{ 'catalog.products.field.requiresExclusiveInvoice' | translate }}</label>
               </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <app-field-label targetId="product-serial-mode" [required]="true">{{ 'catalog.products.field.serialMode' | translate }}</app-field-label>
+              <select id="product-serial-mode" class="form-select" formControlName="serialMode"
+                [class.is-invalid]="isInvalid(form.controls.serialMode)">
+                @for (mode of serialModes; track mode) {
+                  <option [value]="mode">{{ 'catalog.products.serialMode.' + mode | translate }}</option>
+                }
+              </select>
+              <app-field-error [control]="form.controls.serialMode" invalidKey="error.SERIALS_REQUIRE_WHOLE_UNIT" />
+              <div class="form-text">{{ serialModeHintKey() | translate }}</div>
             </div>
 
             <div class="col-12 col-md-6">

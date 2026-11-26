@@ -17,6 +17,7 @@ import { AMOUNT_PATTERN, numberToThousandths, thousandthsToQuantity } from '../.
 import { blankToNull } from '../../../../shared/forms/form-values';
 import { randomUuid } from '../../../../shared/ids/random-uuid';
 import { branchLabel } from '../../../../shared/stores/branch-label';
+import { isEquipmentSerial } from '../../../../shared/serials/serial-mode';
 
 /** Largo máximo del motivo, igual que en el backend. */
 export const REASON_MAX = 200;
@@ -144,10 +145,10 @@ export class DocumentDraftStore {
       sku: row.product.sku,
       name: row.product.name,
       // Un producto con seriales empieza sin seriales: su cantidad llega con cada uno.
-      value: row.product.tracksSerials ? 0 : row.value,
+      value: isEquipmentSerial(row.product.serialMode) ? 0 : row.value,
       unitCost: row.unitCost,
       currentQuantity: null,
-      tracksSerials: row.product.tracksSerials,
+      tracksSerials: isEquipmentSerial(row.product.serialMode),
       serials: [],
     }));
     this.lines.update((current) => [...current, ...added]);
@@ -210,7 +211,7 @@ export class DocumentDraftStore {
           quantity: adjustment ? null : quantity,
           countedQuantity: adjustment ? quantity : null,
           unitCost: raw.type === 'ENTRY' ? blankToNull(line.unitCost) : null,
-          // Un serial por unidad: solo los productos que controlan seriales lo envían.
+          // Un serial por unidad: solo los productos de serie de lista (equipos) lo envían.
           ...(line.tracksSerials ? { serialNumbers: [...line.serials] } : {}),
         };
       }),
