@@ -4,7 +4,7 @@ import { AbstractControl, FormControl, ValidationErrors, Validators } from '@ang
 import { EMPTY, Observable, Subject, catchError, debounceTime, switchMap, tap } from 'rxjs';
 
 import { CustomerDocumentType, CustomerView } from '../../../core/api/customers-api';
-import { ProductView } from '../../../core/api/products-api';
+import { ProductView, SerialMode } from '../../../core/api/products-api';
 import {
   AuthorizationRequest,
   DiscountType,
@@ -16,6 +16,7 @@ import {
   SalesApi,
 } from '../../../core/api/sales-api';
 import { numberToThousandths, thousandthsToQuantity } from '../../../shared/forms/amounts';
+import { needsSerialPerUnit } from '../../../shared/serials/serial-mode';
 import { DiscountChoice } from '../shared/discount-form';
 
 /** Pausa tras el último cambio antes de pedir los totales, en milisegundos. */
@@ -66,8 +67,8 @@ export interface CartLine {
   readonly discountType: DiscountType | null;
   readonly discountValue: string | null;
   readonly unitPrice: number | null;
-  /** Producto que controla seriales: su cantidad es el número de seriales y no se escribe a mano. */
-  readonly tracksSerials: boolean;
+  /** Configuración de serie: con MANUAL o LIST la cantidad es el número de seriales y no se escribe a mano. */
+  readonly serialMode: SerialMode;
   readonly serialNumbers: readonly string[];
 }
 
@@ -106,7 +107,7 @@ export class OrderDraftStore {
   readonly hasLines = computed(() => this.lines().length > 0);
   /** Hay un producto con seriales sin ninguno todavía: la orden no se puede cotizar ni guardar. */
   readonly serialsIncomplete = computed(() =>
-    this.lines().some((line) => line.tracksSerials && line.serialNumbers.length === 0),
+    this.lines().some((line) => needsSerialPerUnit(line.serialMode) && line.serialNumbers.length === 0),
   );
   /** Se puede guardar: hay líneas, todos los seriales están y los totales están al día. */
   readonly readyToSave = computed(
@@ -155,7 +156,7 @@ export class OrderDraftStore {
   addProduct(product: ProductView): boolean {
     const existing = this.lines().find((line) => line.productId === product.id);
     if (existing) {
-      if (existing.tracksSerials) {
+      if (needsSerialPerUnit(existing.serialMode)) {
         return false;
       }
       this.updateLine(existing.key, (line) => ({ ...line, quantity: line.quantity + ONE_UNIT }));
@@ -169,11 +170,11 @@ export class OrderDraftStore {
         sku: product.sku,
         name: product.name,
         // Un producto con seriales empieza sin unidades: la cantidad llega con cada serial.
-        quantity: product.tracksSerials ? 0 : ONE_UNIT,
+        quantity: needsSerialPerUnit(product.serialMode) ? 0 : ONE_UNIT,
         discountType: null,
         discountValue: null,
         unitPrice: null,
-        tracksSerials: product.tracksSerials,
+        serialMode: product.serialMode,
         serialNumbers: [],
       },
     ]);
@@ -185,7 +186,7 @@ export class OrderDraftStore {
     if (thousandths <= 0) {
       return;
     }
-    this.updateLine(key, (line) => (line.tracksSerials ? line : { ...line, quantity: thousandths }));
+    this.updateLine(key, (line) => (needsSerialPerUnit(line.serialMode) ? line : { ...line, quantity: thousandths }));
   }
 
   /** Agrega un serial a la línea de un producto con seriales. La cantidad pasa a ser el número de seriales. */
@@ -255,7 +256,7 @@ export class OrderDraftStore {
         discountType: line.discountType,
         discountValue: line.discountValue === null ? null : line.discountValue.toFixed(2),
         unitPrice: line.priceOverridden ? line.unitPrice : null,
-        tracksSerials: line.serialNumbers.length > 0,
+        serialMode: line.serialMode,
         serialNumbers: [...line.serialNumbers],
       })),
     );
@@ -295,8 +296,8 @@ export class OrderDraftStore {
         discountType: line.discountType,
         discountValue: line.discountValue,
         unitPrice: line.unitPrice,
-        // Un serial por unidad: solo los productos que controlan seriales lo envían.
-        ...(line.tracksSerials ? { serialNumbers: [...line.serialNumbers] } : {}),
+        // Un serial por unidad: solo los productos con serie manual o de lista lo envían.
+        ...(needsSerialPerUnit(line.serialMode) ? { serialNumbers: [...line.serialNumbers] } : {}),
       })),
       discountType: discount.type,
       discountValue: discount.value,

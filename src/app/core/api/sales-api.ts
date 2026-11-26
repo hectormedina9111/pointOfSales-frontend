@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { CustomerDocumentType } from './customers-api';
+import { SerialMode } from './products-api';
 import { Page, PageRequest, pageParams } from './page';
 
 /**
@@ -111,6 +112,8 @@ export interface SaleLineView {
   readonly returnedQuantity: number;
   /** En una devolución, la línea de la venta original que se devuelve; null en una venta. */
   readonly originalLineId: number | null;
+  /** Configuración de serie del producto al vender: cada unidad lleva una serie si no es NONE. */
+  readonly serialMode: SerialMode;
   /** Seriales vendidos en esta línea (vacío si el producto no controla seriales). */
   readonly serialNumbers: readonly string[];
   /** Seriales de esta línea que ya volvieron en devoluciones. */
@@ -331,7 +334,9 @@ export interface ReturnableLineView {
   readonly returnableQuantity: number;
   readonly netTotal: number;
   readonly refundedAmount: number;
-  /** Verdadero si el producto controla seriales: la devolución elige cuáles vuelven. */
+  /** Configuración de serie del producto: con MANUAL o LIST la devolución elige cuáles vuelven. */
+  readonly serialMode: SerialMode;
+  /** Verdadero solo con serie de lista (derivado en el servidor). Se usa la serialMode en la web. */
   readonly tracksSerials: boolean;
   /** Seriales vendidos en la línea. */
   readonly serialNumbers: readonly string[];

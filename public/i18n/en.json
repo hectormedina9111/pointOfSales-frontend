@@ -381,6 +381,8 @@
   "error.PRODUCT_NOT_FOUND": "The product does not exist",
   "error.SERIALS_REQUIRE_INVENTORY": "Serial numbers require tracking inventory",
   "error.SERIALS_REQUIRE_WHOLE_UNIT": "Serial numbers require a unit without decimals",
+  "error.SERIALS_NOT_ALLOWED": "This product does not take serial numbers.",
+  "error.SERIAL_ALREADY_SOLD": "This serial number is already sold and has not been returned.",
   "error.SERVICE_WITH_SERIALS": "A service cannot track serial numbers",
   "error.SINGLE_COUNTRY_ONLY": "Each central server serves a single country; another one cannot be created.",
   "error.STORE_REVOKED": "The store is revoked and does not accept changes.",

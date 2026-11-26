@@ -67,20 +67,20 @@
                 @if (isShort(line)) {
                   <span class="badge text-bg-warning mt-1" data-testid="line-short-stock">{{ 'sales.pos.stock.short' | translate }}</span>
                 }
-                @if (line.tracksSerials) {
+                @if (usesSerials(line)) {
                   <div class="mt-2">
                     <app-serial-chips
                       [inputId]="'order-line-serial-' + line.key"
                       labelKey="serials.input.lineLabel"
                       [serials]="line.serialNumbers"
-                      [pickProductId]="line.productId"
+                      [pickProductId]="pickProductIdOf(line)"
                       (added)="addSerial(line, $event)"
                       (removed)="removeSerial(line, $event)" />
                   </div>
                 }
               </td>
               <td>
-                @if (line.tracksSerials) {
+                @if (usesSerials(line)) {
                   <span class="font-monospace" data-testid="serial-quantity">{{ quantityText(line) }}</span>
                 } @else {
                   <div class="input-group input-group-sm flex-nowrap" style="width: 10rem;">

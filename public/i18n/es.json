@@ -381,6 +381,8 @@
   "error.PRODUCT_NOT_FOUND": "El producto no existe",
   "error.SERIALS_REQUIRE_INVENTORY": "Los seriales requieren controlar inventario",
   "error.SERIALS_REQUIRE_WHOLE_UNIT": "Los seriales requieren una unidad sin decimales",
+  "error.SERIALS_NOT_ALLOWED": "Este producto no lleva números de serie.",
+  "error.SERIAL_ALREADY_SOLD": "Esta serie ya está vendida y no se ha devuelto.",
   "error.SERVICE_WITH_SERIALS": "Un servicio no puede controlar números de serie",
   "error.SINGLE_COUNTRY_ONLY": "Cada servidor central atiende un solo país; no se puede dar de alta otro.",
   "error.STORE_REVOKED": "La tienda está revocada y no admite cambios.",
