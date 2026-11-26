@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { AttributeValues } from './categories-api';
 import { MovementReferenceType } from './inventory-api';
 import { Page, PageRequest, pageParams } from './page';
 
@@ -31,6 +32,10 @@ export interface ProductSerialView {
   readonly branchName: string;
   readonly receivedAt: string | null;
   readonly soldAt: string | null;
+  /** Código externo del equipo (ERP u otro sistema); null si no tiene. */
+  readonly externalCode: string | null;
+  /** Características del equipo según la plantilla de su categoría. */
+  readonly attributes: AttributeValues;
 }
 
 /** Movimiento de un serial en su rastreo (record SerialMovementView). */
@@ -61,6 +66,8 @@ export interface SerialTraceView {
   readonly soldAt: string | null;
   readonly saleId: number | null;
   readonly saleReceiptNumber: string | null;
+  readonly externalCode: string | null;
+  readonly attributes: AttributeValues;
   readonly movements: readonly SerialMovementView[];
 }
 

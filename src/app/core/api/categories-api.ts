@@ -38,6 +38,12 @@ export interface AttributeView {
   readonly active: boolean;
 }
 
+/** Valor de una característica en un equipo: texto, fecha (YYYY-MM-DD) u opción como texto, o número. */
+export type AttributeValue = string | number;
+
+/** Características de un equipo: código de la característica → valor (record de los equipos). */
+export type AttributeValues = Readonly<Record<string, AttributeValue>>;
+
 /** Body de POST y PUT de una característica. El código no cambia después de creada. */
 export interface AttributeRequest {
   readonly code: string;
