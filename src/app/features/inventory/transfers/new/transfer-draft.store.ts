@@ -10,6 +10,7 @@ import { SystemInfoService } from '../../../../core/system/system-info.service';
 import { thousandthsToQuantity } from '../../../../shared/forms/amounts';
 import { blankToNull } from '../../../../shared/forms/form-values';
 import { randomUuid } from '../../../../shared/ids/random-uuid';
+import { isEquipmentSerial } from '../../../../shared/serials/serial-mode';
 
 /** Una unidad en milésimas: la cantidad inicial de una línea sin seriales. */
 const ONE_UNIT = 1000;
@@ -116,9 +117,9 @@ export class TransferDraftStore {
       productId: product.id,
       sku: product.sku,
       name: product.name,
-      value: product.tracksSerials ? 0 : ONE_UNIT,
+      value: isEquipmentSerial(product.serialMode) ? 0 : ONE_UNIT,
       originStock: null,
-      tracksSerials: product.tracksSerials,
+      tracksSerials: isEquipmentSerial(product.serialMode),
       serials: [],
     };
     this.lines.update((current) => [...current, line]);

@@ -14,6 +14,7 @@ import { countToThousandths } from '../../shared/inventory-math';
 import { DocumentDraftStore, DocumentLine, NewLine } from './document-draft.store';
 import { CsvRow, parseInventoryCsv } from './inventory-csv';
 import { currentText, differenceText, valueText } from './document-line-text';
+import { isEquipmentSerial } from '../../../../shared/serials/serial-mode';
 
 /** Productos que se piden para cada SKU del archivo; el que coincide exacto es el elegido. */
 const CSV_SEARCH_SIZE = 10;
@@ -84,7 +85,7 @@ export class DocumentLinesStepComponent {
    * que pide las características de cada una. El aviso lleva a la carga con el producto ya elegido.
    */
   protected addProduct(product: ProductView): void {
-    if (product.tracksSerials && this.draft.type() === 'ENTRY') {
+    if (isEquipmentSerial(product.serialMode) && this.draft.type() === 'ENTRY') {
       this.lineMessage.set(null);
       this.serialEntryProduct.set(product);
       return;
@@ -184,7 +185,7 @@ export class DocumentLinesStepComponent {
           issues.push(this.issue(row.line, 'inventory.csv.error.lookup'));
         } else if (product === null) {
           issues.push(this.issue(row.line, 'inventory.csv.error.unknownSku', { sku: row.sku }));
-        } else if (product.tracksSerials) {
+        } else if (isEquipmentSerial(product.serialMode)) {
           issues.push(this.issue(row.line, 'inventory.csv.error.serialProduct', { sku: row.sku }));
         } else if (seen.has(product.id) || this.draft.hasProduct(product.id)) {
           issues.push(this.issue(row.line, 'inventory.csv.error.duplicate', { sku: row.sku }));

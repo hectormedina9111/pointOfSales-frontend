@@ -20,6 +20,7 @@ import {
   attributeValues,
 } from '../shared/equipment-attributes';
 import { EquipmentCsvRow } from './equipment-csv';
+import { isEquipmentSerial } from '../../../shared/serials/serial-mode';
 
 /** Largo máximo de las notas, igual que en el backend. */
 const NOTES_MAX = 200;
@@ -154,7 +155,7 @@ export class EquipmentLoadStore {
    * seriales, o ya hay equipos cargados de otro producto (cada plantilla es distinta).
    */
   chooseProduct(product: ProductView): string | null {
-    if (!product.tracksSerials) {
+    if (!isEquipmentSerial(product.serialMode)) {
       return 'equipment.load.product.notSerialized';
     }
     if (this.product()?.id === product.id) {
