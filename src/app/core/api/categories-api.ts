@@ -19,6 +19,42 @@ export interface CategoryRequest {
   readonly active: boolean;
 }
 
+/** Tipo de dato de una característica de equipo (enum AttributeDataType del backend). */
+export type AttributeDataType = 'TEXT' | 'NUMBER' | 'DATE' | 'LIST';
+
+/**
+ * Característica que todos los equipos de una categoría llevan (record AttributeView). options solo
+ * tiene valores en tipo LIST; en los demás tipos es null.
+ */
+export interface AttributeView {
+  readonly id: number;
+  readonly categoryId: number;
+  readonly code: string;
+  readonly name: string;
+  readonly dataType: AttributeDataType;
+  readonly options: readonly string[] | null;
+  readonly required: boolean;
+  readonly sortOrder: number;
+  readonly active: boolean;
+}
+
+/** Valor de una característica en un equipo: texto, fecha (YYYY-MM-DD) u opción como texto, o número. */
+export type AttributeValue = string | number;
+
+/** Características de un equipo: código de la característica → valor (record de los equipos). */
+export type AttributeValues = Readonly<Record<string, AttributeValue>>;
+
+/** Body de POST y PUT de una característica. El código no cambia después de creada. */
+export interface AttributeRequest {
+  readonly code: string;
+  readonly name: string;
+  readonly dataType: AttributeDataType;
+  readonly options: readonly string[] | null;
+  readonly required: boolean;
+  readonly sortOrder: number;
+  readonly active: boolean;
+}
+
 /**
  * Llamadas a /api/v1/categories. Escrito a mano hasta que `npm run api:update` genere src/app/api
  * a partir del OpenAPI del backend.
@@ -42,5 +78,23 @@ export class CategoriesApi {
   /** Desactiva la categoría (DELETE no borra). Devuelve la categoría desactivada. */
   deactivate(id: number): Observable<CategoryView> {
     return this.http.delete<CategoryView>(`/api/v1/categories/${id}`);
+  }
+
+  /** Características de los equipos de la categoría, sin paginar. Incluye las inactivas. */
+  attributes(categoryId: number): Observable<readonly AttributeView[]> {
+    return this.http.get<readonly AttributeView[]>(`/api/v1/categories/${categoryId}/attributes`);
+  }
+
+  createAttribute(categoryId: number, body: AttributeRequest): Observable<AttributeView> {
+    return this.http.post<AttributeView>(`/api/v1/categories/${categoryId}/attributes`, body);
+  }
+
+  updateAttribute(categoryId: number, attributeId: number, body: AttributeRequest): Observable<AttributeView> {
+    return this.http.put<AttributeView>(`/api/v1/categories/${categoryId}/attributes/${attributeId}`, body);
+  }
+
+  /** Desactiva la característica (DELETE no borra). Los equipos conservan el valor que ya tienen. */
+  deactivateAttribute(categoryId: number, attributeId: number): Observable<AttributeView> {
+    return this.http.delete<AttributeView>(`/api/v1/categories/${categoryId}/attributes/${attributeId}`);
   }
 }

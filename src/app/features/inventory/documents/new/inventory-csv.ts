@@ -1,4 +1,5 @@
 import { AMOUNT_PATTERN, quantityToThousandths } from '../../../../shared/forms/amounts';
+import { splitCsvFields } from '../../shared/csv-fields';
 
 /** Encabezado obligatorio, en este orden. El separador puede ser coma o punto y coma. */
 const HEADER = ['sku', 'quantity', 'unitCost'] as const;
@@ -40,7 +41,7 @@ export function parseInventoryCsv(text: string): CsvParseResult {
     return { headerError: true, rows: [], errors: [] };
   }
   const separator = header.content.includes(';') ? ';' : ',';
-  const headerFields = splitFields(header.content, separator).map((field) => field.trim().toLowerCase());
+  const headerFields = splitCsvFields(header.content, separator).map((field) => field.trim().toLowerCase());
   const headerOk = headerFields.length === HEADER.length && HEADER.every((name, i) => headerFields[i] === name.toLowerCase());
   if (!headerOk) {
     return { headerError: true, rows: [], errors: [] };
@@ -49,7 +50,7 @@ export function parseInventoryCsv(text: string): CsvParseResult {
   const rows: CsvRow[] = [];
   const errors: CsvRowError[] = [];
   for (const entry of numbered.slice(1)) {
-    const fields = splitFields(entry.content, separator).map((field) => field.trim());
+    const fields = splitCsvFields(entry.content, separator).map((field) => field.trim());
     if (fields.length !== HEADER.length) {
       errors.push({ line: entry.line, key: 'inventory.csv.error.columns' });
       continue;
@@ -71,35 +72,4 @@ export function parseInventoryCsv(text: string): CsvParseResult {
     rows.push({ line: entry.line, sku, quantity, unitCost: costText === '' ? null : costText });
   }
   return { headerError: false, rows, errors };
-}
-
-/** Divide una línea en campos. Las comillas dobles protegen el separador; "" dentro de comillas es una comilla. */
-function splitFields(line: string, separator: string): string[] {
-  const fields: string[] = [];
-  let current = '';
-  let quoted = false;
-  for (let i = 0; i < line.length; i++) {
-    const char = line.charAt(i);
-    if (quoted) {
-      if (char === '"') {
-        if (line.charAt(i + 1) === '"') {
-          current += '"';
-          i++;
-        } else {
-          quoted = false;
-        }
-      } else {
-        current += char;
-      }
-    } else if (char === '"') {
-      quoted = true;
-    } else if (char === separator) {
-      fields.push(current);
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-  fields.push(current);
-  return fields;
 }

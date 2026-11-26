@@ -1,0 +1,28 @@
+@if (showLabel()) {
+  <app-field-label [targetId]="inputId()" [required]="attribute().required">{{ attribute().name }}</app-field-label>
+}
+@switch (attribute().dataType) {
+  @case ('LIST') {
+    <select class="form-select form-select-sm" [id]="inputId()" [class.is-invalid]="invalid()"
+      [attr.aria-label]="showLabel() ? null : attribute().name" (change)="onInput($event)">
+      <option value="" [selected]="value() === ''">{{ 'common.select' | translate }}</option>
+      @for (option of attribute().options ?? []; track option) {
+        <option [value]="option" [selected]="option === value()">{{ option }}</option>
+      }
+    </select>
+  }
+  @case ('NUMBER') {
+    <input type="number" step="any" class="form-control form-control-sm font-monospace" autocomplete="off"
+      [id]="inputId()" [class.is-invalid]="invalid()" [value]="value()"
+      [attr.aria-label]="showLabel() ? null : attribute().name" (input)="onInput($event)" />
+  }
+  @case ('DATE') {
+    <input type="date" class="form-control form-control-sm" [id]="inputId()" [class.is-invalid]="invalid()"
+      [value]="value()" [attr.aria-label]="showLabel() ? null : attribute().name" (input)="onInput($event)" />
+  }
+  @default {
+    <input type="text" class="form-control form-control-sm" autocomplete="off" [id]="inputId()"
+      [class.is-invalid]="invalid()" [value]="value()"
+      [attr.aria-label]="showLabel() ? null : attribute().name" (input)="onInput($event)" />
+  }
+}

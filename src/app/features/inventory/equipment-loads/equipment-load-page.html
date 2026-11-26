@@ -1,0 +1,22 @@
+<div class="mb-3">
+  <h1 class="h3 mb-1">{{ 'equipment.load.title' | translate }}</h1>
+  <p class="text-body-secondary mb-0">{{ 'equipment.load.intro' | translate }}</p>
+</div>
+
+<app-problem-alert [error]="prefillError()" />
+@if (notice(); as key) {
+  <div class="alert alert-warning py-2" role="alert">{{ key | translate }}</div>
+}
+<app-problem-alert [error]="saveError()" />
+
+<app-stepper [saving]="saving()" saveLabelKey="equipment.load.register" (finish)="save()" (cancel)="cancel()">
+  <app-step labelKey="equipment.load.step.header" [controls]="headerControls">
+    <app-load-header-step />
+  </app-step>
+  <app-step labelKey="equipment.load.step.equipment" [controls]="lineControls">
+    <app-load-equipment-step />
+  </app-step>
+  <app-step labelKey="equipment.load.step.summary" [controls]="noControls">
+    <app-load-summary-step />
+  </app-step>
+</app-stepper>

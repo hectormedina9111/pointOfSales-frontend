@@ -43,9 +43,15 @@
       } @else {
         <div class="list-group list-group-flush">
           @for (item of pickItems(); track item.id) {
-            <button type="button" class="list-group-item list-group-item-action font-monospace py-1"
+            <button type="button" class="list-group-item list-group-item-action py-1"
               [disabled]="serials().includes(item.serialNumber)" (click)="pick(item.serialNumber)">
-              {{ item.serialNumber }}
+              <span class="font-monospace">{{ item.serialNumber }}</span>
+              @if (item.externalCode; as code) {
+                <span class="small font-monospace text-body-secondary ms-2" data-testid="serial-external-code">{{ code }}</span>
+              }
+              @if (summary(item); as text) {
+                <span class="small text-body-secondary ms-2" data-testid="serial-attributes">{{ text }}</span>
+              }
             </button>
           }
         </div>

@@ -1,0 +1,143 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ 'inventory.equipment.detail.title' | translate }}</h1>
+  <button type="button" class="btn btn-outline-secondary" (click)="back()">{{ 'inventory.equipment.detail.back' | translate }}</button>
+</div>
+
+@if (equipmentId === null) {
+  <div class="alert alert-warning" role="alert">{{ 'inventory.equipment.invalidId' | translate }}</div>
+} @else {
+  @if (notice(); as key) {
+    <div class="alert alert-success" role="status">{{ key | translate }}</div>
+  }
+  <app-problem-alert [error]="loadError()" />
+
+  @if (loading()) {
+    <p class="text-body-secondary">{{ 'common.loading' | translate }}</p>
+  } @else if (equipment(); as current) {
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+          <span class="h5 font-monospace mb-0">{{ current.serialNumber }}</span>
+          <span class="badge {{ statusClass(current.status) }}">{{ 'inventory.serials.status.' + current.status | translate }}</span>
+        </div>
+        <dl class="row mb-0">
+          <dt class="col-sm-3">{{ 'inventory.serials.column.product' | translate }}</dt>
+          <dd class="col-sm-9">
+            {{ current.productName }} <span class="small font-monospace text-body-secondary">{{ current.productSku }}</span>
+          </dd>
+
+          <dt class="col-sm-3">{{ 'equipment.load.column.externalCode' | translate }}</dt>
+          <dd class="col-sm-9 font-monospace" data-testid="equipment-external-code">{{ current.externalCode ?? '—' }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.serials.column.branch' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.branchName }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.serials.detail.receivedAt' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.receivedAt ? (current.receivedAt | localDateTime) : ('common.none' | translate) }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.serials.detail.soldAt' | translate }}</dt>
+          <dd class="col-sm-9">{{ current.soldAt ? (current.soldAt | localDateTime) : ('common.none' | translate) }}</dd>
+
+          <dt class="col-sm-3">{{ 'inventory.serials.column.sale' | translate }}</dt>
+          <dd class="col-sm-9 mb-0">
+            @if (saleMovement(); as sale) {
+              @if (linkOf(sale); as link) {
+                <a [routerLink]="link">{{ sale.referenceNumber ?? sale.referenceId }}</a>
+              } @else {
+                {{ sale.referenceNumber ?? '—' }}
+              }
+            } @else {
+              {{ 'common.none' | translate }}
+            }
+          </dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h5 mb-0">{{ 'inventory.equipment.detail.characteristics' | translate }}</h2>
+          @if (!editing()) {
+            <button *appIfPrivilege="'PUT_INVENTORY_EQUIPMENT_ID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="startEdit()">
+              {{ 'common.edit' | translate }}
+            </button>
+          }
+        </div>
+
+        @if (editing()) {
+          <p class="small text-body-secondary">{{ 'inventory.equipment.detail.editHint' | translate }}</p>
+          <app-problem-alert [error]="saveError()" />
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <app-field-label targetId="equipment-external-code">{{ 'equipment.load.column.externalCode' | translate }}</app-field-label>
+              <input id="equipment-external-code" type="text" class="form-control font-monospace" autocomplete="off"
+                [value]="draftCode()" (input)="setDraftCode($event)" />
+            </div>
+            @for (attribute of activeDefinitions(); track attribute.id) {
+              <div class="col-12 col-md-6">
+                <app-equipment-attribute-field [inputId]="'equipment-attribute-' + attribute.code" [attribute]="attribute"
+                  [value]="draftText(attribute.code)" [invalid]="!!issueKey(attribute.code)"
+                  (valueChange)="setDraftText(attribute.code, $event)" />
+                @if (issueKey(attribute.code); as key) {
+                  <div class="invalid-feedback d-block">{{ key | translate }}</div>
+                }
+              </div>
+            }
+          </div>
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <button type="button" class="btn btn-outline-secondary" (click)="cancelEdit()">{{ 'common.cancel' | translate }}</button>
+            <button type="button" class="btn btn-primary" [disabled]="saving() || !canSave()" (click)="save()">
+              {{ (saving() ? 'common.saving' : 'common.save') | translate }}
+            </button>
+          </div>
+        } @else {
+          @if (characteristics().length === 0) {
+            <p class="text-body-secondary mb-0">{{ 'inventory.equipment.detail.none' | translate }}</p>
+          } @else {
+            <dl class="row mb-0" data-testid="equipment-characteristics">
+              @for (item of characteristics(); track item.id) {
+                <dt class="col-sm-4">{{ item.name }}</dt>
+                <dd class="col-sm-8">{{ item.text || '—' }}</dd>
+              }
+            </dl>
+          }
+        }
+      </div>
+    </div>
+
+    <h2 class="h5 mb-2">{{ 'inventory.serials.detail.movements' | translate }}</h2>
+    @if (current.movements.length === 0) {
+      <p class="text-body-secondary mb-0">{{ 'inventory.serials.detail.noMovements' | translate }}</p>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-sm align-middle" data-testid="equipment-movements">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'inventory.serials.movement.column.date' | translate }}</th>
+              <th scope="col">{{ 'inventory.serials.movement.column.type' | translate }}</th>
+              <th scope="col">{{ 'inventory.serials.movement.column.branch' | translate }}</th>
+              <th scope="col">{{ 'inventory.serials.movement.column.reference' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (movement of current.movements; track movement.id) {
+              <tr>
+                <td>{{ movement.movedAt | localDateTime }}</td>
+                <td>{{ 'inventory.serials.movement.' + movement.type | translate }}</td>
+                <td>{{ movement.branchName }}</td>
+                <td>
+                  @if (linkOf(movement); as link) {
+                    <a [routerLink]="link">{{ movement.referenceNumber ?? movement.referenceId }}</a>
+                  } @else {
+                    {{ movement.referenceNumber ?? '—' }}
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+}

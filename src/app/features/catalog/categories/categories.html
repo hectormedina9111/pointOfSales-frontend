@@ -45,6 +45,10 @@
             </span>
           </td>
           <td class="text-end text-nowrap">
+            <a *appIfPrivilege="'GET_CATEGORIES_ID_ATTRIBUTES'" class="btn btn-sm btn-outline-secondary me-1"
+              [routerLink]="['/catalog/categories', row.item.id, 'attributes']">
+              {{ 'catalog.categories.attributes' | translate }}
+            </a>
             @if (isCentral()) {
               <button *appIfPrivilege="'PUT_CATEGORIES_ID'" type="button" class="btn btn-sm btn-outline-secondary" (click)="edit(row.item)">
                 {{ 'common.edit' | translate }}

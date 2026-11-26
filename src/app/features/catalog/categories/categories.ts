@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { CategoriesApi, CategoryView } from '../../../core/api/categories-api';
@@ -17,7 +18,7 @@ import { CategoryFormComponent } from './category-form';
  */
 @Component({
   selector: 'app-categories',
-  imports: [TranslatePipe, ProblemAlertComponent, IfPrivilegeDirective],
+  imports: [RouterLink, TranslatePipe, ProblemAlertComponent, IfPrivilegeDirective],
   templateUrl: './categories.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

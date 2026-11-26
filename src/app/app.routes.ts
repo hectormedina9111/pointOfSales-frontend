@@ -66,6 +66,14 @@ export const routes: Routes = [
       import('./features/catalog/categories/categories').then((module) => module.CategoriesComponent),
   },
   {
+    path: 'catalog/categories/:id/attributes',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/catalog/categories/category-attributes-page').then(
+        (module) => module.CategoryAttributesPageComponent,
+      ),
+  },
+  {
     path: 'catalog/products',
     canActivate: [authGuard],
     loadComponent: () =>
@@ -248,10 +256,34 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'inventory/serials',
+    path: 'inventory/equipment',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/inventory/serials/serial-search').then((module) => module.SerialSearchComponent),
+      import('./features/inventory/equipment/equipment-list').then((module) => module.EquipmentListComponent),
+  },
+  {
+    path: 'inventory/equipment/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/equipment/equipment-detail-page').then(
+        (module) => module.EquipmentDetailPageComponent,
+      ),
+  },
+  // Los seriales pasaron a equipos: la búsqueda por número sigue funcionando desde el enlace antiguo.
+  {
+    path: 'inventory/serials',
+    redirectTo: ({ queryParams }) => {
+      const serial = String(queryParams['serialNumber'] ?? '').trim();
+      return serial === '' ? '/inventory/equipment' : `/inventory/equipment?search=${encodeURIComponent(serial)}`;
+    },
+  },
+  {
+    path: 'inventory/equipment-loads/new',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/equipment-loads/equipment-load-page').then(
+        (module) => module.EquipmentLoadPageComponent,
+      ),
   },
   // Cualquier otra dirección: página no encontrada, solo para usuarios con sesión.
   {

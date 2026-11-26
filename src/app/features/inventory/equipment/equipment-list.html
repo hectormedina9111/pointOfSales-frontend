@@ -1,0 +1,112 @@
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ 'inventory.equipment.title' | translate }}</h1>
+    <p class="text-body-secondary mb-0">{{ 'inventory.equipment.intro' | translate }}</p>
+  </div>
+  <a *appIfPrivilege="'POST_INVENTORY_EQUIPMENT_LOADS'" class="btn btn-primary" [routerLink]="['/inventory/equipment-loads/new']">
+    {{ 'inventory.equipment.load' | translate }}
+  </a>
+</div>
+
+<form class="row g-2 align-items-end mb-3" [formGroup]="filterForm" role="search" (submit)="$event.preventDefault()">
+  <div class="col-12 col-sm-6 col-lg-3">
+    <app-field-label targetId="equipment-filter-search">{{ 'inventory.equipment.filter.search' | translate }}</app-field-label>
+    <input id="equipment-filter-search" type="search" class="form-control font-monospace" autocomplete="off" formControlName="search" />
+  </div>
+  <div class="col-12 col-sm-6 col-lg-3">
+    <app-field-label targetId="equipment-filter-product">{{ 'inventory.equipment.filter.product' | translate }}</app-field-label>
+    <app-product-picker inputId="equipment-filter-product" [selected]="selectedProduct()" (productPicked)="selectProduct($event)" />
+    @if (selectedProduct() !== null) {
+      <button type="button" class="btn btn-link btn-sm p-0 mt-1" (click)="clearProduct()">
+        {{ 'inventory.equipment.filter.clearProduct' | translate }}
+      </button>
+    }
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <app-field-label targetId="equipment-filter-category">{{ 'inventory.stock.filter.category' | translate }}</app-field-label>
+    <select id="equipment-filter-category" class="form-select" formControlName="categoryId">
+      <option value="">{{ 'common.all' | translate }}</option>
+      @for (category of categories(); track category.id) {
+        <option [value]="category.id">{{ category.name }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-2">
+    <app-field-label targetId="equipment-filter-status">{{ 'inventory.equipment.filter.status' | translate }}</app-field-label>
+    <select id="equipment-filter-status" class="form-select" formControlName="status">
+      <option value="">{{ 'common.all' | translate }}</option>
+      @for (status of statuses; track status) {
+        <option [value]="status">{{ 'inventory.serials.status.' + status | translate }}</option>
+      }
+    </select>
+  </div>
+  @if (isCentral()) {
+    <div class="col-12 col-sm-6 col-lg-2">
+      <app-field-label targetId="equipment-filter-branch">{{ 'inventory.stock.filter.branch' | translate }}</app-field-label>
+      <select id="equipment-filter-branch" class="form-select" formControlName="branchId">
+        <option value="">{{ 'common.all' | translate }}</option>
+        @for (branch of branches(); track branch.id) {
+          <option [value]="branch.id">{{ branch.code }} · {{ branch.name }}</option>
+        }
+      </select>
+    </div>
+  }
+  <div class="col-12 col-sm-6 col-lg-2">
+    <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+      {{ 'inventory.stock.filter.clear' | translate }}
+    </button>
+  </div>
+</form>
+
+<app-problem-alert [error]="equipment.error()" />
+<app-problem-alert [error]="lookupError()" />
+
+<p class="small text-body-secondary mb-2" data-testid="equipment-total">
+  {{ 'inventory.equipment.count' | translate: { count: equipment.total() } }}
+</p>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th scope="col">{{ 'inventory.serials.column.serial' | translate }}</th>
+        <th scope="col">{{ 'equipment.load.column.externalCode' | translate }}</th>
+        <th scope="col">{{ 'inventory.serials.column.product' | translate }}</th>
+        <th scope="col">{{ 'inventory.serials.column.status' | translate }}</th>
+        <th scope="col">{{ 'inventory.serials.column.branch' | translate }}</th>
+        <th scope="col">{{ 'inventory.serials.detail.receivedAt' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of equipment.items(); track item.id) {
+        <tr>
+          <td class="font-monospace">
+            <a [routerLink]="['/inventory/equipment', item.id]" [state]="{ returnUrl: currentUrl() }">{{ item.serialNumber }}</a>
+          </td>
+          <td class="font-monospace">{{ item.externalCode ?? '—' }}</td>
+          <td>
+            <div class="fw-semibold">{{ item.productName }}</div>
+            <div class="small font-monospace text-body-secondary">{{ item.productSku }}</div>
+          </td>
+          <td><span class="badge {{ statusClass(item.status) }}">{{ 'inventory.serials.status.' + item.status | translate }}</span></td>
+          <td>{{ item.branchName }}</td>
+          <td class="small">{{ item.receivedAt | localDateTime }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="text-center text-body-secondary">
+            {{ (equipment.loading() ? 'common.loading' : 'common.empty') | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-pagination
+  [page]="equipment.page()"
+  [size]="equipment.size()"
+  [total]="equipment.total()"
+  (pageChange)="equipment.goToPage($event)"
+  (sizeChange)="equipment.setSize($event)"
+/>
