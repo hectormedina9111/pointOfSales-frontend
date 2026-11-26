@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
 
 import { CategoriesApi, CategoryView } from '../../../core/api/categories-api';
 import { CountriesApi, CountryView } from '../../../core/api/countries-api';
 import { listAllPages } from '../../../core/api/page';
-import { ProductRequest, ProductType, ProductView, ProductsApi } from '../../../core/api/products-api';
+import { ProductRequest, ProductType, ProductView, ProductsApi, SerialMode } from '../../../core/api/products-api';
 import { TaxView, TaxesApi } from '../../../core/api/taxes-api';
 import { UnitOfMeasureView, UnitsApi } from '../../../core/api/units-api';
 import { TranslationService } from '../../../core/i18n/translation.service';
@@ -69,7 +69,18 @@ export class ProductFormComponent implements OnInit {
   protected readonly error = signal<unknown>(null);
   protected readonly isInvalid = isInvalidControl;
   protected readonly productTypes: readonly ProductType[] = ['GOOD', 'SERVICE'];
+  protected readonly serialModes: readonly SerialMode[] = ['NONE', 'MANUAL', 'LIST'];
   protected readonly indent = indentLabel;
+
+  /**
+   * Error de la configuración de serie con una unidad que admite decimales: una serie identifica
+   * una sola unidad. Se revalida cuando cambia la unidad (ver el constructor).
+   */
+  private readonly serialModeValidator = (control: AbstractControl): ValidationErrors | null => {
+    const unitId = this.form?.controls.unitOfMeasureId.value ?? null;
+    const unit = this.units().find((row) => row.id === unitId);
+    return control.value !== 'NONE' && unit?.allowsDecimals === true ? { serialUnit: true } : null;
+  };
 
   protected readonly form = this.fb.group({
     sku: this.fb.control('', [Validators.required, Validators.maxLength(40)]),
@@ -83,7 +94,7 @@ export class ProductFormComponent implements OnInit {
     salePrice: this.fb.control('', [Validators.required, Validators.pattern(AMOUNT_PATTERN)]),
     cost: this.fb.control('', [Validators.required, Validators.pattern(AMOUNT_PATTERN)]),
     tracksInventory: this.fb.control(true),
-    tracksSerials: this.fb.control(false),
+    serialMode: this.fb.control<SerialMode>('NONE', [this.serialModeValidator]),
     requiresExclusiveInvoice: this.fb.control(false),
     minStock: this.fb.control('', [Validators.pattern(QUANTITY_PATTERN)]),
     imageUrl: this.fb.control('', [Validators.maxLength(300)]),
@@ -105,7 +116,7 @@ export class ProductFormComponent implements OnInit {
     this.form.controls.taxId,
   ];
   protected readonly priceControls: readonly AbstractControl[] = [this.form.controls.salePrice, this.form.controls.cost];
-  protected readonly inventoryControls: readonly AbstractControl[] = [this.form.controls.minStock];
+  protected readonly inventoryControls: readonly AbstractControl[] = [this.form.controls.serialMode, this.form.controls.minStock];
   /** El resumen no tiene campos propios. */
   protected readonly noControls: readonly AbstractControl[] = [];
 
@@ -117,7 +128,9 @@ export class ProductFormComponent implements OnInit {
 
   constructor() {
     this.form.controls.productType.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.syncFlags());
-    this.form.controls.tracksSerials.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.syncFlags());
+    this.form.controls.serialMode.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.syncFlags());
+    // El aviso de unidad con decimales depende de la unidad elegida en el paso 2.
+    this.form.controls.unitOfMeasureId.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.syncFlags());
   }
 
   ngOnInit(): void {
@@ -146,6 +159,11 @@ export class ProductFormComponent implements OnInit {
   protected categoryOptions(): readonly TreeRow<CategoryView>[] {
     const current = this.form.getRawValue().categoryId;
     return this.categories().filter((row) => row.item.active || row.item.id === current);
+  }
+
+  /** Clave de la ayuda de cada configuración de serie, para mostrarla bajo el selector. */
+  protected serialModeHintKey(): string {
+    return `catalog.products.serialModeHint.${this.form.getRawValue().serialMode}`;
   }
 
   protected unitOptions(): readonly UnitOfMeasureView[] {
@@ -184,7 +202,7 @@ export class ProductFormComponent implements OnInit {
       { labelKey: 'catalog.products.field.salePrice', value: text(raw.salePrice) },
       { labelKey: 'catalog.products.field.cost', value: text(raw.cost) },
       { labelKey: 'catalog.products.field.tracksInventory', value: yesNo(raw.tracksInventory) },
-      { labelKey: 'catalog.products.field.tracksSerials', value: yesNo(raw.tracksSerials) },
+      { labelKey: 'catalog.products.field.serialMode', value: this.t(`catalog.products.serialMode.${raw.serialMode}`) },
       { labelKey: 'catalog.products.field.minStock', value: text(raw.minStock) },
       { labelKey: 'catalog.products.field.requiresExclusiveInvoice', value: yesNo(raw.requiresExclusiveInvoice) },
       { labelKey: 'catalog.products.field.active', value: yesNo(raw.active) },
@@ -216,7 +234,7 @@ export class ProductFormComponent implements OnInit {
       cost: blankToNull(value.cost),
       productType: value.productType,
       tracksInventory: value.tracksInventory,
-      tracksSerials: value.tracksSerials,
+      serialMode: value.serialMode,
       requiresExclusiveInvoice: value.requiresExclusiveInvoice,
       minStock: blankToNull(value.minStock),
       imageUrl: blankToNull(value.imageUrl),
@@ -239,23 +257,26 @@ export class ProductFormComponent implements OnInit {
   }
 
   /**
-   * Aplica las reglas entre tipo y flags. Un servicio no controla inventario ni seriales. Con
-   * seriales activos, el inventario se controla siempre, así que su casilla se fija en marcada.
+   * Aplica las reglas entre tipo, serie e inventario. Un servicio es siempre sin serie y sin
+   * inventario. Manual y de lista exigen controlar inventario, así que la casilla se fija en
+   * marcada y se deshabilita. La unidad se revalida porque el validador la lee del formulario.
    */
   private syncFlags(): void {
     const controls = this.form.controls;
     const raw = this.form.getRawValue();
     const isService = raw.productType === 'SERVICE';
+    const hasSerials = raw.serialMode !== 'NONE';
 
     if (isService) {
-      controls.tracksSerials.setValue(false, { emitEvent: false });
+      controls.serialMode.setValue('NONE', { emitEvent: false });
       controls.tracksInventory.setValue(false, { emitEvent: false });
-    } else if (raw.tracksSerials) {
+    } else if (hasSerials) {
       controls.tracksInventory.setValue(true, { emitEvent: false });
     }
 
-    setEnabled(controls.tracksSerials, !isService);
-    setEnabled(controls.tracksInventory, !isService && !raw.tracksSerials);
+    setEnabled(controls.serialMode, !isService);
+    setEnabled(controls.tracksInventory, !isService && !hasSerials);
+    controls.serialMode.updateValueAndValidity({ emitEvent: false });
   }
 
   private fillForm(): void {
@@ -274,7 +295,7 @@ export class ProductFormComponent implements OnInit {
         salePrice: formatAmount(product.salePrice),
         cost: formatAmount(product.cost),
         tracksInventory: product.tracksInventory,
-        tracksSerials: product.tracksSerials,
+        serialMode: product.serialMode,
         requiresExclusiveInvoice: product.requiresExclusiveInvoice,
         minStock: product.minStock === null ? '' : String(product.minStock),
         imageUrl: product.imageUrl ?? '',

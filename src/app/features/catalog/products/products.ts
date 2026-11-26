@@ -61,6 +61,11 @@ export class ProductsComponent implements OnInit {
   /** Error de una acción de la tabla (desactivar). El de la carga va aparte, en PagedList. */
   protected readonly actionError = signal<unknown>(null);
   protected readonly formatAmount = formatAmount;
+
+  /** Clave de la etiqueta de serie que se muestra junto al nombre; null si el producto no tiene serie. */
+  protected serialBadgeKey(product: ProductView): string | null {
+    return product.serialMode === 'NONE' ? null : `catalog.products.serialMode.${product.serialMode}`;
+  }
   protected readonly indent = indentLabel;
 
   constructor() {

@@ -7,6 +7,13 @@ import { Page, PageRequest, pageParams } from './page';
 /** Tipo de producto (enum ProductType del backend). Un SERVICE nunca controla inventario. */
 export type ProductType = 'GOOD' | 'SERVICE';
 
+/**
+ * Configuración de serie del producto (enum SerialMode del backend). NONE: sin serie. MANUAL: el
+ * cajero escribe una serie por unidad al facturar. LIST: el equipo se carga antes y se elige al
+ * facturar.
+ */
+export type SerialMode = 'NONE' | 'MANUAL' | 'LIST';
+
 /** Producto (record ProductView del backend). Los montos llegan como número con dos decimales. */
 export interface ProductView {
   readonly id: number;
@@ -22,6 +29,8 @@ export interface ProductView {
   readonly cost: number | null;
   readonly productType: ProductType;
   readonly tracksInventory: boolean;
+  readonly serialMode: SerialMode;
+  /** Derivado en el servidor: true solo cuando serialMode es LIST. Es de solo lectura. */
   readonly tracksSerials: boolean;
   readonly requiresExclusiveInvoice: boolean;
   readonly minStock: number | null;
@@ -45,7 +54,7 @@ export interface ProductRequest {
   readonly cost: string | null;
   readonly productType: ProductType;
   readonly tracksInventory: boolean;
-  readonly tracksSerials: boolean;
+  readonly serialMode: SerialMode;
   readonly requiresExclusiveInvoice: boolean;
   readonly minStock: string | null;
   readonly imageUrl: string | null;
